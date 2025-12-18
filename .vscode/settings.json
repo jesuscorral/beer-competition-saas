@@ -1,0 +1,70 @@
+{
+  "github.copilot.advanced": {
+    "debug.overrideEngine": "gpt-4"
+  },
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": false,
+    "markdown": true,
+    "scminput": false
+  },
+  "github.copilot.chat.codeGeneration.instructions": [
+    {
+      "text": "Este es un proyecto de sistema SaaS para gestión de competiciones de cerveza siguiendo las normas BJCP (Beer Judge Certification Program). Características clave del proyecto:"
+    },
+    {
+      "text": "ARQUITECTURA: Microservicios con multi-tenancy (tenant isolation por organization_id), autenticación JWT con OAuth2, base de datos PostgreSQL con Prisma ORM, cache Redis, message queue RabbitMQ."
+    },
+    {
+      "text": "STACK BACKEND: Node.js 18+ con TypeScript, Express.js, Prisma, autenticación JWT, validación con Zod."
+    },
+    {
+      "text": "STACK FRONTEND: React 18+ con TypeScript, Redux Toolkit + RTK Query, Material-UI v5, React Hook Form con Zod."
+    },
+    {
+      "text": "DOMINIO: Sistema gestiona organizaciones, usuarios con roles (owner, admin, organizer, judge, participant), competiciones, categorías BJCP, beer entries, jueces, scores según normas BJCP, rankings y resultados."
+    },
+    {
+      "text": "SEGURIDAD CRÍTICA: SIEMPRE incluir organization_id en queries para tenant isolation. Validar todos los inputs. Hash passwords con bcrypt. Implementar rate limiting."
+    },
+    {
+      "text": "TESTING: Jest para unitarios, Supertest para integración API, React Testing Library para frontend, Playwright para E2E. Coverage > 80% en lógica crítica."
+    },
+    {
+      "text": "DOCUMENTACIÓN: Mantener ARCHITECTURE.md actualizado, usar OpenAPI para APIs, escribir JSDoc para funciones complejas."
+    }
+  ],
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "files.exclude": {
+    "**/.git": true,
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/.next": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/.next": true,
+    "**/coverage": true
+  },
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true
+}
