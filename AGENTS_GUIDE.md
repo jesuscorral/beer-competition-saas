@@ -1086,12 +1086,14 @@ Prompt: "Implementa logging estructurado y métricas para el scoring service."
 
 ## Recursos Adicionales
 
-- [GitHub Copilot Documentation](https://docs.github.com/en/copilot)
-- [BJCP Style Guidelines](https://www.bjcp.org/style/)
-- [Clean Code Principles](https://www.amazon.com/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882)
-- [Microservices Patterns](https://microservices.io/patterns/)
-- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
-- [React Best Practices](https://react.dev/learn)
+- **GitHub Copilot**: [Documentación oficial](https://docs.github.com/en/copilot)
+- **BJCP**: [Beer Judge Certification Program](https://www.bjcp.org/) - Normas y guías de estilos
+- **Clean Code**: Libro de Robert C. Martin sobre principios de código limpio
+- **Microservices**: [Microservices.io Patterns](https://microservices.io/patterns/)
+- **PostgreSQL**: [Documentación oficial](https://www.postgresql.org/docs/)
+- **React**: [Documentación oficial](https://react.dev/learn)
+- **Node.js**: [Best Practices](https://nodejs.org/en/docs/guides/)
+- **TypeScript**: [Documentación oficial](https://www.typescriptlang.org/docs/)
 
 ---
 
