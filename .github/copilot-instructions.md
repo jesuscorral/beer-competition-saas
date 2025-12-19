@@ -17,6 +17,30 @@ You are working on a **Beer Competition SaaS Platform** that enables competition
 
 ---
 
+## Language Requirements
+
+**CRITICAL**: All project documentation, code comments, commit messages, Pull Requests, Issues, ADRs, and README files **MUST be written in English**.
+
+This includes:
+- ✅ **Commit messages**: `feat: implement entry submission API (#16)`
+- ✅ **Pull Request titles and descriptions**: All in English
+- ✅ **Issue titles and descriptions**: All in English
+- ✅ **Code comments**: `// Calculate consensus score from all judges`
+- ✅ **Documentation files**: README.md, ADRs, guides, etc.
+- ✅ **API documentation**: OpenAPI/Swagger specs
+- ✅ **Error messages**: Application error messages in English
+- ✅ **Log messages**: All structured logs in English
+
+**Rationale**: English is the international language for software development, enabling:
+- Global collaboration and code reviews
+- Better AI/Copilot assistance
+- Easier onboarding for international developers
+- Industry-standard documentation practices
+
+**Exception**: User-facing UI text may be localized (future internationalization).
+
+---
+
 ## MANDATORY Workflow: Starting New Issues
 
 **BEFORE implementing any GitHub issue, ALWAYS follow this workflow:**
