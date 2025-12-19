@@ -11,7 +11,6 @@ This directory contains specialized AI agents that work with GitHub Copilot in V
 | **devops.agent.md** | Infrastructure & CI/CD (Azure, AWS, Docker, K8s) | filesystem, github, fetch, memory, azure-resources, azure-auth |
 | **qa.agent.md** | Testing & quality assurance (unit, integration, E2E) | filesystem, github, postgres, memory, fetch |
 | **data-science.agent.md** | ML & analytics (Python, FastAPI, scikit-learn) | filesystem, github, postgres, memory, fetch |
-| **teacher.agent.md** | Pattern documentation & knowledge sharing | filesystem, github, memory, fetch |
 | **product-owner.agent.md** | Product management, backlog, user stories, GitHub issues | filesystem, github, memory, fetch |
 
 ## 🎯 Agent Selection Decision Tree
@@ -48,14 +47,14 @@ DevOps Agent                                        QA Agent
 (Docker, Azure,                                     (Unit, Integration,
  CI/CD, IaC)                                        E2E, Security, Load)
 
-        │                                                 │
-        ▼                                                 ▼
-Data/Analytics?                                    Review/Documentation?
-        │                                                 │
-        ▼                                                 ▼
-Data Science Agent                                  Teacher Agent
-(Python, ML, FastAPI,                               (Pattern docs, ADRs,
- Jupyter, Analytics)                                Knowledge sharing)
+        │
+        ▼
+Data/Analytics?
+        │
+        ▼
+Data Science Agent
+(Python, ML, FastAPI,
+ Jupyter, Analytics)
 ```
 
 ## 📋 How to Use Agents
@@ -112,13 +111,6 @@ The agent will respond with implementation guidance specific to its expertise.
 - Implementing recommendation systems
 - NLP tasks
 - Time series forecasting
-
-**Use @teacher when:**
-- Reviewing pull requests
-- Documenting architectural decisions
-- Identifying design patterns
-- Proposing knowledge-sharing content
-- Creating ADRs
 
 **Use @product-owner when:**
 - Defining new features or capabilities
@@ -215,9 +207,9 @@ Full path: `C:\Users\[YourUsername]\AppData\Roaming\Code\User\globalStorage\gith
 - Track long-term patterns
 
 **Use cases**:
-- Teacher Agent stores learned patterns
 - Backend Agent shares API conventions
 - DevOps Agent tracks deployment history
+- Agents share architectural decisions and patterns
 
 #### 5. Fetch MCP Server
 **Purpose**: Retrieve web content (docs, Stack Overflow, GitHub issues)  
@@ -260,7 +252,6 @@ Full path: `C:\Users\[YourUsername]\AppData\Roaming\Code\User\globalStorage\gith
 | **DevOps** | filesystem, github, fetch | postgres, memory, azure-resources, azure-auth |
 | **QA** | filesystem, github, postgres | memory, fetch |
 | **Data Science** | postgres, filesystem, github | memory, fetch |
-| **Teacher** | github, filesystem, memory | fetch |
 | **Product Owner** | github, filesystem, memory | fetch |
 
 ### Troubleshooting MCP Servers
@@ -392,9 +383,9 @@ All agents follow these documentation principles:
 - Document test strategies
 
 **Knowledge Sharing:**
-- Teacher agent proposes blog posts
-- Document lessons learned
+- Document lessons learned in ADRs
 - Share patterns with team
+- Update architecture documentation
 
 ## 🔄 Agent Collaboration
 
@@ -409,7 +400,7 @@ Agent workflow:
 3. @frontend: Create upload UI with progress indicators
 4. @devops: Setup storage (Azure Blob) and ML inference service
 5. @qa: Test end-to-end flow
-6. @teacher: Document the ML pipeline architecture
+6. @product-owner: Document the feature and update backlog
 ```
 
 ### Agent Communication Patterns
@@ -446,11 +437,7 @@ Will create PR linked to COMP-008.
 **Step 3: Backend Agent implements and creates PR**
 - Creates PR linked to original Issue
 - Tags Frontend Agent for review
-
-**Step 4: Teacher Agent reviews both PRs**
-- Identifies **Bulk Operation Pattern**
-- Updates pattern documentation
-- Suggests LinkedIn article: "Optimizing Bulk Updates in REST APIs"
+- Documents implementation decisions in PR description
 
 ## 📝 Development Workflow Example
 
@@ -491,19 +478,10 @@ Creates:
 - Verifies Docker images build correctly
 - Checks Lighthouse PWA score
 
-**Step 6: Teacher Agent review (MANDATORY)**
-- Identifies patterns used:
-  - Offline-First Architecture (IndexedDB + Service Worker)
-  - Background Sync Pattern (queue API calls)
-  - Optimistic UI (update UI before server confirms)
-- Creates ADR: `ADR-015-offline-scoresheet-storage-strategy.md`
-- Proposes LinkedIn article: "Building Offline-First PWAs for Field Competitions"
-- Updates BACKLOG: `- [x] SCORE-003`
-
-**Step 7: Create Pull Request**
+**Step 6: Create Pull Request**
 - Title: `[SCORE-003] Implement Offline Scoresheet Entry`
-- Description includes Teacher Agent's implementation summary
-- Links to ADR-015
+- Description includes implementation summary and architectural decisions
+- Links to relevant ADRs if created
 - All tests passing
 - Documentation updated
 
@@ -513,7 +491,7 @@ Creates:
 2. **Choose Agent**: Select based on task (see selection guide above)
 3. **Provide Context**: Be specific about requirements and tech stack
 4. **Iterate**: Refine implementation with follow-up questions
-5. **Review**: Have @teacher review for patterns and knowledge sharing
+5. **Document**: Create ADRs for significant architectural decisions
 
 ## ❓ Troubleshooting
 
@@ -545,7 +523,7 @@ Creates:
 **Documentation out of sync:**
 - Run `git status` to see uncommitted changes
 - Check if PR includes doc updates
-- Teacher Agent should flag missing docs
+- Review PR checklist to ensure docs are updated
 
 ## ✅ Pre-PR Checklist (All Agents)
 
@@ -559,7 +537,7 @@ Before creating ANY pull request:
 - [ ] ADR created (for significant architectural decisions)
 - [ ] BACKLOG.md updated: `- [x] TASK-XXX`
 - [ ] GitHub Issue updated with completion notes
-- [ ] Teacher Agent reviewed and documented patterns
+- [ ] Architecture documentation updated if needed
 - [ ] No compiler warnings or errors
 - [ ] Code follows project conventions (linting, formatting)
 
@@ -577,7 +555,6 @@ Before creating ANY pull request:
 - [ ] **Frontend Agent**: `@frontend what React patterns should I use?`
 - [ ] **DevOps Agent**: `@devops show me the docker-compose.yml`
 - [ ] **QA Agent**: `@qa what's our testing strategy?`
-- [ ] **Teacher Agent**: `@teacher what agents are available?`
 - [ ] **Product Owner**: `@product-owner help me write a user story`
 
 ### 3. First Development Task
@@ -586,7 +563,7 @@ Before creating ANY pull request:
 - [ ] Assign to appropriate agent (@backend, @frontend, etc.)
 - [ ] Agent implements + creates PR
 - [ ] @qa tests implementation
-- [ ] @teacher reviews patterns
+- [ ] Review PR and document any architectural decisions
 - [ ] Merge PR
 - [ ] Update BACKLOG.md: `- [x] TASK-XXX`
 

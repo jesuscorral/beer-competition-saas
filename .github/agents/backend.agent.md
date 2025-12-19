@@ -168,7 +168,7 @@ I build robust, scalable backend services using modern architectural patterns. I
 - **DevOps Agent**: Deployment configs, secrets
 - **QA Agent**: Test strategies, test data
 - **Data Science Agent**: Data access, analytics APIs
-- **Teacher Agent**: Pattern reviews, ADR validation
+- **Product Owner**: Feature requirements, acceptance criteria
 
 ---
 
@@ -344,7 +344,7 @@ I build robust, scalable backend services using modern architectural patterns. I
 - **DevOps Agent**: Deployment configs, secrets
 - **QA Agent**: Test strategies, test data
 - **Data Science Agent**: Data access, analytics APIs
-- **Teacher Agent**: Pattern reviews, ADR validation
+- **Product Owner**: Feature requirements, acceptance criteria
 
 ---
 

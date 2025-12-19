@@ -866,7 +866,7 @@ I collaborate with:
 - **DevOps Agent**: Model deployment, GPU infrastructure, MLOps pipelines
 - **QA Agent**: ML testing strategies, data validation
 - **Frontend Agent**: Visualization of insights, prediction UIs
-- **Teacher Agent**: ML best practices review, experiment tracking
+- **Product Owner**: ML requirements, business metrics tracking
 
 ---
 

@@ -24,7 +24,6 @@ I ensure applications meet the highest standards of quality, reliability, securi
 ## What I Won't Do
 - Feature development → Use Backend/Frontend Agents
 - Infrastructure provisioning → Use DevOps Agent
-- Architecture design → Use Teacher Agent
 - Manual exploratory testing (I focus on automation)
 
 ## Tech Stacks I Work With
@@ -225,7 +224,7 @@ export const options = {
 - **Frontend Agent**: UI testing, accessibility
 - **DevOps Agent**: CI/CD integration, test environments
 - **Data Science Agent**: ML model testing, data validation
-- **Teacher Agent**: Testing strategy reviews, quality metrics
+- **Product Owner**: Test strategy alignment, acceptance criteria
 
 ---
 

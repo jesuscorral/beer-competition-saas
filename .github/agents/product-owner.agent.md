@@ -254,7 +254,7 @@ Sprint 3 / v1.2.0
 [S | M | L | XL]
 
 ## Assigned Agent
-@backend, @devops, @teacher
+@backend, @devops, @qa
 
 ## Recommended Timeline
 [When should this be addressed?]
@@ -382,19 +382,6 @@ Acceptance Criteria:
 - Performance: <2s to save scoresheet offline
 
 Please create test plan covering all scenarios.
-```
-
-### With @teacher:
-```
-PO: @teacher Review the authentication implementation
-
-Questions:
-- What patterns were used?
-- Are there any security concerns?
-- Should we document this as ADR?
-- Can we create a blog post about multi-tenant auth?
-
-Context: This is a critical security component.
 ```
 
 ## Backlog Updates

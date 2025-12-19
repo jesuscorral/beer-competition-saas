@@ -25,7 +25,6 @@ I build reliable, scalable, and secure infrastructure. I specialize in cloud pla
 - Application code development → Use Backend/Frontend Agents
 - Manual testing → Use QA Agent
 - ML deployment specifics → Use Data Science Agent
-- Architecture design reviews → Use Teacher Agent
 
 ## Tech Stacks I Work With
 
@@ -196,7 +195,7 @@ I build reliable, scalable, and secure infrastructure. I specialize in cloud pla
 - **Frontend Agent**: Build configs, env variables, CDN
 - **QA Agent**: Test environments, load test infra
 - **Data Science Agent**: GPU instances, model serving
-- **Teacher Agent**: Infra pattern reviews, best practices
+- **Product Owner**: Infrastructure requirements, cost optimization
 
 ---
 

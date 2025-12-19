@@ -186,7 +186,7 @@ I build modern, accessible, and performant user interfaces using React, TypeScri
 - **Backend Agent**: API contracts, auth, WebSockets
 - **DevOps Agent**: Build configs, env variables, CDN
 - **QA Agent**: E2E strategies, accessibility testing
-- **Teacher Agent**: UX pattern reviews, design system
+- **Product Owner**: UX requirements, design feedback
 
 ---
 
