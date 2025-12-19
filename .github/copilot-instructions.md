@@ -89,7 +89,7 @@ Before starting implementation, verify:
 1. **[ADR-001: Tech Stack](docs/architecture/decisions/ADR-001-tech-stack-selection.md)**
    - Backend: .NET 10 (Competition Service, Judging Service, BFF)
    - Frontend: React 18 + TypeScript + PWA
-   - Database: PostgreSQL 16+ with Row-Level Security
+   - Database: PostgreSQL 17+ with Row-Level Security
    - Message Bus: RabbitMQ with CloudEvents format
    - Analytics: Python 3.12 + FastAPI (Post-MVP)
 

@@ -128,20 +128,20 @@ docker-compose up -d
 docker-compose ps
 
 # Expected output:
-# NAME                   STATUS              PORTS
-# beercomp_postgres      Up (healthy)        0.0.0.0:5432->5432/tcp
-# beercomp_pgadmin       Up                  0.0.0.0:5050->80/tcp
-# beercomp_rabbitmq      Up (healthy)        0.0.0.0:5672->5672/tcp, 0.0.0.0:15672->15672/tcp
-# beercomp_redis         Up (healthy)        0.0.0.0:6379->6379/tcp
-# beercomp_keycloak      Up (healthy)        0.0.0.0:8080->8080/tcp
+NAME                   STATUS              PORTS
+beercomp_postgres      Up (healthy)        0.0.0.0:5432->5432/tcp
+beercomp_pgadmin       Up                  0.0.0.0:5050->80/tcp
+beercomp_rabbitmq      Up (healthy)        0.0.0.0:5672->5672/tcp, 0.0.0.0:15672->15672/tcp
+beercomp_redis         Up (healthy)        0.0.0.0:6379->6379/tcp
+beercomp_keycloak      Up (healthy)        0.0.0.0:8080->8080/tcp
 
 # 6. Access management interfaces:
-# - pgAdmin (PostgreSQL UI): http://localhost:5050
-#   Login: admin@beercomp.dev / admin
-# - RabbitMQ Management: http://localhost:15672
-#   Login: dev_user / dev_password
-# - Keycloak Admin Console: http://localhost:8080/admin
-#   Login: admin / admin
+- pgAdmin (PostgreSQL UI): http://localhost:5050
+  Login: admin@beercomp.dev / admin
+- RabbitMQ Management: http://localhost:15672
+  Login: dev_user / dev_password
+- Keycloak Admin Console: http://localhost:8080/admin
+  Login: admin / admin
 ```
 
 ### Initial Database Configuration (pgAdmin)
@@ -154,12 +154,12 @@ docker-compose ps
    - **Connection Tab**:
      - Host: `postgres` (Docker internal network)
      - Port: `5432`
-     - Database: `beercomp`
-     - Username: `dev_user`
-     - Password: `dev_password`
+     - Database: `<databasename>`
+     - Username: `<user>`
+     - Password: `<password>`
    - Click "Save"
 
-3. You should now see the `beercomp` database and can browse tables (future: after migrations)
+3. You should now see the `<databasename>` database and can browse tables (future: after migrations)
 
 ### Keycloak Initial Setup (Future - Sprint 1)
 
@@ -180,111 +180,6 @@ docker-compose down
 
 # DANGER: Remove all data (reset to clean state)
 docker-compose down -v
-```
-
-### Troubleshooting
-
-#### Port Conflicts
-
-If you get port binding errors, check if ports are already in use:
-
-```powershell
-# Check PostgreSQL port (5432)
-netstat -ano | findstr :5432
-
-# Check RabbitMQ port (5672)
-netstat -ano | findstr :5672
-
-# Check Keycloak port (8080)
-netstat -ano | findstr :8080
-```
-
-**Solution**: Either:
-1. Stop the conflicting service
-2. Edit `.env` file to use different ports
-
-#### Keycloak Takes Long to Start
-
-Keycloak typically takes 60-90 seconds on first startup (database schema initialization). Check progress:
-
-```powershell
-docker logs beercomp_keycloak --follow
-```
-
-Wait until you see: `Listening on: http://0.0.0.0:8080`
-
-#### PostgreSQL Connection Refused
-
-Ensure PostgreSQL is healthy before connecting:
-
-```powershell
-docker-compose ps postgres
-
-# Check logs if not healthy
-docker logs beercomp_postgres
-```
-
-#### RabbitMQ Management UI Not Loading
-
-Wait for health check to pass (20 seconds), then check:
-
-```powershell
-docker logs beercomp_rabbitmq
-
-# Verify management plugin is enabled (should see in logs):
-# "Server startup complete; 4 plugins started: [rabbitmq_management, ...]"
-```
-
-#### Docker Compose Version Issues
-
-This project requires Docker Compose v2 (included in Docker Desktop 4.x). Verify:
-
-```powershell
-docker compose version
-# Should show: Docker Compose version v2.x.x
-```
-
-If using standalone Docker Compose v1 (legacy), upgrade to Docker Desktop.
-
-#### WSL 2 Performance on Windows
-
-For best performance, ensure project files are in WSL 2 filesystem (not `/mnt/c/`):
-
-```bash
-# From WSL terminal
-cd ~
-git clone https://github.com/jesuscorral/beer-competition-saas.git
-cd beer-competition-saas/infrastructure
-docker compose up -d
-```
-
-### Running Tests (Future - Sprint 0 Issue #7)
-
-```bash
-# .NET unit and integration tests (uses Testcontainers)
-dotnet test
-
-# Python tests (Post-MVP)
-cd services/analytics
-pytest
-
-# End-to-end tests (Cypress)
-cd tests/e2e
-npm run test:e2e
-```
-
-### Logs and Monitoring
-
-```powershell
-# View all service logs
-docker-compose logs --follow
-
-# View specific service logs
-docker-compose logs postgres --follow
-docker-compose logs rabbitmq --follow
-
-# View last 100 lines
-docker-compose logs --tail=100
 ```
 
 ---
@@ -328,15 +223,6 @@ az deployment sub create \
 - CI/CD pipeline automatically deploys on push to `main` branch
 - See [.github/workflows/deploy.yml](.github/workflows/deploy.yml) for full pipeline
 
-**Manual Deployment**:
-```bash
-# Build and push Docker images
-docker build -t beercompregistry.azurecr.io/bff:latest services/bff
-docker push beercompregistry.azurecr.io/bff:latest
-
-# Restart Azure Container Instances
-az container restart --name beercomp-bff --resource-group rg-beercomp-prod
-```
 
 ---
 

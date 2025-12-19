@@ -8,9 +8,9 @@ This folder contains the Docker Compose configuration for running the complete B
 
 ### Core Services
 
-1. **PostgreSQL 16** (`postgres`)
+1. **PostgreSQL 17** (`postgres`)
    - Port: 5432
-   - Database: `beercomp`
+   - Database: `beer_competition`
    - User: `dev_user`
    - Features: Multi-tenant data isolation with Row-Level Security (future)
 
@@ -103,9 +103,8 @@ All services communicate via the `beercomp-network` bridge network. This allows:
 **Configuration files:**
 
 - `.env` - Active environment variables (git-ignored)
-- `.env.example` - Template with all available options
 
-**Security Note:** Never commit `.env` to version control. Use `.env.example` as reference.
+**Security Note:** Never commit `.env` to version control.
 
 ## Service Dependencies
 
@@ -126,73 +125,6 @@ Health checks ensure proper startup order:
 | RabbitMQ Management | http://localhost:15672 | `dev_user` / `dev_password` |
 | Redis | `localhost:6379` | Password: `dev_password` |
 | Keycloak Admin | http://localhost:8080/admin | `admin` / `admin` |
-
-## Connecting from Application Code
-
-### PostgreSQL Connection String
-
-```csharp
-// .NET (Entity Framework Core)
-"Server=localhost;Port=5432;Database=beercomp;User Id=dev_user;Password=dev_password;"
-```
-
-### RabbitMQ Connection
-
-```csharp
-// .NET (RabbitMQ.Client)
-var factory = new ConnectionFactory
-{
-    HostName = "localhost",
-    Port = 5672,
-    UserName = "dev_user",
-    Password = "dev_password",
-    VirtualHost = "/"
-};
-```
-
-### Redis Connection
-
-```csharp
-// .NET (StackExchange.Redis)
-"localhost:6379,password=dev_password"
-```
-
-### Keycloak OIDC Configuration
-
-```json
-{
-  "Authority": "http://localhost:8080/realms/beercomp",
-  "ClientId": "backend-api",
-  "ClientSecret": "<generate-after-realm-setup>",
-  "RequireHttpsMetadata": false
-}
-```
-
-## Troubleshooting
-
-### Service Won't Start
-
-1. Check logs: `docker-compose logs <service_name>`
-2. Verify port availability: `netstat -ano | findstr :<port>`
-3. Check Docker Desktop is running
-
-### Keycloak Slow to Start
-
-- First startup takes 60-90 seconds (database schema initialization)
-- Monitor: `docker logs beercomp_keycloak --follow`
-- Wait for: `"Listening on: http://0.0.0.0:8080"`
-
-### PostgreSQL Connection Failed
-
-1. Check health: `docker-compose ps postgres`
-2. Should show: `Up (healthy)`
-3. Test connection: `docker exec -it beercomp_postgres psql -U dev_user -d beercomp`
-
-### RabbitMQ Management UI Not Loading
-
-1. Wait 20 seconds for health check
-2. Verify plugin: `docker logs beercomp_rabbitmq | Select-String management`
-3. Should see: `"rabbitmq_management" plugin enabled`
 
 ### Reset Everything
 
@@ -224,14 +156,6 @@ This Docker Compose setup is for **LOCAL DEVELOPMENT ONLY**. Production deployme
 
 See [docs/deployment/DEPLOYMENT.md](../docs/deployment/DEPLOYMENT.md) for production setup.
 
-## Next Steps (Sprint 0)
-
-After infrastructure is running:
-
-1. **Issue #6**: PostgreSQL multi-tenant schema setup (RLS policies)
-2. **Issue #13**: Seed BJCP 2021 styles database
-3. **Issue #7**: Outbox Pattern implementation
-4. **Issue #8**: RabbitMQ exchanges and queues configuration
 
 ---
 
