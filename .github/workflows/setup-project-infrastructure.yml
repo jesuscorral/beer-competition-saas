@@ -543,28 +543,27 @@ jobs:
               },
               {
                 title: 'MVP Release',
-                description: `**Goal:** Production-ready MVP
-                
-**Includes:**
-- All Sprint 0-3 features
-- E2E tests passing
-- Security audit complete
-- Performance testing done
-- Documentation complete
-- Deployment to production
-
-**Critical Features:**
-- Multi-tenancy enforcement
-- Offline judging workflow
-- Event-driven architecture
-- BJCP 2021 compliance
-
-**Success Criteria:**
-- Support 200+ entrants
-- 50+ concurrent judges
-- 600+ bottles per competition
-- <2s page load times
-- 99.5% uptime`,
+                description: `**Goal:** Production-ready MVP          
+                              **Includes:**
+                              - All Sprint 0-3 features
+                              - E2E tests passing
+                              - Security audit complete
+                              - Performance testing done
+                              - Documentation complete
+                              - Deployment to production
+                              
+                              **Critical Features:**
+                              - Multi-tenancy enforcement
+                              - Offline judging workflow
+                              - Event-driven architecture
+                              - BJCP 2021 compliance
+                              
+                              **Success Criteria:**
+                              - Support 200+ entrants
+                              - 50+ concurrent judges
+                              - 600+ bottles per competition
+                              - <2s page load times
+                              - 99.5% uptime`,
                 due_on: new Date(now.getTime() + 70 * 24 * 60 * 60 * 1000).toISOString()
               },
               {
