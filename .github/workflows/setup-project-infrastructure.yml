@@ -1,0 +1,632 @@
+name: Setup Project Infrastructure
+on:
+  workflow_dispatch:
+    inputs:
+      setup_type:
+        description: 'What to setup'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - labels-only
+          - milestones-only
+
+jobs:
+  setup-labels:
+    if: inputs.setup_type == 'all' || inputs.setup_type == 'labels-only'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    
+    steps:
+      - name: Setup Agent Labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            console.log('🏷️ Creating agent labels...');
+            
+            const agentLabels = [
+              {
+                name: 'agent:backend',
+                color: '0052CC',
+                description: '🏗️ Backend API & Business Logic - .NET, CQRS, Events'
+              },
+              {
+                name: 'agent:frontend',
+                color: '61DAFB',
+                description: '🎨 Frontend UI & PWA - React, TypeScript, Offline-first'
+              },
+              {
+                name: 'agent:data-science',
+                color: 'F37626',
+                description: '🔬 ML & Analytics - Python, FastAPI, Models'
+              },
+              {
+                name: 'agent:devops',
+                color: '326CE5',
+                description: '🚀 Infrastructure & DevOps - Docker, CI/CD, Monitoring'
+              },
+              {
+                name: 'agent:qa',
+                color: '00C853',
+                description: '✅ Testing & QA - Unit, Integration, E2E Tests'
+              },
+              {
+                name: 'agent:architecture',
+                color: '9C27B0',
+                description: '📋 Architecture & Design - ADRs, Patterns, Review'
+              }
+            ];
+
+            for (const label of agentLabels) {
+              try {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label.name,
+                  color: label.color,
+                  description: label.description
+                });
+                console.log(`✅ Created: ${label.name}`);
+              } catch (error) {
+                if (error.status === 422) {
+                  // Label exists, update it
+                  await github.rest.issues.updateLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    name: label.name,
+                    color: label.color,
+                    description: label.description
+                  });
+                  console.log(`🔄 Updated: ${label.name}`);
+                } else {
+                  console.error(`❌ Error creating ${label.name}:`, error.message);
+                }
+              }
+            }
+
+      - name: Setup Coordination Labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            console.log('🤝 Creating coordination labels...');
+            
+            const coordinationLabels = [
+              {
+                name: 'multi-agent-task',
+                color: 'FBCA04',
+                description: '🔄 Requires coordination between multiple agents'
+              },
+              {
+                name: 'agent-handoff',
+                color: 'D4C5F9',
+                description: '🤝 Task handoff between agents'
+              },
+              {
+                name: 'agent-question',
+                color: 'FEF2C0',
+                description: '❓ Question for another agent'
+              },
+              {
+                name: 'needs-response',
+                color: 'D93F0B',
+                description: '💬 Waiting for response from assigned agent'
+              },
+              {
+                name: 'blocked',
+                color: 'B60205',
+                description: '🚫 Blocked by dependencies or external factors'
+              }
+            ];
+
+            for (const label of coordinationLabels) {
+              try {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label.name,
+                  color: label.color,
+                  description: label.description
+                });
+                console.log(`✅ Created: ${label.name}`);
+              } catch (error) {
+                if (error.status === 422) {
+                  await github.rest.issues.updateLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    name: label.name,
+                    color: label.color,
+                    description: label.description
+                  });
+                  console.log(`🔄 Updated: ${label.name}`);
+                } else {
+                  console.error(`❌ Error creating ${label.name}:`, error.message);
+                }
+              }
+            }
+
+      - name: Setup Priority Labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            console.log('📊 Creating priority labels...');
+            
+            const priorityLabels = [
+              {
+                name: 'priority:critical',
+                color: 'B60205',
+                description: '🔴 Critical - Blocker for release'
+              },
+              {
+                name: 'priority:high',
+                color: 'D93F0B',
+                description: '🟠 High - Important for MVP'
+              },
+              {
+                name: 'priority:medium',
+                color: 'FBCA04',
+                description: '🟡 Medium - Should have'
+              },
+              {
+                name: 'priority:low',
+                color: '0E8A16',
+                description: '🟢 Low - Nice to have'
+              }
+            ];
+
+            for (const label of priorityLabels) {
+              try {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label.name,
+                  color: label.color,
+                  description: label.description
+                });
+                console.log(`✅ Created: ${label.name}`);
+              } catch (error) {
+                if (error.status === 422) {
+                  await github.rest.issues.updateLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    name: label.name,
+                    color: label.color,
+                    description: label.description
+                  });
+                  console.log(`🔄 Updated: ${label.name}`);
+                } else {
+                  console.error(`❌ Error creating ${label.name}:`, error.message);
+                }
+              }
+            }
+
+      - name: Setup Complexity Labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            console.log('⚙️ Creating complexity labels...');
+            
+            const complexityLabels = [
+              {
+                name: 'complexity:trivial',
+                color: 'C5DEF5',
+                description: '🐛 Trivial (< 1 hour)'
+              },
+              {
+                name: 'complexity:simple',
+                color: '5EBEFF',
+                description: '📝 Simple (1-4 hours)'
+              },
+              {
+                name: 'complexity:moderate',
+                color: '1D76DB',
+                description: '⚙️ Moderate (1-2 days)'
+              },
+              {
+                name: 'complexity:complex',
+                color: '0E4C92',
+                description: '🔧 Complex (3-5 days)'
+              },
+              {
+                name: 'complexity:epic',
+                color: '0A2647',
+                description: '🏗️ Epic (> 1 week, should be split)'
+              }
+            ];
+
+            for (const label of complexityLabels) {
+              try {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label.name,
+                  color: label.color,
+                  description: label.description
+                });
+                console.log(`✅ Created: ${label.name}`);
+              } catch (error) {
+                if (error.status === 422) {
+                  await github.rest.issues.updateLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    name: label.name,
+                    color: label.color,
+                    description: label.description
+                  });
+                  console.log(`🔄 Updated: ${label.name}`);
+                } else {
+                  console.error(`❌ Error creating ${label.name}:`, error.message);
+                }
+              }
+            }
+
+      - name: Setup Type Labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            console.log('📦 Creating type labels...');
+            
+            const typeLabels = [
+              {
+                name: 'type:feature',
+                color: 'A2EEEF',
+                description: '✨ New feature or enhancement'
+              },
+              {
+                name: 'type:bug',
+                color: 'D73A4A',
+                description: '🐛 Bug fix'
+              },
+              {
+                name: 'type:infrastructure',
+                color: '6F42C1',
+                description: '🏗️ Infrastructure setup or configuration'
+              },
+              {
+                name: 'type:documentation',
+                color: '0075CA',
+                description: '📚 Documentation updates'
+              },
+              {
+                name: 'type:refactor',
+                color: 'EDEDED',
+                description: '♻️ Code refactoring'
+              },
+              {
+                name: 'type:test',
+                color: 'BFDADC',
+                description: '🧪 Test-related changes'
+              },
+              {
+                name: 'type:security',
+                color: 'FF6B6B',
+                description: '🔒 Security-related issue or improvement'
+              }
+            ];
+
+            for (const label of typeLabels) {
+              try {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label.name,
+                  color: label.color,
+                  description: label.description
+                });
+                console.log(`✅ Created: ${label.name}`);
+              } catch (error) {
+                if (error.status === 422) {
+                  await github.rest.issues.updateLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    name: label.name,
+                    color: label.color,
+                    description: label.description
+                  });
+                  console.log(`🔄 Updated: ${label.name}`);
+                } else {
+                  console.error(`❌ Error creating ${label.name}:`, error.message);
+                }
+              }
+            }
+
+      - name: Setup Status Labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            console.log('📍 Creating status labels...');
+            
+            const statusLabels = [
+              {
+                name: 'status:needs-triage',
+                color: 'EEEEEE',
+                description: '🔍 Needs review and assignment'
+              },
+              {
+                name: 'status:in-progress',
+                color: '0052CC',
+                description: '🏃 Currently being worked on'
+              },
+              {
+                name: 'status:in-review',
+                color: 'FFA500',
+                description: '👀 In code review'
+              },
+              {
+                name: 'status:ready-to-merge',
+                color: '00FF00',
+                description: '✅ Approved and ready to merge'
+              },
+              {
+                name: 'status:on-hold',
+                color: 'CCCCCC',
+                description: '⏸️ On hold, not currently active'
+              }
+            ];
+
+            for (const label of statusLabels) {
+              try {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label.name,
+                  color: label.color,
+                  description: label.description
+                });
+                console.log(`✅ Created: ${label.name}`);
+              } catch (error) {
+                if (error.status === 422) {
+                  await github.rest.issues.updateLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    name: label.name,
+                    color: label.color,
+                    description: label.description
+                  });
+                  console.log(`🔄 Updated: ${label.name}`);
+                } else {
+                  console.error(`❌ Error creating ${label.name}:`, error.message);
+                }
+              }
+            }
+
+      - name: Setup Epic Labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            console.log('🎯 Creating epic labels...');
+            
+            const epicLabels = [
+              {
+                name: 'epic:competition-management',
+                color: '8B4513',
+                description: '🏆 E1: Competition Management'
+              },
+              {
+                name: 'epic:entry-management',
+                color: 'CD853F',
+                description: '📝 E2: Entry Management'
+              },
+              {
+                name: 'epic:flight-organization',
+                color: 'DEB887',
+                description: '✈️ E3: Flight Organization'
+              },
+              {
+                name: 'epic:check-in-process',
+                color: 'F4A460',
+                description: '📦 E4: Check-in & Bottle Processing'
+              },
+              {
+                name: 'epic:judging-workflow',
+                color: 'DAA520',
+                description: '⚖️ E5: Judging Workflow'
+              },
+              {
+                name: 'epic:authentication',
+                color: 'B8860B',
+                description: '🔐 E6: Authentication & Authorization'
+              },
+              {
+                name: 'epic:analytics',
+                color: 'FF8C00',
+                description: '📊 Analytics & ML Features'
+              }
+            ];
+
+            for (const label of epicLabels) {
+              try {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label.name,
+                  color: label.color,
+                  description: label.description
+                });
+                console.log(`✅ Created: ${label.name}`);
+              } catch (error) {
+                if (error.status === 422) {
+                  await github.rest.issues.updateLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    name: label.name,
+                    color: label.color,
+                    description: label.description
+                  });
+                  console.log(`🔄 Updated: ${label.name}`);
+                } else {
+                  console.error(`❌ Error creating ${label.name}:`, error.message);
+                }
+              }
+            }
+
+  setup-milestones:
+    if: inputs.setup_type == 'all' || inputs.setup_type == 'milestones-only'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    
+    steps:
+      - name: Setup Sprint Milestones
+        uses: actions/github-script@v7
+        with:
+          script: |
+            console.log('🎯 Creating sprint milestones...');
+            
+            const now = new Date();
+            
+            const milestones = [
+              {
+                title: 'Sprint 0: Infrastructure Setup',
+                description: `**Goal:** Setup foundational infrastructure
+                
+**Key Deliverables:**
+- PostgreSQL with Row-Level Security (RLS)
+- Keycloak for authentication
+- RabbitMQ message broker
+- Docker Compose setup
+- CI/CD pipeline (GitHub Actions)
+- Basic monitoring (Application Insights)
+
+**Duration:** 1 week
+**Team:** DevOps Agent + Backend Agent`,
+                due_on: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString()
+              },
+              {
+                title: 'Sprint 1: Competition Management',
+                description: `**Goal:** Core competition CRUD operations
+                
+**Key Deliverables:**
+- Create/Edit/Delete competitions (Backend + Frontend)
+- List competitions with multi-tenancy
+- BJCP category management
+- Entry fee configuration
+- Admin dashboard basics
+
+**Duration:** 2 weeks
+**Team:** Backend Agent + Frontend Agent + QA Agent`,
+                due_on: new Date(now.getTime() + 21 * 24 * 60 * 60 * 1000).toISOString()
+              },
+              {
+                title: 'Sprint 2: Entry Management',
+                description: `**Goal:** Entrant registration and entry submission
+                
+**Key Deliverables:**
+- Entrant registration
+- Entry submission with payment
+- Entry validation (BJCP categories)
+- Confirmation emails
+- Entry list for organizers
+
+**Duration:** 2 weeks
+**Team:** Backend Agent + Frontend Agent + QA Agent`,
+                due_on: new Date(now.getTime() + 35 * 24 * 60 * 60 * 1000).toISOString()
+              },
+              {
+                title: 'Sprint 3: Judging Workflow (Offline PWA)',
+                description: `**Goal:** Offline-first judging with scoresheets
+                
+**Key Deliverables:**
+- Offline scoresheet entry (PWA)
+- IndexedDB for offline storage
+- Sync conflict resolution
+- Flight assignment UI
+- Judge dashboard
+- Best of Show judging
+
+**Duration:** 3 weeks
+**Team:** Frontend Agent + Backend Agent + QA Agent + DevOps Agent`,
+                due_on: new Date(now.getTime() + 56 * 24 * 60 * 60 * 1000).toISOString()
+              },
+              {
+                title: 'MVP Release',
+                description: `**Goal:** Production-ready MVP
+                
+**Includes:**
+- All Sprint 0-3 features
+- E2E tests passing
+- Security audit complete
+- Performance testing done
+- Documentation complete
+- Deployment to production
+
+**Critical Features:**
+- Multi-tenancy enforcement
+- Offline judging workflow
+- Event-driven architecture
+- BJCP 2021 compliance
+
+**Success Criteria:**
+- Support 200+ entrants
+- 50+ concurrent judges
+- 600+ bottles per competition
+- <2s page load times
+- 99.5% uptime`,
+                due_on: new Date(now.getTime() + 70 * 24 * 60 * 60 * 1000).toISOString()
+              },
+              {
+                title: 'Post-MVP: Analytics & ML',
+                description: `**Goal:** Add intelligent features
+                
+**Key Deliverables:**
+- Judge assignment suggestions (ML)
+- Scoresheet anomaly detection
+- Competition analytics dashboard
+- Historical trend analysis
+- Predictive entry volume forecasting
+
+**Duration:** 2-3 weeks
+**Team:** Data Science Agent + Backend Agent + Frontend Agent`,
+                due_on: new Date(now.getTime() + 91 * 24 * 60 * 60 * 1000).toISOString()
+              }
+            ];
+
+            for (const milestone of milestones) {
+              try {
+                await github.rest.issues.createMilestone({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: milestone.title,
+                  description: milestone.description,
+                  due_on: milestone.due_on
+                });
+                console.log(`✅ Created milestone: ${milestone.title}`);
+              } catch (error) {
+                if (error.status === 422) {
+                  console.log(`⚠️ Milestone already exists: ${milestone.title}`);
+                } else {
+                  console.error(`❌ Error creating milestone ${milestone.title}:`, error.message);
+                }
+              }
+            }
+
+  summary:
+    needs: [setup-labels, setup-milestones]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Complete
+        run: |
+          echo "🎉 Project infrastructure setup complete!"
+          echo ""
+          echo "✅ Labels created:"
+          echo "  - Agent labels (backend, frontend, data-science, devops, qa, architecture)"
+          echo "  - Coordination labels (multi-agent-task, agent-handoff, agent-question)"
+          echo "  - Priority labels (critical, high, medium, low)"
+          echo "  - Complexity labels (trivial, simple, moderate, complex, epic)"
+          echo "  - Type labels (feature, bug, infrastructure, documentation, etc.)"
+          echo "  - Status labels (needs-triage, in-progress, in-review, etc.)"
+          echo "  - Epic labels (competition-management, entry-management, etc.)"
+          echo ""
+          echo "✅ Milestones created:"
+          echo "  - Sprint 0: Infrastructure Setup"
+          echo "  - Sprint 1: Competition Management"
+          echo "  - Sprint 2: Entry Management"
+          echo "  - Sprint 3: Judging Workflow"
+          echo "  - MVP Release"
+          echo "  - Post-MVP: Analytics & ML"
+          echo ""
+          echo "🚀 Ready to create issues! Use the templates in .github/ISSUE_TEMPLATE/"
