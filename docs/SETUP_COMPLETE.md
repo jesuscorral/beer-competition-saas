@@ -61,6 +61,20 @@ Created GitHub issue templates for:
 
 ### 4. GitHub Actions Workflows
 
+#### Setup Project Infrastructure ([.github/workflows/setup-project-infrastructure.yml](.github/workflows/setup-project-infrastructure.yml))
+Creates/updates all 47 GitHub labels with proper colors and descriptions.
+- Priority labels (P0, P1, P2)
+- Epic labels (9 epics)
+- Complexity labels (S, M, L)
+- Sprint labels (0-6, post-mvp)
+- Agent labels (6 agents)
+- Type labels (feature, bug, docs, test, refactor, chore)
+- Status labels (7 status labels)
+- Special labels (good-first-issue, help-wanted, etc.)
+
+**Triggers**: Manual workflow dispatch
+**Usage**: Go to Actions → Setup Project Infrastructure → Run workflow
+
 #### Auto-Label Issues ([.github/workflows/auto-label-issues.yml](.github/workflows/auto-label-issues.yml))
 Automatically applies labels based on:
 - Issue title prefixes (INFRA-, COMP-, ENTRY-, etc.)
@@ -79,26 +93,6 @@ Automatically:
 **Triggers**: On issue opened, edited, or labeled
 
 **Required Secret**: `GITHUB_PROJECT_TOKEN` with `project` scope
-
-### 5. PowerShell Scripts
-
-#### setup-github-labels.ps1 ([scripts/setup-github-labels.ps1](scripts/setup-github-labels.ps1))
-Creates/updates all 47 GitHub labels with proper colors and descriptions.
-
-**Usage**:
-```powershell
-.\scripts\setup-github-labels.ps1         # Apply changes
-.\scripts\setup-github-labels.ps1 -DryRun # Preview changes
-```
-
-#### update-project-fields.ps1 ([scripts/update-project-fields.ps1](scripts/update-project-fields.ps1))
-Bulk updates all issues with Sprint, Epic, Complexity, Priority, and Agent fields.
-
-**Usage**:
-```powershell
-.\scripts\update-project-fields.ps1         # Apply changes
-.\scripts\update-project-fields.ps1 -DryRun # Preview changes
-```
 
 ---
 
