@@ -137,11 +137,11 @@ beercomp_keycloak      Up (healthy)        0.0.0.0:8080->8080/tcp
 
 # 6. Access management interfaces:
 - pgAdmin (PostgreSQL UI): http://localhost:5050
-  Login: admin@beercomp.dev / admin
-- RabbitMQ Management: http://localhost:15672
-  Login: dev_user / dev_password
-- Keycloak Admin Console: http://localhost:8080/admin
-  Login: admin / admin
+#   Login: admin@beercomp.dev / <your-password>
+# - RabbitMQ Management: http://localhost:15672
+#   Login: <your-username> / <your-password>
+# - Keycloak Admin Console: http://localhost:8080/admin
+#   Login: admin / <your-password>
 ```
 
 ### Initial Database Configuration (pgAdmin)

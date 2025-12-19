@@ -10,30 +10,30 @@ This folder contains the Docker Compose configuration for running the complete B
 
 1. **PostgreSQL 16** (`postgres`)
    - Port: 5432
-   - Database: `beer_competition`
-   - User: `dev_user`
+   - Database: `beercomp`
+   - Credentials: Configured in `.env` file
    - Features: Multi-tenant data isolation with Row-Level Security (future)
 
 2. **pgAdmin 4** (`pgadmin`)
    - Port: 5050 → http://localhost:5050
    - Web-based PostgreSQL management interface
-   - Login: `admin@beercomp.local` / `admin`
+   - Credentials: Configured in `.env` file
 
 3. **RabbitMQ 3.12** (`rabbitmq`)
    - AMQP Port: 5672
    - Management UI Port: 15672 → http://localhost:15672
-   - User: `dev_user` / `dev_password`
+   - Credentials: Configured in `.env` file
    - Features: Topic exchanges, durable queues, DLQ support
 
 4. **Redis 7** (`redis`)
    - Port: 6379
-   - Password: `dev_password`
+   - Credentials: Configured in `.env` file
    - Purpose: Distributed caching, session storage
 
 5. **Keycloak 23** (`keycloak`)
    - Port: 8080 → http://localhost:8080
    - Admin Console: http://localhost:8080/admin
-   - Admin User: `admin` / `admin`
+   - Credentials: Configured in `.env` file
    - Database: Stores config in PostgreSQL (shared with main app)
 
 ## Quick Commands
@@ -103,8 +103,24 @@ All services communicate via the `beercomp-network` bridge network. This allows:
 **Configuration files:**
 
 - `.env` - Active environment variables (git-ignored)
+- `.env.example` - Template with placeholders for all variables
 
-**Security Note:** Never commit `.env` to version control.
+**IMPORTANT SECURITY NOTES:**
+
+1. ⚠️ **Never commit `.env` to version control** - It's already in `.gitignore`
+2. ⚠️ **Docker Compose default values** (in `docker-compose.yml`) are for **local development convenience only**
+3. ✅ **Always create your own `.env` file** from `.env.example` with your own passwords
+4. ✅ **Replace all placeholders** in `.env.example` with actual values in your `.env` file
+5. 🔒 **Production must use Azure Key Vault** or similar secrets management
+
+**Example**: 
+```bash
+# docker-compose.yml has defaults like:
+POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dev_password}
+
+# This means: use env var if set, otherwise use "dev_password"
+# For better security, always set your own value in .env file
+```
 
 ## Service Dependencies
 
@@ -119,12 +135,14 @@ Health checks ensure proper startup order:
 
 | Service | URL | Credentials |
 |---------|-----|-------------|
-| PostgreSQL | `localhost:5432` | `dev_user` / `dev_password` |
-| pgAdmin | http://localhost:5050 | `admin@beercomp.dev` / `admin` |
-| RabbitMQ AMQP | `localhost:5672` | `dev_user` / `dev_password` |
-| RabbitMQ Management | http://localhost:15672 | `dev_user` / `dev_password` |
-| Redis | `localhost:6379` | Password: `dev_password` |
-| Keycloak Admin | http://localhost:8080/admin | `admin` / `admin` |
+| PostgreSQL | `localhost:5432` | From `.env` file |
+| pgAdmin | http://localhost:5050 | From `.env` file |
+| RabbitMQ AMQP | `localhost:5672` | From `.env` file |
+| RabbitMQ Management | http://localhost:15672 | From `.env` file |
+| Redis | `localhost:6379` | From `.env` file |
+| Keycloak Admin | http://localhost:8080/admin | From `.env` file |
+
+**Note**: All credentials are defined in your `.env` file. See `.env.example` for reference.
 
 ### Reset Everything
 

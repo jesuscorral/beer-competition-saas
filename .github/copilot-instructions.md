@@ -41,6 +41,48 @@ This includes:
 
 ---
 
+## Security and Sensitive Information
+
+**CRITICAL**: Never include passwords, API keys, secrets, or any sensitive information in:
+- ❌ **Issues or Pull Requests**: Titles, descriptions, or comments
+- ❌ **Code comments or documentation**: README, ADRs, guides
+- ❌ **Configuration files**: Committed to repository
+- ❌ **Commit messages**: Any part of the commit history
+- ❌ **Example code or snippets**: In documentation or comments
+
+**Use placeholders instead**:
+- ✅ Passwords: `<your-password>`, `<secure-password>`, `your_password_here`
+- ✅ API Keys: `<your-api-key>`, `<api-key-here>`
+- ✅ Secrets: `<your-secret>`, `<client-secret>`
+- ✅ Connection strings: Mask passwords with `***` or placeholders
+- ✅ Environment variables: Reference variable name, not actual value
+
+**Examples**:
+```bash
+# ❌ WRONG
+POSTGRES_PASSWORD=SuperSecret123!
+
+# ✅ CORRECT
+POSTGRES_PASSWORD=<your-password>
+```
+
+```yaml
+# ❌ WRONG
+Login: admin@example.com / password123
+
+# ✅ CORRECT
+Login: admin@example.com / <your-password>
+```
+
+**Exception**: 
+- `.env` files (git-ignored) may contain development credentials
+- Docker Compose default values for **local development only** are acceptable with clear warnings
+- Production secrets **must** use Azure Key Vault or similar secret management
+
+**Rationale**: Prevents accidental exposure of credentials in public repositories and commit history.
+
+---
+
 ## MANDATORY Workflow: Starting New Issues
 
 **BEFORE implementing any GitHub issue, ALWAYS follow this workflow:**
