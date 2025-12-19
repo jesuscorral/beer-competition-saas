@@ -264,21 +264,37 @@ az container restart --name beercomp-bff --resource-group rg-beercomp-prod
 **Branching Strategy**:
 - `main`: Production-ready code
 - `develop`: Integration branch
-- Feature branches: `feature/<issue-number>-<description>`
+- Feature branches: `{issue-number}-{short-description}` (e.g., `16-entry-submission-api`)
+
+**Branch Creation Workflow** (MANDATORY for all developers):
+```bash
+# Always start from main
+git checkout main
+git pull origin main
+
+# Create branch using convention: {issue-number}-{short-description}
+git checkout -b 16-entry-submission-api
+
+# After implementation, commit with issue reference
+git commit -m "feat: implement entry submission API (#16)"
+
+# Push and create PR
+git push -u origin 16-entry-submission-api
+```
 
 **Pull Request Process**:
-1. Create feature branch from `develop`
-2. Write tests (unit + integration)
-3. Open PR with clear description
+1. Create feature branch from `main` using naming convention above
+2. Write tests (unit + integration) - minimum 70% coverage
+3. Open PR with clear description and link to issue
 4. Automated tests run via GitHub Actions
 5. Require 1 approval from code owner
-6. Merge to `develop` → staging deployment
-7. Merge `develop` to `main` → production deployment
+6. Merge to `main` → production deployment
 
 **Code Standards**:
 - Follow .NET conventions (C#) and PEP 8 (Python)
-- Conventional Commits for commit messages
+- Conventional Commits for commit messages (feat:, fix:, docs:, etc.)
 - Minimum 70% code coverage
+- Always reference issue number in commits: `feat: description (#issue-number)`
 
 ---
 

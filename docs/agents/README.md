@@ -541,7 +541,109 @@ Before creating ANY pull request:
 - [ ] No compiler warnings or errors
 - [ ] Code follows project conventions (linting, formatting)
 
-## 🎓 Getting Started Checklist
+## � Branch Naming Convention & Workflow
+
+**CRITICAL**: All agents MUST follow this workflow when starting work on a GitHub Issue:
+
+### Branch Naming Standard
+```
+{issue-number}-{short-description}
+```
+
+**Examples:**
+- `16-entry-submission-api` (for issue #16)
+- `25-offline-pwa-scoresheet` (for issue #25)
+- `20-flight-auto-assignment` (for issue #20)
+
+### Automated Workflow (MANDATORY)
+
+**When an agent starts work on ANY GitHub Issue, they MUST:**
+
+1. **Create branch from `main`:**
+   ```bash
+   git checkout main
+   git pull origin main
+   git checkout -b {issue-number}-{short-description}
+   ```
+
+2. **Example for Issue #16 (ENTRY-001):**
+   ```bash
+   git checkout main
+   git pull origin main
+   git checkout -b 16-entry-submission-api
+   ```
+
+3. **Commit messages reference issue:**
+   ```bash
+   git commit -m "feat: implement entry submission API (#16)"
+   git commit -m "test: add unit tests for entry validation (#16)"
+   git commit -m "docs: update API documentation (#16)"
+   ```
+
+4. **Push branch and create PR:**
+   ```bash
+   git push -u origin 16-entry-submission-api
+   ```
+   
+   **PR Title:** `[ENTRY-001] Entry Submission API with Payment (#16)`
+   **PR Description:** Links to issue, includes acceptance criteria checklist
+
+### Branch Lifecycle
+
+```
+main
+ │
+ ├─→ 16-entry-submission-api (branch created)
+ │   │
+ │   ├─ feat: implement API (#16)
+ │   ├─ test: add tests (#16)
+ │   ├─ docs: update docs (#16)
+ │   │
+ │   └─→ PR created → reviewed → merged to main
+ │
+ └─→ branch deleted after merge
+```
+
+### Why This Convention?
+
+✅ **Automatic GitHub linking:** Commits with `(#16)` auto-link to issue  
+✅ **Easy tracking:** `git branch -a` shows all in-progress issues  
+✅ **PR auto-linking:** GitHub suggests linking PR to issue  
+✅ **Clean history:** Easy to see what branch implemented which feature  
+✅ **No merge conflicts:** Each issue = separate branch from main  
+
+### Agent Responsibility
+
+**Before implementing ANY code, the agent MUST:**
+1. ✅ Verify they're on the correct branch (`git branch`)
+2. ✅ Pull latest main (`git pull origin main`)
+3. ✅ Create feature branch with correct naming
+4. ✅ Make commits referencing issue number
+5. ✅ Push branch and create PR when complete
+
+**Example Agent Conversation:**
+```
+User: @backend implement issue #16 (ENTRY-001)
+
+Agent: Starting work on issue #16 (Entry Submission API).
+
+First, I'll create a feature branch:
+```bash
+git checkout main
+git pull origin main
+git checkout -b 16-entry-submission-api
+```
+
+Now I'll implement the following:
+1. Entry domain model...
+2. CQRS command handler...
+3. API endpoint...
+[implementation follows]
+```
+
+---
+
+## �🎓 Getting Started Checklist
 
 ### 1. Setup MCP Servers
 - [ ] Copy configuration to your `mcp.json`

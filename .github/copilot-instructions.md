@@ -17,6 +17,70 @@ You are working on a **Beer Competition SaaS Platform** that enables competition
 
 ---
 
+## MANDATORY Workflow: Starting New Issues
+
+**BEFORE implementing any GitHub issue, ALWAYS follow this workflow:**
+
+### 1. Create Feature Branch (AUTOMATIC)
+```bash
+# ALWAYS start from main branch
+git checkout main
+git pull origin main
+
+# Create branch using format: {issue-number}-{short-description}
+# Example for issue #16: "API endpoint for entry submission"
+git checkout -b 16-entry-submission-api
+
+# Other examples:
+# Issue #23: "Create Flight entity and repository" → 23-flight-entity-repository
+# Issue #45: "Add scoresheet offline storage" → 45-scoresheet-offline-storage
+```
+
+### 2. Branch Naming Convention
+**Format**: `{issue-number}-{short-description}`
+- Use issue number from GitHub (e.g., #16, #23, #45)
+- Use lowercase with hyphens for description
+- Keep description short (3-5 words max)
+- Focus on WHAT, not HOW
+
+### 3. Commit Convention
+```bash
+# ALWAYS reference issue number in commits
+git commit -m "feat: implement entry submission API (#16)"
+git commit -m "fix: resolve tenant isolation bug (#23)"
+git commit -m "docs: update API documentation (#45)"
+
+# Use conventional commit prefixes:
+# feat: - New feature
+# fix: - Bug fix
+# docs: - Documentation only
+# test: - Adding tests
+# refactor: - Code refactoring
+# chore: - Build/tooling changes
+```
+
+### 4. Push and Create PR
+```bash
+# Push branch to remote
+git push -u origin 16-entry-submission-api
+
+# Create PR via GitHub CLI (optional)
+gh pr create --title "feat: implement entry submission API (#16)" \
+             --body "Closes #16" \
+             --base main
+```
+
+### 5. Validation Checklist
+Before starting implementation, verify:
+- ✅ Branch created from latest `main`
+- ✅ Branch name follows convention: `{issue-number}-{short-description}`
+- ✅ Issue number exists in GitHub
+- ✅ Relevant ADRs reviewed (see list below)
+- ✅ Multi-tenancy requirements understood
+- ✅ Test strategy planned (unit + integration)
+
+---
+
 ## Architecture Quick Reference
 
 **ALWAYS review these ADRs before implementing features:**
@@ -364,11 +428,15 @@ beer-competition-saas/
 
 ## Before Starting Work
 
-1. **Read the relevant ADR** from `docs/architecture/decisions/`
-2. **Check existing patterns** in codebase
-3. **Verify multi-tenancy** is enforced
-4. **Write tests first** (TDD approach)
-5. **Run integration tests** with Testcontainers before PR
+**MANDATORY: Follow the "MANDATORY Workflow: Starting New Issues" section at the top of this file.**
+
+1. **Create feature branch** using `{issue-number}-{short-description}` format
+2. **Read the relevant ADR** from `docs/architecture/decisions/`
+3. **Check existing patterns** in codebase
+4. **Verify multi-tenancy** is enforced
+5. **Write tests first** (TDD approach)
+6. **Run integration tests** with Testcontainers before PR
+7. **Reference issue number** in all commits: `feat: description (#issue-number)`
 
 ---
 
@@ -383,6 +451,8 @@ beer-competition-saas/
 
 ## Success Criteria
 
+✅ Branch created with correct naming convention: `{issue-number}-{short-description}`  
+✅ All commits reference issue number: `feat: description (#issue)`  
 ✅ All code follows multi-tenancy rules (tenant_id always present)  
 ✅ Events published via Outbox Pattern (no dual-write)  
 ✅ CQRS pattern used (MediatR handlers)  
