@@ -1,0 +1,22 @@
+name: beer-competition-services
+services:
+  db:
+    container_name: beer_competition_db
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - beer-network # <--- Conectamos la DB a esta red
+
+volumes:
+  postgres_data:
+
+networks:
+  beer-network: # Definimos la red explícitamente
+    name: mcp-network # Le damos un nombre real en el sistema
