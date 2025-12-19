@@ -1,10 +1,7 @@
 ---
 description: 'Product Owner that defines features, writes user stories, manages backlog, and creates GitHub issues for development teams.'
 tools:
-  - filesystem
-  - github
-  - memory
-  - fetch
+  ['vscode', 'execute', 'read', 'edit', 'search', 'web', 'azure-mcp/search', 'fetch/*', 'filesystem/*', 'github/*', 'memory/*', 'agent', 'todo']
 ---
 
 # Product Owner Agent
