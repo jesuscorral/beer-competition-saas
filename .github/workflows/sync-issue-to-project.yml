@@ -1,0 +1,197 @@
+name: Sync Issue to Project
+on:
+  issues:
+    types: [opened, edited, labeled]
+
+jobs:
+  sync-to-project:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      repository-projects: write
+
+    steps:
+      - name: Add issue to project
+        uses: actions/add-to-project@v0.5.0
+        with:
+          project-url: https://github.com/users/jesuscorral/projects/9
+          github-token: ${{ secrets.GITHUB_PROJECT_TOKEN }}
+
+      - name: Update project fields
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_PROJECT_TOKEN }}
+          script: |
+            const issue = context.payload.issue;
+            const labels = issue.labels.map(l => l.name);
+            
+            // Get project details
+            const projectNumber = 9;
+            const owner = 'jesuscorral';
+            
+            // GraphQL query to get project ID and field IDs
+            const projectQuery = `
+              query {
+                user(login: "${owner}") {
+                  projectV2(number: ${projectNumber}) {
+                    id
+                    fields(first: 20) {
+                      nodes {
+                        ... on ProjectV2SingleSelectField {
+                          id
+                          name
+                          options {
+                            id
+                            name
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+            
+            const projectData = await github.graphql(projectQuery);
+            const project = projectData.user.projectV2;
+            const projectId = project.id;
+            
+            // Build field lookups
+            const fieldLookup = {};
+            const optionLookup = {};
+            
+            for (const field of project.fields.nodes) {
+              fieldLookup[field.name] = field.id;
+              optionLookup[field.name] = {};
+              
+              if (field.options) {
+                for (const option of field.options) {
+                  optionLookup[field.name][option.name] = option.id;
+                }
+              }
+            }
+            
+            // Get project item ID for this issue
+            const itemQuery = `
+              query {
+                repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
+                  issue(number: ${issue.number}) {
+                    projectItems(first: 10) {
+                      nodes {
+                        id
+                        project {
+                          id
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+            
+            const itemData = await github.graphql(itemQuery);
+            const projectItem = itemData.repository.issue.projectItems.nodes.find(
+              item => item.project.id === projectId
+            );
+            
+            if (!projectItem) {
+              console.log('⚠️ Issue not in project yet, skipping field updates');
+              return;
+            }
+            
+            const itemId = projectItem.id;
+            
+            // Map labels to field values
+            const fieldUpdates = {};
+            
+            // Priority
+            if (labels.includes('priority-p0')) fieldUpdates['Priority'] = 'P0';
+            else if (labels.includes('priority-p1')) fieldUpdates['Priority'] = 'P1';
+            else if (labels.includes('priority-p2')) fieldUpdates['Priority'] = 'P2';
+            
+            // Sprint
+            const sprintLabel = labels.find(l => l.startsWith('sprint-'));
+            if (sprintLabel) {
+              const sprint = sprintLabel.replace('sprint-', '');
+              if (sprint === 'post-mvp') fieldUpdates['Sprint'] = 'Post-MVP';
+              else fieldUpdates['Sprint'] = `Sprint ${sprint}`;
+            }
+            
+            // Complexity
+            if (labels.includes('complexity-S')) fieldUpdates['Complexity'] = 'S';
+            else if (labels.includes('complexity-M')) fieldUpdates['Complexity'] = 'M';
+            else if (labels.includes('complexity-L')) fieldUpdates['Complexity'] = 'L';
+            
+            // Epic
+            const epicMapping = {
+              'epic-infrastructure': 'Infrastructure',
+              'epic-competitions': 'Competitions',
+              'epic-entries': 'Entries',
+              'epic-flights': 'Flights',
+              'epic-scoring': 'Scoring',
+              'epic-best-of-show': 'Best of Show',
+              'epic-authentication': 'Authentication',
+              'epic-ui-frontend': 'UI/Frontend',
+              'epic-observability': 'Observability'
+            };
+            
+            for (const [label, epic] of Object.entries(epicMapping)) {
+              if (labels.includes(label)) {
+                fieldUpdates['Epic'] = epic;
+                break;
+              }
+            }
+            
+            // Agent
+            const agentMapping = {
+              'agent-backend': 'Backend',
+              'agent-frontend': 'Frontend',
+              'agent-devops': 'DevOps',
+              'agent-qa': 'QA',
+              'agent-data-science': 'Data Science',
+              'agent-product-owner': 'Product Owner'
+            };
+            
+            for (const [label, agent] of Object.entries(agentMapping)) {
+              if (labels.includes(label)) {
+                fieldUpdates['Agent'] = agent;
+                break;
+              }
+            }
+            
+            // Apply field updates
+            for (const [fieldName, fieldValue] of Object.entries(fieldUpdates)) {
+              const fieldId = fieldLookup[fieldName];
+              const optionId = optionLookup[fieldName]?.[fieldValue];
+              
+              if (!fieldId || !optionId) {
+                console.log(`⚠️ Warning: Field '${fieldName}' or option '${fieldValue}' not found`);
+                continue;
+              }
+              
+              const updateMutation = `
+                mutation {
+                  updateProjectV2ItemFieldValue(input: {
+                    projectId: "${projectId}"
+                    itemId: "${itemId}"
+                    fieldId: "${fieldId}"
+                    value: {
+                      singleSelectOptionId: "${optionId}"
+                    }
+                  }) {
+                    projectV2Item {
+                      id
+                    }
+                  }
+                }
+              `;
+              
+              try {
+                await github.graphql(updateMutation);
+                console.log(`✅ Updated ${fieldName} = ${fieldValue}`);
+              } catch (error) {
+                console.log(`❌ Error updating ${fieldName}: ${error.message}`);
+              }
+            }
+            
+            console.log('✅ Project fields synced successfully');

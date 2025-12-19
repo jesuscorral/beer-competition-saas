@@ -1,0 +1,127 @@
+name: 🐛 Bug Report
+description: Report a bug or unexpected behavior
+title: "[BUG] "
+labels: ["bug", "triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🐛 Bug Report
+        Thanks for taking the time to report a bug!
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How critical is this bug?
+      options:
+        - P0 (Critical - Production Down)
+        - P1 (High - Major Feature Broken)
+        - P2 (Medium - Minor Issue)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected Area
+      description: Which part of the system is affected?
+      options:
+        - Infrastructure
+        - Competitions
+        - Entries
+        - Flights
+        - Scoring
+        - Best of Show
+        - Authentication
+        - UI/Frontend
+        - Observability
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of the bug
+      placeholder: Describe what went wrong...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this issue?
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Scroll down to '...'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: Describe the expected behavior...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      placeholder: Describe what actually happened...
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Environment details where the bug occurred
+      placeholder: |
+        - OS: [e.g., Windows 11, Ubuntu 22.04]
+        - Browser: [e.g., Chrome 120, Firefox 115]
+        - Version: [e.g., commit hash or release tag]
+        - Environment: [Development, Staging, Production]
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Logs
+      description: Paste relevant error logs, stack traces, or console output
+      render: shell
+      placeholder: |
+        Paste error logs here...
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots to help explain the problem
+      placeholder: |
+        Drag and drop images here...
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other context about the problem
+      placeholder: |
+        Add any additional context here...
+    validations:
+      required: false

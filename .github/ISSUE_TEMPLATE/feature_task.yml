@@ -1,0 +1,190 @@
+name: 🚀 Feature Task
+description: Create a new feature task for MVP development
+title: "[AREA-###] "
+labels: ["feature"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🎯 Feature Task Template
+        Use this template for creating new MVP features following the Beer Competition SaaS architecture.
+
+  - type: dropdown
+    id: epic
+    attributes:
+      label: Epic
+      description: Which epic does this feature belong to?
+      options:
+        - Infrastructure
+        - Competitions
+        - Entries
+        - Flights
+        - Scoring
+        - Best of Show
+        - Authentication
+        - UI/Frontend
+        - Observability
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: What is the priority level?
+      options:
+        - P0 (Critical - MVP Blocker)
+        - P1 (High - Enhanced Feature)
+        - P2 (Medium - Nice to Have)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: sprint
+    attributes:
+      label: Sprint
+      description: Which sprint is this planned for?
+      options:
+        - Sprint 0
+        - Sprint 1
+        - Sprint 2
+        - Sprint 3
+        - Sprint 4
+        - Sprint 5
+        - Sprint 6
+        - Post-MVP
+    validations:
+      required: true
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: Complexity
+      description: Estimated complexity (S=1-2 days, M=3-4 days, L=5-7 days)
+      options:
+        - S (Small)
+        - M (Medium)
+        - L (Large)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: agent
+    attributes:
+      label: Agent
+      description: Which agent/team should handle this task?
+      options:
+        - Backend
+        - Frontend
+        - DevOps
+        - QA
+        - Data Science
+        - Product Owner
+    validations:
+      required: true
+
+  - type: textarea
+    id: user_story
+    attributes:
+      label: User Story
+      description: Describe the feature from the user's perspective
+      placeholder: |
+        As a [role],
+        I want [feature],
+        So that [benefit].
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      description: Define what "done" looks like
+      placeholder: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+        - [ ] Criterion 3
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical_specs
+    attributes:
+      label: Technical Specifications
+      description: Technical details, API endpoints, database schemas, etc.
+      placeholder: |
+        ### Database Changes
+        - Table X with columns...
+        
+        ### API Endpoints
+        - POST /api/resource
+        
+        ### Dependencies
+        - Requires completion of #123
+    validations:
+      required: false
+
+  - type: textarea
+    id: testing
+    attributes:
+      label: Testing Requirements
+      description: Unit tests, integration tests, E2E scenarios
+      placeholder: |
+        ### Unit Tests
+        - Test X
+        
+        ### Integration Tests
+        - Test Y
+        
+        ### E2E Scenarios
+        - Scenario Z
+    validations:
+      required: false
+
+  - type: textarea
+    id: adr_references
+    attributes:
+      label: Architecture Decision Records
+      description: Link to relevant ADRs
+      placeholder: |
+        - ADR-002: Multi-tenancy Strategy
+        - ADR-003: Event-Driven Architecture
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Implementation Checklist
+      description: Standard checklist for all features
+      options:
+        - label: Multi-tenancy enforced (tenant_id in all queries)
+          required: false
+        - label: Events published via Outbox Pattern
+          required: false
+        - label: CQRS pattern used (MediatR handlers)
+          required: false
+        - label: Authorization enforced on endpoints
+          required: false
+        - label: Unit tests written (70% coverage target)
+          required: false
+        - label: Integration tests written (Testcontainers)
+          required: false
+        - label: E2E test scenarios defined
+          required: false
+        - label: Documentation updated
+          required: false
+        - label: ADRs reviewed
+          required: false
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional Context
+      description: Screenshots, mockups, links, or any other relevant information
+      placeholder: |
+        Add any additional context here...
+    validations:
+      required: false

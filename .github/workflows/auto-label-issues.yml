@@ -1,0 +1,126 @@
+name: Auto-Label Issues
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  auto-label:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Auto-apply labels based on issue content
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issue = context.payload.issue;
+            const issueBody = issue.body || '';
+            const issueTitle = issue.title || '';
+            const currentLabels = issue.labels.map(l => l.name);
+            
+            const labelsToAdd = new Set(currentLabels);
+            
+            // ========================================
+            // Epic Labels (based on title prefix or body content)
+            // ========================================
+            const epicMapping = {
+              'Infrastructure': ['INFRA-', 'infrastructure', 'docker', 'postgresql', 'rabbitmq'],
+              'Competitions': ['COMP-', 'competition', 'bjcp'],
+              'Entries': ['ENTRY-', 'entry', 'submission', 'payment'],
+              'Flights': ['FLIGHT-', 'flight', 'judge assignment', 'conflict of interest'],
+              'Scoring': ['SCORE-', 'scoresheet', 'judging', 'offline'],
+              'Best of Show': ['BOS-', 'best of show', 'awards', 'medal'],
+              'Authentication': ['AUTH-', 'authentication', 'keycloak', 'authorization'],
+              'UI/Frontend': ['UI-', 'frontend', 'react', 'pwa'],
+              'Observability': ['OBS-', 'observability', 'logging', 'monitoring', 'telemetry']
+            };
+            
+            for (const [epic, keywords] of Object.entries(epicMapping)) {
+              if (keywords.some(kw => 
+                issueTitle.toLowerCase().includes(kw.toLowerCase()) || 
+                issueBody.toLowerCase().includes(kw.toLowerCase())
+              )) {
+                labelsToAdd.add(`epic-${epic.toLowerCase().replace(/\s+/g, '-')}`);
+              }
+            }
+            
+            // ========================================
+            // Priority Labels (from issue form)
+            // ========================================
+            if (issueBody.includes('P0 (Critical')) {
+              labelsToAdd.add('priority-p0');
+              labelsToAdd.add('mvp-blocker');
+            } else if (issueBody.includes('P1 (High')) {
+              labelsToAdd.add('priority-p1');
+            } else if (issueBody.includes('P2 (Medium')) {
+              labelsToAdd.add('priority-p2');
+            }
+            
+            // ========================================
+            // Sprint Labels
+            // ========================================
+            const sprintRegex = /Sprint (\d+|Post-MVP)/i;
+            const sprintMatch = issueBody.match(sprintRegex);
+            if (sprintMatch) {
+              const sprint = sprintMatch[1];
+              labelsToAdd.add(`sprint-${sprint === 'Post-MVP' ? 'post-mvp' : sprint}`);
+            }
+            
+            // ========================================
+            // Complexity Labels
+            // ========================================
+            if (issueBody.includes('S (Small)')) {
+              labelsToAdd.add('complexity-S');
+            } else if (issueBody.includes('M (Medium)')) {
+              labelsToAdd.add('complexity-M');
+            } else if (issueBody.includes('L (Large)')) {
+              labelsToAdd.add('complexity-L');
+            }
+            
+            // ========================================
+            // Agent/Team Labels
+            // ========================================
+            const agentMapping = {
+              'Backend': 'backend',
+              'Frontend': 'frontend',
+              'DevOps': 'devops',
+              'QA': 'qa',
+              'Data Science': 'data-science',
+              'Product Owner': 'product-owner'
+            };
+            
+            for (const [agent, label] of Object.entries(agentMapping)) {
+              if (issueBody.includes(agent)) {
+                labelsToAdd.add(`agent-${label}`);
+              }
+            }
+            
+            // ========================================
+            // Apply labels
+            // ========================================
+            const newLabels = Array.from(labelsToAdd);
+            
+            if (newLabels.length > currentLabels.length) {
+              await github.rest.issues.setLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                labels: newLabels
+              });
+              
+              console.log(`✅ Applied labels: ${newLabels.join(', ')}`);
+            } else {
+              console.log('ℹ️ No new labels to apply');
+            }
+
+      - name: Add to Project Board
+        uses: actions/add-to-project@v0.5.0
+        with:
+          project-url: https://github.com/users/jesuscorral/projects/9
+          github-token: ${{ secrets.GITHUB_PROJECT_TOKEN }}

@@ -298,6 +298,73 @@ git push -u origin 16-entry-submission-api
 
 ---
 
+## Project Management
+
+### 📋 GitHub Project Setup
+
+The project uses GitHub Projects for comprehensive tracking and organization:
+
+**Project Board**: https://github.com/users/jesuscorral/projects/9
+
+**Custom Fields**:
+- **Status**: Backlog → Ready → In Progress → In Review → Done
+- **Priority**: P0 (Critical), P1 (High), P2 (Medium)
+- **Sprint**: Sprint 0-6, Post-MVP
+- **Epic**: Infrastructure, Competitions, Entries, Flights, Scoring, Best of Show, Authentication, UI/Frontend, Observability
+- **Complexity**: S (1-2 days), M (3-4 days), L (5-7 days)
+- **Agent**: Backend, Frontend, DevOps, QA, Data Science, Product Owner
+
+### 🏷️ Initial Project Setup
+
+**First-time setup** (run once):
+
+```powershell
+# 1. Create all GitHub labels
+cd c:\MyPersonalWS\beer-competition-saas
+.\scripts\setup-github-labels.ps1
+
+# 2. Update all existing issues with project fields
+.\scripts\update-project-fields.ps1
+```
+
+**Testing changes** (dry run mode):
+```powershell
+# See what would change without applying
+.\scripts\update-project-fields.ps1 -DryRun
+```
+
+### 🤖 Automated Issue Management
+
+GitHub Actions automatically handle:
+- **Auto-labeling**: Issues are labeled based on title/content
+- **Project sync**: Issues are added to project board automatically
+- **Field updates**: Sprint, Epic, Priority auto-assigned from labels
+
+**Creating New Issues**:
+1. Use [Feature Task template](.github/ISSUE_TEMPLATE/feature_task.yml)
+2. Fill in all fields (Epic, Priority, Sprint, Complexity, Agent)
+3. Issue is automatically added to project with fields set
+4. Create feature branch: `{issue-number}-{short-description}`
+
+**Bug Reports**:
+1. Use [Bug Report template](.github/ISSUE_TEMPLATE/bug_report.yml)
+2. Auto-labeled as `bug` and `triage`
+3. Organizer will triage and assign priority/sprint
+
+### 📊 Available Scripts
+
+| Script | Purpose | Usage |
+|--------|---------|-------|
+| `setup-github-labels.ps1` | Create all project labels | `.\scripts\setup-github-labels.ps1` |
+| `update-project-fields.ps1` | Bulk update project fields | `.\scripts\update-project-fields.ps1` |
+
+**Script Requirements**:
+- GitHub CLI (`gh`) installed and authenticated
+- PowerShell 7+ (recommended)
+- Permissions: `repo`, `project` scopes
+
+---
+
 ## Roadmap
 
 **v1.0 (MVP)** - Q2 2026:
