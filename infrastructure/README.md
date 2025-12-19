@@ -8,7 +8,7 @@ This folder contains the Docker Compose configuration for running the complete B
 
 ### Core Services
 
-1. **PostgreSQL 17** (`postgres`)
+1. **PostgreSQL 16** (`postgres`)
    - Port: 5432
    - Database: `beer_competition`
    - User: `dev_user`

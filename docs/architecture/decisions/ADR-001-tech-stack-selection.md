@@ -78,7 +78,7 @@ Which technologies will best support these requirements while maintaining develo
 - **FastAPI** provides Python's best REST API framework with automatic OpenAPI generation
 
 ### Database
-- **PostgreSQL 17+** with Row-Level Security (RLS)
+- **PostgreSQL 16+** with Row-Level Security (RLS)
 
 **Rationale:**
 - **Row-Level Security** provides database-enforced multi-tenancy (security-in-depth)

@@ -393,7 +393,7 @@ The following issues are on the critical path and CANNOT be parallelized:
 ### Technology Choices Confirmed
 - **Backend:** .NET 10, Entity Framework Core, MediatR, FluentValidation
 - **Frontend:** React 18, TypeScript, TanStack Query, Zustand, IndexedDB (Dexie.js)
-- **Database:** PostgreSQL 17+ with RLS
+- **Database:** PostgreSQL 16+ with RLS
 - **Message Bus:** RabbitMQ 3.12+
 - **Identity:** Keycloak 23+
 - **Observability:** Serilog, OpenTelemetry, Seq (dev), Azure Monitor (prod)
