@@ -112,6 +112,7 @@ git checkout -b 16-entry-submission-api
 ### 3. Commit Convention
 ```bash
 # ALWAYS reference issue number in commits
+# ALWAYS write commit messages in ENGLISH
 git commit -m "feat: implement entry submission API (#16)"
 git commit -m "fix: resolve tenant isolation bug (#23)"
 git commit -m "docs: update API documentation (#45)"
@@ -123,6 +124,13 @@ git commit -m "docs: update API documentation (#45)"
 # test: - Adding tests
 # refactor: - Code refactoring
 # chore: - Build/tooling changes
+# security: - Security improvements
+
+# ❌ WRONG (Spanish)
+git commit -m "feat: implementar API de envío de entradas (#16)"
+
+# ✅ CORRECT (English)
+git commit -m "feat: implement entry submission API (#16)"
 ```
 
 ### 4. Push and Create PR
@@ -130,10 +138,28 @@ git commit -m "docs: update API documentation (#45)"
 # Push branch to remote
 git push -u origin 16-entry-submission-api
 
-# Create PR via GitHub CLI (optional)
+# Create PR via GitHub CLI
+# ALWAYS write PR title and body in ENGLISH
 gh pr create --title "feat: implement entry submission API (#16)" \
-             --body "Closes #16" \
+             --body "## Summary
+
+Complete implementation of entry submission API endpoint.
+
+## Changes
+- Added POST /api/entries endpoint
+- Implemented validation with FluentValidation
+- Added unit and integration tests
+
+Closes #16" \
              --base main
+
+# ❌ WRONG (Spanish in PR)
+gh pr create --title "feat: implementar API de envío (#16)" \
+             --body "Implementación completa..."
+
+# ✅ CORRECT (English in PR)
+gh pr create --title "feat: implement entry submission API (#16)" \
+             --body "Complete implementation..."
 ```
 
 ### 5. Issue Status Management
