@@ -94,51 +94,197 @@ A comprehensive, multi-tenant SaaS platform for managing BJCP 2021-compliant hom
 ## Getting Started (Local Development)
 
 ### Prerequisites
-- Docker & Docker Compose
-- .NET 10 SDK
-- Python 3.12
-- Node.js 20+
 
-### Quick Start
+Before starting, ensure you have the following installed:
 
-```bash
-# Clone repository
-git clone https://github.com/your-org/beer-competition-saas.git
+- **Docker Desktop** 4.25+ (includes Docker Compose v2)
+  - [Download for Windows](https://www.docker.com/products/docker-desktop/)
+  - Ensure WSL 2 backend is enabled (Settings → General → Use WSL 2 based engine)
+- **.NET 10 SDK** (for backend services - future)
+  - [Download .NET 10](https://dotnet.microsoft.com/download/dotnet/10.0)
+- **Node.js 20+** and **npm** (for frontend - future)
+  - [Download Node.js](https://nodejs.org/)
+- **Git** for version control
+- **PowerShell 7+** (recommended for Windows)
+
+### Quick Start (Infrastructure Only - Sprint 0)
+
+```powershell
+# 1. Clone repository
+git clone https://github.com/jesuscorral/beer-competition-saas.git
 cd beer-competition-saas
 
-# Copy environment template
-cp .env.example .env
-# Edit .env with your local settings
+# 2. Navigate to infrastructure folder
+cd infrastructure
 
-# Start all services via Docker Compose
+# 3. Copy environment template and configure
+Copy-Item .env.example .env
+# Edit .env with your preferences (default values work for local dev)
+
+# 4. Start all infrastructure services
 docker-compose up -d
 
-# Run database migrations
-./scripts/run-migrations.sh
+# 5. Verify all services are healthy
+docker-compose ps
 
-# Seed BJCP styles
-psql -h localhost -U beercomp_user -d beercomp -f scripts/seed-data.sql
+# Expected output:
+# NAME                   STATUS              PORTS
+# beercomp_postgres      Up (healthy)        0.0.0.0:5432->5432/tcp
+# beercomp_pgadmin       Up                  0.0.0.0:5050->80/tcp
+# beercomp_rabbitmq      Up (healthy)        0.0.0.0:5672->5672/tcp, 0.0.0.0:15672->15672/tcp
+# beercomp_redis         Up (healthy)        0.0.0.0:6379->6379/tcp
+# beercomp_keycloak      Up (healthy)        0.0.0.0:8080->8080/tcp
 
-# Access the application
-# Frontend: http://localhost:3000
-# BFF API: http://localhost:5000
-# Keycloak: http://localhost:8080
-# RabbitMQ Management: http://localhost:15672
+# 6. Access management interfaces:
+# - pgAdmin (PostgreSQL UI): http://localhost:5050
+#   Login: admin@beercomp.dev / admin
+# - RabbitMQ Management: http://localhost:15672
+#   Login: dev_user / dev_password
+# - Keycloak Admin Console: http://localhost:8080/admin
+#   Login: admin / admin
 ```
 
-### Running Tests
+### Initial Database Configuration (pgAdmin)
+
+1. Open pgAdmin at http://localhost:5050
+2. **Add Server Connection**:
+   - Right-click "Servers" → Register → Server
+   - **General Tab**:
+     - Name: `Beer Competition Local`
+   - **Connection Tab**:
+     - Host: `postgres` (Docker internal network)
+     - Port: `5432`
+     - Database: `beercomp`
+     - Username: `dev_user`
+     - Password: `dev_password`
+   - Click "Save"
+
+3. You should now see the `beercomp` database and can browse tables (future: after migrations)
+
+### Keycloak Initial Setup (Future - Sprint 1)
+
+Keycloak admin console will be configured in Sprint 1 (AUTH-001 issue) with:
+- Realm: `beercomp`
+- Clients: `backend-api`, `frontend-web`
+- Roles: `ORGANIZER`, `JUDGE`, `ENTRANT`, `STEWARD`
+- Test users with various roles
+
+### Stopping Services
+
+```powershell
+# Stop all services (preserves data in volumes)
+docker-compose stop
+
+# Stop and remove containers (preserves data)
+docker-compose down
+
+# DANGER: Remove all data (reset to clean state)
+docker-compose down -v
+```
+
+### Troubleshooting
+
+#### Port Conflicts
+
+If you get port binding errors, check if ports are already in use:
+
+```powershell
+# Check PostgreSQL port (5432)
+netstat -ano | findstr :5432
+
+# Check RabbitMQ port (5672)
+netstat -ano | findstr :5672
+
+# Check Keycloak port (8080)
+netstat -ano | findstr :8080
+```
+
+**Solution**: Either:
+1. Stop the conflicting service
+2. Edit `.env` file to use different ports
+
+#### Keycloak Takes Long to Start
+
+Keycloak typically takes 60-90 seconds on first startup (database schema initialization). Check progress:
+
+```powershell
+docker logs beercomp_keycloak --follow
+```
+
+Wait until you see: `Listening on: http://0.0.0.0:8080`
+
+#### PostgreSQL Connection Refused
+
+Ensure PostgreSQL is healthy before connecting:
+
+```powershell
+docker-compose ps postgres
+
+# Check logs if not healthy
+docker logs beercomp_postgres
+```
+
+#### RabbitMQ Management UI Not Loading
+
+Wait for health check to pass (20 seconds), then check:
+
+```powershell
+docker logs beercomp_rabbitmq
+
+# Verify management plugin is enabled (should see in logs):
+# "Server startup complete; 4 plugins started: [rabbitmq_management, ...]"
+```
+
+#### Docker Compose Version Issues
+
+This project requires Docker Compose v2 (included in Docker Desktop 4.x). Verify:
+
+```powershell
+docker compose version
+# Should show: Docker Compose version v2.x.x
+```
+
+If using standalone Docker Compose v1 (legacy), upgrade to Docker Desktop.
+
+#### WSL 2 Performance on Windows
+
+For best performance, ensure project files are in WSL 2 filesystem (not `/mnt/c/`):
 
 ```bash
-# .NET unit and integration tests
+# From WSL terminal
+cd ~
+git clone https://github.com/jesuscorral/beer-competition-saas.git
+cd beer-competition-saas/infrastructure
+docker compose up -d
+```
+
+### Running Tests (Future - Sprint 0 Issue #7)
+
+```bash
+# .NET unit and integration tests (uses Testcontainers)
 dotnet test
 
 # Python tests (Post-MVP)
 cd services/analytics
 pytest
 
-# End-to-end tests
+# End-to-end tests (Cypress)
 cd tests/e2e
-npx playwright test
+npm run test:e2e
+```
+
+### Logs and Monitoring
+
+```powershell
+# View all service logs
+docker-compose logs --follow
+
+# View specific service logs
+docker-compose logs postgres --follow
+docker-compose logs rabbitmq --follow
+
+# View last 100 lines
+docker-compose logs --tail=100
 ```
 
 ---
