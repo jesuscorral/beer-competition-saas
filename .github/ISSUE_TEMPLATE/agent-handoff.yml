@@ -1,0 +1,308 @@
+name: Agent Handoff
+description: Transfer task between specialized agents with context preservation
+title: "[HANDOFF] [FROM: ] [TO: ] "
+labels: ["agent-handoff", "coordination"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🤝 Agent-to-Agent Task Handoff
+        
+        Use this template when one agent needs to pass work to another agent.
+        This ensures context is preserved and the receiving agent has all necessary information.
+
+  - type: dropdown
+    id: from-agent
+    attributes:
+      label: Handoff From (Current Agent)
+      description: Which agent is passing this task?
+      options:
+        - "🏗️ Backend Agent"
+        - "🎨 Frontend Agent"
+        - "🔬 Data Science Agent"
+        - "🚀 DevOps Agent"
+        - "✅ QA Agent"
+        - "📋 Architecture Agent"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: to-agent
+    attributes:
+      label: Handoff To (Receiving Agent)
+      description: Which agent should take over?
+      options:
+        - "🏗️ Backend Agent"
+        - "🎨 Frontend Agent"
+        - "🔬 Data Science Agent"
+        - "🚀 DevOps Agent"
+        - "✅ QA Agent"
+        - "📋 Architecture Agent"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reason-for-handoff
+    attributes:
+      label: Reason for Handoff
+      description: Why does this task need to be transferred to another agent?
+      placeholder: |
+        Example: I've completed the backend API implementation. Now the Frontend Agent needs to build the UI that consumes this API.
+    validations:
+      required: true
+
+  - type: textarea
+    id: work-completed
+    attributes:
+      label: Work Completed by Current Agent
+      description: What has been done so far?
+      placeholder: |
+        - ✅ Created `CreateEntryCommand` and handler
+        - ✅ Added database migration for `entries` table
+        - ✅ Published `entry.submitted` event to RabbitMQ
+        - ✅ Unit tests passing (95% coverage)
+        - ✅ Integration tests added
+    validations:
+      required: true
+
+  - type: textarea
+    id: files-modified
+    attributes:
+      label: Files Modified/Created
+      description: List all files changed by the current agent
+      placeholder: |
+        **Created:**
+        - `backend/Competition.Service/Commands/CreateEntryCommand.cs`
+        - `backend/Competition.Service/Domain/Entry.cs`
+        
+        **Modified:**
+        - `backend/Competition.Service/Data/ApplicationDbContext.cs`
+        - `backend/Shared/Events/EntrySubmittedEvent.cs`
+        
+        **Migrations:**
+        - `backend/Competition.Service/Migrations/20251219_AddEntriesTable.cs`
+    validations:
+      required: true
+
+  - type: textarea
+    id: task-for-receiving-agent
+    attributes:
+      label: Task for Receiving Agent
+      description: What specifically needs the receiving agent to do?
+      placeholder: |
+        **Objective:** Build the UI for offline scoresheet entry
+        
+        **Requirements:**
+        - Create React component for scoresheet form
+        - Implement offline-first pattern with IndexedDB
+        - Connect to `/api/scoresheets` POST endpoint
+        - Handle sync conflicts when going back online
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria for Receiving Agent
+      description: How will we know the receiving agent's work is complete?
+      placeholder: |
+        - [ ] Scoresheet form renders correctly on mobile
+        - [ ] Data saves to IndexedDB when offline
+        - [ ] Successful sync to backend when online
+        - [ ] Error handling for sync conflicts
+        - [ ] PWA works without network connection
+    validations:
+      required: true
+
+  - type: textarea
+    id: integration-contracts
+    attributes:
+      label: Integration Contracts & APIs
+      description: Document the interfaces between agents (APIs, events, data structures)
+      placeholder: |
+        **API Endpoint Created:**
+        ```http
+        POST /api/competitions/{competitionId}/entries
+        Content-Type: application/json
+        Authorization: Bearer {token}
+        X-Tenant-ID: {tenantId}
+        
+        {
+          "categoryId": "uuid",
+          "entrantId": "uuid",
+          "specialIngredients": "Cascade hops, lactose"
+        }
+        
+        Response 201:
+        {
+          "entryId": "uuid",
+          "judgingNumber": 42,
+          "status": "pending"
+        }
+        ```
+        
+        **Event Published (RabbitMQ):**
+        ```json
+        {
+          "specversion": "1.0",
+          "type": "com.beercomp.entry.submitted",
+          "source": "/services/competition",
+          "id": "uuid",
+          "datacontenttype": "application/json",
+          "data": {
+            "tenant_id": "uuid",
+            "competition_id": "uuid",
+            "entry_id": "uuid",
+            "judging_number": 42
+          }
+        }
+        ```
+        
+        **Authentication:**
+        - JWT token required in Authorization header
+        - Must include `tenant_id` claim
+        - Role required: `organizer` or `entrant`
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical-context
+    attributes:
+      label: Technical Context & Decisions
+      description: Share important technical decisions, patterns used, gotchas
+      placeholder: |
+        **Patterns Used:**
+        - CQRS with MediatR (command handler pattern)
+        - Outbox Pattern for events (atomic with DB transaction)
+        - Multi-tenancy enforced via RLS policies
+        
+        **Important Decisions:**
+        - Judging numbers are auto-generated (sequential per competition)
+        - Duplicate entries are prevented by unique constraint on (competition_id, category_id, entrant_id)
+        
+        **ADRs to Read:**
+        - ADR-002: Multi-tenancy Strategy
+        - ADR-003: Event-Driven Architecture
+        
+        **Gotchas:**
+        - Always include `X-Tenant-ID` header or queries will fail
+        - Entry status transitions: pending → checked_in → judged → scored
+    validations:
+      required: true
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies & Prerequisites
+      description: What must be in place before the receiving agent can start?
+      placeholder: |
+        **Completed:**
+        - ✅ Backend API deployed to dev environment
+        - ✅ Database migrations run
+        - ✅ RabbitMQ exchange configured
+        
+        **Pending:**
+        - ⏳ Keycloak roles configured (blocker for auth)
+        - ⏳ Stripe payment integration (not blocking this task)
+        
+        **Related Issues:**
+        - Depends on: #123 (Payment gateway integration)
+        - Blocks: #456 (Judge assignment UI)
+
+  - type: textarea
+    id: testing-notes
+    attributes:
+      label: Testing Notes
+      description: Information about testing done and testing needed
+      placeholder: |
+        **Tests Already Written:**
+        - Unit tests for `CreateEntryCommandHandler` (backend/tests/unit/)
+        - Integration tests with Testcontainers (backend/tests/integration/)
+        
+        **Tests Needed from Receiving Agent:**
+        - E2E test: Create entry through UI
+        - E2E test: Offline entry creation and sync
+        - Component tests for scoresheet form
+        
+        **Test Data:**
+        - Use `TestDataSeeder` for sample competitions
+        - Test user credentials in `.env.test`
+
+  - type: textarea
+    id: questions-for-receiving-agent
+    attributes:
+      label: Questions for Receiving Agent
+      description: What questions or clarifications does the receiving agent need to answer?
+      placeholder: |
+        1. Should we show a loading spinner during API calls or optimistic UI?
+        2. How should we handle the case where judging number conflicts occur?
+        3. Do we need to support editing submitted entries?
+
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: Urgency
+      description: How urgent is this handoff?
+      options:
+        - "🔴 Blocker - Receiving agent is blocked"
+        - "🟠 High - Should start within 24 hours"
+        - "🟡 Medium - Can wait a few days"
+        - "🟢 Low - No rush"
+    validations:
+      required: true
+
+  - type: input
+    id: original-issue
+    attributes:
+      label: Original Issue Number
+      description: Link to the original feature issue (e.g., #123)
+      placeholder: "#123"
+
+  - type: input
+    id: pull-request
+    attributes:
+      label: Pull Request Created by Current Agent
+      description: Link to the PR with completed work (e.g., #456)
+      placeholder: "#456"
+
+  - type: checkboxes
+    id: handoff-checklist
+    attributes:
+      label: Handoff Checklist (Current Agent)
+      description: Verify you've provided all necessary context
+      options:
+        - label: "📋 Documented all work completed"
+        - label: "📄 Listed all modified files"
+        - label: "🔗 Provided API contracts and event schemas"
+        - label: "📖 Referenced relevant ADRs"
+        - label: "✅ Shared testing notes"
+        - label: "🔍 Verified prerequisites are met"
+        - label: "💬 Available for questions in comments"
+
+  - type: checkboxes
+    id: receiving-agent-checklist
+    attributes:
+      label: Receiving Agent Checklist
+      description: Before starting, verify you have what you need
+      options:
+        - label: "📖 Read all context from current agent"
+        - label: "🔍 Reviewed modified files and PRs"
+        - label: "📚 Read referenced ADRs"
+        - label: "✅ Verified dependencies are met"
+        - label: "🧪 Understand testing requirements"
+        - label: "💬 Asked clarifying questions if needed"
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        
+        ## 🔄 What Happens Next?
+        
+        1. **Current Agent**: Submit this handoff issue
+        2. **System**: Automatically assigns label to receiving agent
+        3. **Receiving Agent**: Reviews context and asks questions if needed
+        4. **Receiving Agent**: Updates this issue when starting work
+        5. **Receiving Agent**: Links PR to this issue when complete
+        
+        Good handoffs make for efficient collaboration! 🚀

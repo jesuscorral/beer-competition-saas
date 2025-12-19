@@ -1,0 +1,216 @@
+name: Agent Question
+description: Ask another agent for clarification or technical guidance
+title: "[QUESTION] [TO: ] "
+labels: ["agent-question", "needs-response"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## ❓ Inter-Agent Question
+        
+        Use this template when you need clarification, technical guidance, or decisions from another specialized agent.
+        This keeps communication structured and trackable.
+
+  - type: dropdown
+    id: asking-agent
+    attributes:
+      label: Asking Agent (You)
+      description: Which agent are you?
+      options:
+        - "🏗️ Backend Agent"
+        - "🎨 Frontend Agent"
+        - "🔬 Data Science Agent"
+        - "🚀 DevOps Agent"
+        - "✅ QA Agent"
+        - "📋 Architecture Agent"
+        - "👤 Team Member (not an agent)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: target-agent
+    attributes:
+      label: Question For (Target Agent)
+      description: Which agent should answer this question?
+      options:
+        - "🏗️ Backend Agent"
+        - "🎨 Frontend Agent"
+        - "🔬 Data Science Agent"
+        - "🚀 DevOps Agent"
+        - "✅ QA Agent"
+        - "📋 Architecture Agent"
+        - "🤝 Any Agent (general question)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: What are you working on? Why do you need this information?
+      placeholder: |
+        I'm implementing the offline scoresheet entry feature. I've created the React form component, but I'm unsure about the best approach for handling sync conflicts when the app comes back online.
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: The Question
+      description: Ask your question clearly and specifically
+      placeholder: |
+        When syncing offline scoresheets to the backend:
+        
+        1. Should I use optimistic concurrency (ETag) or last-write-wins?
+        2. What should the conflict resolution UI look like from a UX perspective?
+        3. Is there an existing pattern in the codebase I should follow?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: question-type
+    attributes:
+      label: Question Type
+      description: What kind of question is this?
+      options:
+        - "🏗️ Architecture/Design - Pattern or approach decisions"
+        - "🔗 Integration - How to connect with other services"
+        - "📋 Specification - Requirements or acceptance criteria"
+        - "🐛 Technical - Implementation details or troubleshooting"
+        - "✅ Validation - Reviewing approach or code"
+        - "📚 Documentation - Where to find information"
+        - "⚡ Blocker - Preventing progress on current task"
+    validations:
+      required: true
+
+  - type: textarea
+    id: options-considered
+    attributes:
+      label: Options Considered
+      description: What solutions have you thought about? Pros/cons of each?
+      placeholder: |
+        **Option A: Optimistic Concurrency (ETag)**
+        - ✅ Pros: Prevents accidental overwrites, proper conflict detection
+        - ❌ Cons: More complex to implement, requires ETag support in API
+        
+        **Option B: Last-Write-Wins**
+        - ✅ Pros: Simpler implementation, no conflict UI needed
+        - ❌ Cons: Risk of losing scoresheet data
+        
+        **Option C: Server-Side Timestamp Comparison**
+        - ✅ Pros: Backend handles logic, frontend stays simple
+        - ❌ Cons: Clock skew issues, time zone complications
+        
+        **My Recommendation:** Option A, but want to confirm this aligns with project patterns.
+
+  - type: textarea
+    id: relevant-files
+    attributes:
+      label: Relevant Files/Code
+      description: Which files or code sections are related to this question?
+      placeholder: |
+        - `frontend/src/pages/JudgingScoresheet.tsx` (form component)
+        - `frontend/src/db/scoresheet-sync.ts` (sync logic)
+        - `backend/Judging.Service/Commands/SubmitScoresheetCommand.cs` (API handler)
+
+  - type: textarea
+    id: attempted-solutions
+    attributes:
+      label: What Have You Tried?
+      description: What have you already attempted or researched?
+      placeholder: |
+        - ✅ Reviewed ADR-003 (Event-Driven Architecture)
+        - ✅ Checked existing sync logic in entrant registration flow
+        - ✅ Tested basic IndexedDB storage (working)
+        - ❌ Haven't found conflict resolution pattern in codebase
+
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: Urgency
+      description: How urgently do you need an answer?
+      options:
+        - "🔴 Blocker - Cannot proceed without answer"
+        - "🟠 High - Blocking progress within 24 hours"
+        - "🟡 Medium - Would like answer within 2-3 days"
+        - "🟢 Low - Informational, no rush"
+    validations:
+      required: true
+
+  - type: input
+    id: related-issue
+    attributes:
+      label: Related Issue/PR
+      description: Link to the issue or PR this question is about (e.g., #123)
+      placeholder: "#123"
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Any other information that might help answer the question
+      placeholder: |
+        **Timeline:** Need to complete this by end of week for MVP
+        
+        **Constraints:**
+        - Must work offline (judges have no WiFi in tasting rooms)
+        - Can't lose scoresheet data (critical for competition integrity)
+        - Should handle 50+ judges syncing simultaneously
+        
+        **References:**
+        - BJCP guidelines require paper backup scoresheets
+        - Similar pattern in competition entry submission
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        
+        ## 💬 Response Template for Target Agent
+        
+        When answering, please structure your response with:
+        
+        ### Answer
+        Your recommendation with clear reasoning
+        
+        ### Rationale
+        Why this approach is best for this project
+        
+        ### Code Example (if applicable)
+        ```language
+        // Example implementation
+        ```
+        
+        ### References
+        - ADRs to read
+        - Existing code to reference
+        - Documentation links
+        
+        ### Gotchas
+        Any pitfalls or considerations to watch out for
+
+  - type: checkboxes
+    id: question-checklist
+    attributes:
+      label: Before Asking Checklist
+      description: Have you done your research?
+      options:
+        - label: "📖 Read relevant ADRs"
+        - label: "🔍 Searched codebase for similar patterns"
+        - label: "📚 Checked project documentation"
+        - label: "🤔 Considered multiple options"
+        - label: "✅ Question is specific and clear"
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        
+        ## 🔄 What Happens Next?
+        
+        1. **System**: Assigns label to target agent
+        2. **Target Agent**: Reviews question and responds in comments
+        3. **You**: Mark issue as resolved once answered
+        4. **System**: Stores Q&A for future reference
+        
+        Clear questions lead to better answers! 🎯

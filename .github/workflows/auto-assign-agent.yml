@@ -1,0 +1,316 @@
+name: Auto-Assign Agent Based on Issue Type
+on:
+  issues:
+    types: [opened, labeled, edited]
+
+jobs:
+  assign-agent:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Parse issue and assign agent
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const issueBody = issue.body || '';
+            const issueTitle = issue.title || '';
+            
+            // Agent detection based on issue content
+            const agentMap = {
+              'Backend Agent': {
+                label: 'agent:backend',
+                keywords: ['backend', 'api', 'business logic', 'cqrs', 'event', 'database schema'],
+                emoji: '🏗️',
+                color: '0052CC',
+                description: 'Backend API & Business Logic'
+              },
+              'Frontend Agent': {
+                label: 'agent:frontend',
+                keywords: ['frontend', 'react', 'ui', 'pwa', 'offline', 'component'],
+                emoji: '🎨',
+                color: '61DAFB',
+                description: 'Frontend UI & PWA'
+              },
+              'Data Science Agent': {
+                label: 'agent:data-science',
+                keywords: ['machine learning', 'analytics', 'ml model', 'prediction', 'data science'],
+                emoji: '🔬',
+                color: 'F37626',
+                description: 'ML & Analytics'
+              },
+              'DevOps Agent': {
+                label: 'agent:devops',
+                keywords: ['devops', 'infrastructure', 'ci/cd', 'docker', 'deployment'],
+                emoji: '🚀',
+                color: '326CE5',
+                description: 'Infrastructure & DevOps'
+              },
+              'QA Agent': {
+                label: 'agent:qa',
+                keywords: ['testing', 'quality assurance', 'e2e', 'test cases'],
+                emoji: '✅',
+                color: '00C853',
+                description: 'Testing & QA'
+              },
+              'Architecture Agent': {
+                label: 'agent:architecture',
+                keywords: ['architecture', 'design', 'adr', 'pattern'],
+                emoji: '📋',
+                color: '9C27B0',
+                description: 'Architecture & Design'
+              }
+            };
+
+            // Ensure all agent labels exist
+            for (const [agentName, config] of Object.entries(agentMap)) {
+              try {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: config.label,
+                  color: config.color,
+                  description: `${config.emoji} ${config.description}`
+                });
+              } catch (error) {
+                // Label already exists
+              }
+            }
+
+            // Ensure coordination labels exist
+            try {
+              await github.rest.issues.createLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'multi-agent-task',
+                color: 'FBCA04',
+                description: '🔄 Requires coordination between multiple agents'
+              });
+            } catch (error) {}
+
+            try {
+              await github.rest.issues.createLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'agent-handoff',
+                color: 'D4C5F9',
+                description: '🤝 Task handoff between agents'
+              });
+            } catch (error) {}
+
+            try {
+              await github.rest.issues.createLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'agent-question',
+                color: 'FEF2C0',
+                description: '❓ Question for another agent'
+              });
+            } catch (error) {}
+
+            // Handle HANDOFF issues
+            if (issueTitle.includes('[HANDOFF]')) {
+              const fromMatch = issueTitle.match(/\[FROM:\s*(.+?)\]/i);
+              const toMatch = issueTitle.match(/\[TO:\s*(.+?)\]/i);
+              
+              let toAgent = null;
+              let fromAgent = null;
+              
+              // Extract from dropdown in body
+              for (const [agentName, config] of Object.entries(agentMap)) {
+                if (issueBody.includes(`Handoff To (Receiving Agent)\n`) || 
+                    issueBody.includes(`Handoff From (Current Agent)`)) {
+                  // Parse YAML-style dropdown selection
+                  const toRegex = new RegExp(`Handoff To.*?${config.emoji}\\s*${agentName}`, 's');
+                  const fromRegex = new RegExp(`Handoff From.*?${config.emoji}\\s*${agentName}`, 's');
+                  
+                  if (toRegex.test(issueBody)) toAgent = agentName;
+                  if (fromRegex.test(issueBody)) fromAgent = agentName;
+                }
+              }
+              
+              if (toAgent && agentMap[toAgent]) {
+                const config = agentMap[toAgent];
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  labels: [config.label, 'agent-handoff']
+                });
+                
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: `🤝 **Agent Handoff Detected**\n\n` +
+                        `**From:** ${fromAgent || 'Unknown'}\n` +
+                        `**To:** ${config.emoji} **${toAgent}**\n\n` +
+                        `@${config.label.replace('agent:', '')}-team - Please review the context and integration contracts above.\n\n` +
+                        `### 📋 Before Starting:\n` +
+                        `- [ ] Read all work completed by previous agent\n` +
+                        `- [ ] Review modified files and PRs\n` +
+                        `- [ ] Check API contracts and event schemas\n` +
+                        `- [ ] Verify dependencies are met\n` +
+                        `- [ ] Ask clarifying questions if needed\n\n` +
+                        `When ready, update this issue with your progress! 🚀`
+                });
+                
+                console.log(`Handoff: ${fromAgent} → ${toAgent}`);
+                return;
+              }
+            }
+
+            // Handle QUESTION issues
+            if (issueTitle.includes('[QUESTION]')) {
+              const toMatch = issueTitle.match(/\[TO:\s*(.+?)\]/i);
+              
+              let targetAgent = null;
+              
+              // Extract from dropdown in body
+              for (const [agentName, config] of Object.entries(agentMap)) {
+                const questionRegex = new RegExp(`Question For.*?${config.emoji}\\s*${agentName}`, 's');
+                if (questionRegex.test(issueBody)) {
+                  targetAgent = agentName;
+                  break;
+                }
+              }
+              
+              if (targetAgent && agentMap[targetAgent]) {
+                const config = agentMap[targetAgent];
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  labels: [config.label, 'agent-question', 'needs-response']
+                });
+                
+                // Detect urgency
+                let urgency = '🟡 Medium';
+                if (issueBody.includes('🔴 Blocker')) urgency = '🔴 Blocker';
+                else if (issueBody.includes('🟠 High')) urgency = '🟠 High';
+                else if (issueBody.includes('🟢 Low')) urgency = '🟢 Low';
+                
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: `❓ **Question for ${config.emoji} ${targetAgent}**\n\n` +
+                        `**Urgency:** ${urgency}\n\n` +
+                        `@${config.label.replace('agent:', '')}-team - Please provide guidance on this question.\n\n` +
+                        `### 💬 Response Template:\n` +
+                        `\`\`\`markdown\n` +
+                        `## Answer\n` +
+                        `[Your recommendation]\n\n` +
+                        `## Rationale\n` +
+                        `[Why this approach]\n\n` +
+                        `## Code Example\n` +
+                        `\`\`\`language\n` +
+                        `// Example code\n` +
+                        `\`\`\`\n\n` +
+                        `## References\n` +
+                        `- [ADRs, docs, or existing code]\n` +
+                        `\`\`\`\n\n` +
+                        `After answering, remove the \`needs-response\` label. Thank you! 🙏`
+                });
+                
+                console.log(`Question assigned to: ${targetAgent}`);
+                return;
+              }
+            }
+
+            // Handle FEATURE issues
+            if (issueTitle.includes('[FEATURE]')) {
+              const selectedComponents = [];
+              
+              // Extract checked components
+              if (issueBody.match(/\[x\]\s*🏗️\s*\*\*Backend\*\*/i)) selectedComponents.push('Backend Agent');
+              if (issueBody.match(/\[x\]\s*🎨\s*\*\*Frontend\*\*/i)) selectedComponents.push('Frontend Agent');
+              if (issueBody.match(/\[x\]\s*🗄️\s*\*\*Database\*\*/i)) selectedComponents.push('Backend Agent');
+              if (issueBody.match(/\[x\]\s*🔬\s*\*\*Data Science\*\*/i)) selectedComponents.push('Data Science Agent');
+              if (issueBody.match(/\[x\]\s*🚀\s*\*\*DevOps\*\*/i)) selectedComponents.push('DevOps Agent');
+              if (issueBody.match(/\[x\]\s*✅\s*\*\*QA\*\*/i)) selectedComponents.push('QA Agent');
+
+              // Extract suggested primary agent
+              let primaryAgent = null;
+              for (const [agentName, config] of Object.entries(agentMap)) {
+                const primaryRegex = new RegExp(`Suggested Primary Agent.*?${config.emoji}\\s*${agentName}`, 's');
+                if (primaryRegex.test(issueBody)) {
+                  primaryAgent = agentName;
+                  break;
+                }
+              }
+
+              // Determine agents to assign
+              const agentsToAssign = primaryAgent ? [primaryAgent] : [...new Set(selectedComponents)];
+
+              if (agentsToAssign.length === 0) {
+                console.log('No agents detected, skipping assignment');
+                return;
+              }
+
+              // Add labels for all agents
+              const labelsToAdd = agentsToAssign.map(agent => agentMap[agent].label);
+              
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                labels: labelsToAdd
+              });
+
+              // Check if multi-agent task
+              const isMultiAgent = issueBody.match(/\[x\].*requires handoff between multiple agents/i) ||
+                                  issueBody.match(/\[x\].*coordinate in parallel/i) ||
+                                  agentsToAssign.length > 1;
+
+              if (isMultiAgent) {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  labels: ['multi-agent-task']
+                });
+              }
+
+              // Create assignment comment
+              let comment = `🤖 **Automatic Agent Assignment**\n\n`;
+              
+              if (isMultiAgent) {
+                comment += `This is a **multi-agent task** requiring coordination between:\n\n`;
+                agentsToAssign.forEach((agent, index) => {
+                  const config = agentMap[agent];
+                  comment += `${index + 1}. ${config.emoji} **${agent}** (\`${config.label}\`)\n`;
+                });
+                comment += `\n⚠️ **Note**: Use the handoff sequence defined in the issue description.\n\n`;
+              } else {
+                const config = agentMap[agentsToAssign[0]];
+                comment += `Primary agent: ${config.emoji} **${agentsToAssign[0]}** (\`${config.label}\`)\n\n`;
+              }
+
+              comment += `### 📋 Before Starting:\n`;
+              comment += `- [ ] Read relevant ADRs from \`docs/architecture/decisions/\`\n`;
+              comment += `- [ ] Review [Copilot Instructions](../.github/copilot-instructions.md)\n`;
+              comment += `- [ ] Check multi-tenancy enforcement rules (ADR-002)\n`;
+              comment += `- [ ] Verify all dependencies are met\n\n`;
+              
+              comment += `### 📚 Useful Resources:\n`;
+              comment += `- [Architecture Overview](../docs/architecture/ARCHITECTURE.md)\n`;
+              comment += `- [MVP Definition](../docs/MVP_DEFINITION.md)\n`;
+              comment += `- [Development Backlog](../docs/BACKLOG.md)\n\n`;
+              comment += `Ready to start? Update this issue with your progress! 🚀`;
+
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: comment
+              });
+
+              console.log(`Assigned agents: ${agentsToAssign.join(', ')}`);
+            }

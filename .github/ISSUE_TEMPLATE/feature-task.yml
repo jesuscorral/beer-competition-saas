@@ -1,0 +1,211 @@
+name: Feature/Task Implementation
+description: Create a new feature or task that requires agent implementation
+title: "[FEATURE] "
+labels: ["feature", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🎯 Agent Assignment System
+        
+        This template helps identify the **optimal agent(s)** to implement this task.
+        Fill out the form and the system will automatically suggest and assign the appropriate specialized agent.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Task Description
+      description: Describe what needs to be implemented
+      placeholder: "Example: Add offline scoresheet entry capability for judges during competitions"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: primary-component
+    attributes:
+      label: Primary Component Affected
+      description: Which part of the system is primarily affected?
+      options:
+        - Backend API / Business Logic
+        - Frontend UI / User Interface
+        - Database / Data Model
+        - Analytics / Machine Learning
+        - Infrastructure / DevOps
+        - Testing / Quality Assurance
+        - Documentation
+        - Multiple Components
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: components-involved
+    attributes:
+      label: Components Involved
+      description: Select ALL components that will be affected
+      options:
+        - label: "🏗️ **Backend** - API endpoints, business logic, domain models, events"
+        - label: "🎨 **Frontend** - React components, UI/UX, PWA features, offline support"
+        - label: "🗄️ **Database** - Schema changes, migrations, PostgreSQL, RLS policies"
+        - label: "🔬 **Data Science** - ML models, analytics, FastAPI services, predictions"
+        - label: "🚀 **DevOps** - CI/CD, Docker, infrastructure, deployments"
+        - label: "✅ **QA** - Testing strategy, test cases, E2E tests"
+
+  - type: dropdown
+    id: suggested-agent
+    attributes:
+      label: Suggested Primary Agent
+      description: Based on your selection, which agent should lead this task?
+      options:
+        - "🏗️ Backend Agent - API, business logic, CQRS, events"
+        - "🎨 Frontend Agent - React, PWA, offline-first, UI components"
+        - "🔬 Data Science Agent - ML models, analytics, predictions"
+        - "🚀 DevOps Agent - Infrastructure, CI/CD, deployments"
+        - "✅ QA Agent - Testing, quality assurance, E2E tests"
+        - "📋 Architecture Agent - System design, ADRs, patterns"
+        - "❓ Not Sure - Let the system decide"
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What defines this task as complete?
+      placeholder: |
+        - [ ] API endpoint returns correct data
+        - [ ] Frontend displays data properly
+        - [ ] Tests pass with >80% coverage
+        - [ ] Documentation updated
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical-details
+    attributes:
+      label: Technical Details & Context
+      description: Provide technical context that helps the agent understand the task
+      placeholder: |
+        **Files likely to change:**
+        - backend/Competition.Service/Commands/...
+        - frontend/src/pages/...
+        
+        **Related ADRs:**
+        - ADR-002: Multi-tenancy Strategy
+        
+        **Dependencies:**
+        - Requires completion of issue #123
+        
+        **Integration Points:**
+        - Frontend needs new API endpoint from backend
+        - Analytics service will consume events
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How urgent is this task?
+      options:
+        - "🔴 Critical - Blocker for release"
+        - "🟠 High - Important for MVP"
+        - "🟡 Medium - Should have"
+        - "🟢 Low - Nice to have"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: Estimated Complexity
+      description: How complex is this task?
+      options:
+        - "🐛 Trivial (< 1 hour)"
+        - "📝 Simple (1-4 hours)"
+        - "⚙️ Moderate (1-2 days)"
+        - "🔧 Complex (3-5 days)"
+        - "🏗️ Epic (> 1 week, should be split)"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: multi-agent-task
+    attributes:
+      label: Multi-Agent Task
+      description: Does this require coordination between multiple agents?
+      options:
+        - label: "🔄 This task requires handoff between multiple agents"
+        - label: "📞 Agents need to coordinate in parallel"
+        - label: "✅ Single agent can complete this independently"
+
+  - type: textarea
+    id: agent-handoff-sequence
+    attributes:
+      label: Agent Handoff Sequence (if multi-agent)
+      description: Define the order agents should work on this
+      placeholder: |
+        1. **Backend Agent** → Create API endpoint, publish events
+        2. **Frontend Agent** → Build UI consuming the API
+        3. **QA Agent** → Write integration and E2E tests
+      
+  - type: textarea
+    id: integration-contracts
+    attributes:
+      label: Integration Contracts (if multi-agent)
+      description: Define API contracts, event schemas, or interfaces between agents
+      placeholder: |
+        **API Endpoint:**
+        ```json
+        POST /api/competitions/{id}/entries
+        {
+          "judgingNumber": 42,
+          "categoryId": "uuid",
+          "entrantId": "uuid"
+        }
+        ```
+        
+        **Event Published:**
+        ```json
+        {
+          "type": "com.beercomp.entry.submitted",
+          "data": { ... }
+        }
+        ```
+
+  - type: textarea
+    id: questions-blockers
+    attributes:
+      label: Questions & Potential Blockers
+      description: What questions do you have? What might block progress?
+      placeholder: |
+        **Questions:**
+        - Should we enforce duplicate entry validation?
+        - What happens if payment fails?
+        
+        **Potential Blockers:**
+        - Waiting for payment gateway API access
+        - Need clarification on business rules
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-Implementation Checklist
+      description: Agent should verify these before starting
+      options:
+        - label: "📖 Read relevant ADRs (Architecture Decision Records)"
+        - label: "🔍 Review existing similar implementations"
+        - label: "✅ Verify all dependencies are met"
+        - label: "🧪 Understand testing requirements"
+        - label: "📝 Check code conventions and patterns"
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        
+        ## 🤖 What Happens Next?
+        
+        1. **Automatic Agent Assignment**: GitHub Actions will analyze your selections and assign the appropriate agent label
+        2. **Agent Review**: The assigned agent will review the issue and add comments
+        3. **Implementation**: The agent will create a PR linked to this issue
+        4. **Handoff** (if needed): The agent will create handoff issues for other agents
+        
+        Thank you for using the structured agent system! 🚀
