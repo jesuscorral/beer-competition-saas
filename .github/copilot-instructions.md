@@ -70,11 +70,131 @@ gh pr create --title "feat: implement entry submission API (#16)" \
              --base main
 ```
 
-### 5. Validation Checklist
+### 5. Issue Status Management
+**CRITICAL**: Update issue status at each workflow stage using GraphQL API:
+
+```bash
+# Helper: Get Project Item ID for an issue
+get_project_item_id() {
+  gh api graphql -f query="
+    query {
+      node(id: \"PVT_kwHOAFw6AM4BK9-n\") {
+        ... on ProjectV2 {
+          items(first: 100) {
+            nodes {
+              id
+              content {
+                ... on Issue {
+                  number
+                }
+              }
+            }
+          }
+        }
+      }
+    }" --jq ".data.node.items.nodes[] | select(.content.number == $1) | .id"
+}
+
+# Update issue status function
+update_issue_status() {
+  local issue_number=$1
+  local status_option_id=$2
+  local item_id=$(get_project_item_id $issue_number)
+  
+  gh api graphql -f query="
+    mutation {
+      updateProjectV2ItemFieldValue(
+        input: {
+          projectId: \"PVT_kwHOAFw6AM4BK9-n\"
+          itemId: \"$item_id\"
+          fieldId: \"PVTSSF_lAHOAFw6AM4BK9-nzg6rqRo\"
+          value: { 
+            singleSelectOptionId: \"$status_option_id\"
+          }
+        }
+      ) {
+        projectV2Item { id }
+      }
+    }"
+}
+
+# PowerShell version for Windows
+function Update-IssueStatus {
+    param(
+        [int]$IssueNumber,
+        [string]$StatusOptionId
+    )
+    
+    $itemId = (gh api graphql -f query="
+        query {
+          node(id: \`"PVT_kwHOAFw6AM4BK9-n\`") {
+            ... on ProjectV2 {
+              items(first: 100) {
+                nodes {
+                  id
+                  content {
+                    ... on Issue {
+                      number
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }" --jq ".data.node.items.nodes[] | select(.content.number == $IssueNumber) | .id")
+    
+    gh api graphql -f query="
+        mutation {
+          updateProjectV2ItemFieldValue(
+            input: {
+              projectId: \`"PVT_kwHOAFw6AM4BK9-n\`"
+              itemId: \`"$itemId\`"
+              fieldId: \`"PVTSSF_lAHOAFw6AM4BK9-nzg6rqRo\`"
+              value: { 
+                singleSelectOptionId: \`"$StatusOptionId\`"
+              }
+            }
+          ) {
+            projectV2Item { id }
+          }
+        }"
+}
+
+# Status Option IDs (for "Beer competition" project #9)
+# - Backlog:      f75ad846
+# - In progress:  47fc9ee4
+# - In review:    df73e18b
+# - Done:         98236657
+
+# Usage examples:
+# Bash: update_issue_status 2 "47fc9ee4"  # Move issue #2 to "In progress"
+# PowerShell: Update-IssueStatus -IssueNumber 2 -StatusOptionId "47fc9ee4"
+```
+
+**Status Workflow**:
+1. **Backlog** (f75ad846) → Issue created, not started
+2. **In Progress** (47fc9ee4) → Branch created, actively working
+3. **In Review** (df73e18b) → PR created, awaiting review
+4. **Done** (98236657) → PR merged, issue closed
+
+**Project Configuration (for reference)**:
+- Project ID: `PVT_kwHOAFw6AM4BK9-n` (Beer competition #9)
+- Status Field ID: `PVTSSF_lAHOAFw6AM4BK9-nzg6rqRo`
+- Owner: `jesuscorral`
+- Repo: `beer-competition-saas`
+
+**NEVER skip status updates** - they provide critical project visibility.
+3. **In Review** → PR created, awaiting review
+4. **Done** → PR merged, issue closed
+
+**NEVER skip status updates** - they provide project visibility.
+
+### 6. Validation Checklist
 Before starting implementation, verify:
 - ✅ Branch created from latest `main`
 - ✅ Branch name follows convention: `{issue-number}-{short-description}`
 - ✅ Issue number exists in GitHub
+- ✅ **Issue status updated to "In Progress"**
 - ✅ Relevant ADRs reviewed (see list below)
 - ✅ Multi-tenancy requirements understood
 - ✅ Test strategy planned (unit + integration)
