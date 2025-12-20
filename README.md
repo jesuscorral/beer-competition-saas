@@ -154,12 +154,12 @@ beercomp_keycloak      Up (healthy)        0.0.0.0:8080->8080/tcp
    - **Connection Tab**:
      - Host: `postgres` (Docker internal network)
      - Port: `5432`
-     - Database: `<database-name>`
+     - Database: `<your-database-name>`
      - Username: `<your-username>`
      - Password: `<your-password>`
    - Click "Save"
 
-3. You should now see the `<database-name>` database and can browse tables (future: after migrations)
+3. You should now see the `<your-database-name>` database and can browse tables (future: after migrations)
 
 ### Keycloak Initial Setup (Future - Sprint 1)
 
