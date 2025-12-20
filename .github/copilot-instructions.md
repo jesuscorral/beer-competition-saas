@@ -17,6 +17,72 @@ You are working on a **Beer Competition SaaS Platform** that enables competition
 
 ---
 
+## Language Requirements
+
+**CRITICAL**: All project documentation, code comments, commit messages, Pull Requests, Issues, ADRs, and README files **MUST be written in English**.
+
+This includes:
+- ✅ **Commit messages**: `feat: implement entry submission API (#16)`
+- ✅ **Pull Request titles and descriptions**: All in English
+- ✅ **Issue titles and descriptions**: All in English
+- ✅ **Code comments**: `// Calculate consensus score from all judges`
+- ✅ **Documentation files**: README.md, ADRs, guides, etc.
+- ✅ **API documentation**: OpenAPI/Swagger specs
+- ✅ **Error messages**: Application error messages in English
+- ✅ **Log messages**: All structured logs in English
+
+**Rationale**: English is the international language for software development, enabling:
+- Global collaboration and code reviews
+- Better AI/Copilot assistance
+- Easier onboarding for international developers
+- Industry-standard documentation practices
+
+**Exception**: User-facing UI text may be localized (future internationalization).
+
+---
+
+## Security and Sensitive Information
+
+**CRITICAL**: Never include passwords, API keys, secrets, or any sensitive information in:
+- ❌ **Issues or Pull Requests**: Titles, descriptions, or comments
+- ❌ **Code comments or documentation**: README, ADRs, guides
+- ❌ **Configuration files**: Committed to repository
+- ❌ **Commit messages**: Any part of the commit history
+- ❌ **Example code or snippets**: In documentation or comments
+
+**Use placeholders instead**:
+- ✅ Passwords: `<your-password>`, `<secure-password>`, `your_password_here`
+- ✅ API Keys: `<your-api-key>`, `<api-key-here>`
+- ✅ Secrets: `<your-secret>`, `<client-secret>`
+- ✅ Connection strings: Mask passwords with `***` or placeholders
+- ✅ Environment variables: Reference variable name, not actual value
+
+**Examples**:
+```bash
+# ❌ WRONG
+POSTGRES_PASSWORD=SuperSecret123!
+
+# ✅ CORRECT
+POSTGRES_PASSWORD=<your-password>
+```
+
+```yaml
+# ❌ WRONG
+Login: admin@example.com / password123
+
+# ✅ CORRECT
+Login: admin@example.com / <your-password>
+```
+
+**Exception**: 
+- `.env` files (git-ignored) may contain development credentials
+- Docker Compose default values for **local development only** are acceptable with clear warnings
+- Production secrets **must** use Azure Key Vault or similar secret management
+
+**Rationale**: Prevents accidental exposure of credentials in public repositories and commit history.
+
+---
+
 ## MANDATORY Workflow: Starting New Issues
 
 **BEFORE implementing any GitHub issue, ALWAYS follow this workflow:**
@@ -46,6 +112,7 @@ git checkout -b 16-entry-submission-api
 ### 3. Commit Convention
 ```bash
 # ALWAYS reference issue number in commits
+# ALWAYS write commit messages in ENGLISH
 git commit -m "feat: implement entry submission API (#16)"
 git commit -m "fix: resolve tenant isolation bug (#23)"
 git commit -m "docs: update API documentation (#45)"
@@ -57,6 +124,13 @@ git commit -m "docs: update API documentation (#45)"
 # test: - Adding tests
 # refactor: - Code refactoring
 # chore: - Build/tooling changes
+# security: - Security improvements
+
+# ❌ WRONG (Spanish)
+git commit -m "feat: implementar API de envío de entradas (#16)"
+
+# ✅ CORRECT (English)
+git commit -m "feat: implement entry submission API (#16)"
 ```
 
 ### 4. Push and Create PR
@@ -64,17 +138,150 @@ git commit -m "docs: update API documentation (#45)"
 # Push branch to remote
 git push -u origin 16-entry-submission-api
 
-# Create PR via GitHub CLI (optional)
+# Create PR via GitHub CLI
+# ALWAYS write PR title and body in ENGLISH
 gh pr create --title "feat: implement entry submission API (#16)" \
-             --body "Closes #16" \
+             --body "## Summary
+
+Complete implementation of entry submission API endpoint.
+
+## Changes
+- Added POST /api/entries endpoint
+- Implemented validation with FluentValidation
+- Added unit and integration tests
+
+Closes #16" \
              --base main
+
+# ❌ WRONG (Spanish in PR)
+gh pr create --title "feat: implementar API de envío (#16)" \
+             --body "Implementación completa..."
+
+# ✅ CORRECT (English in PR)
+gh pr create --title "feat: implement entry submission API (#16)" \
+             --body "Complete implementation..."
 ```
 
-### 5. Validation Checklist
+### 5. Issue Status Management
+**CRITICAL**: Update issue status at each workflow stage using GraphQL API:
+
+```bash
+# Helper: Get Project Item ID for an issue
+get_project_item_id() {
+  gh api graphql -f query="
+    query {
+      node(id: \"PVT_kwHOAFw6AM4BK9-n\") {
+        ... on ProjectV2 {
+          items(first: 100) {
+            nodes {
+              id
+              content {
+                ... on Issue {
+                  number
+                }
+              }
+            }
+          }
+        }
+      }
+    }" --jq ".data.node.items.nodes[] | select(.content.number == $1) | .id"
+}
+
+# Update issue status function
+update_issue_status() {
+  local issue_number=$1
+  local status_option_id=$2
+  local item_id=$(get_project_item_id $issue_number)
+  
+  gh api graphql -f query="
+    mutation {
+      updateProjectV2ItemFieldValue(
+        input: {
+          projectId: \"PVT_kwHOAFw6AM4BK9-n\"
+          itemId: \"$item_id\"
+          fieldId: \"PVTSSF_lAHOAFw6AM4BK9-nzg6rqRo\"
+          value: { 
+            singleSelectOptionId: \"$status_option_id\"
+          }
+        }
+      ) {
+        projectV2Item { id }
+      }
+    }"
+}
+
+# PowerShell version for Windows
+function Update-IssueStatus {
+    param(
+        [int]$IssueNumber,
+        [string]$StatusOptionId
+    )
+    
+    $itemId = (gh api graphql -f query="
+        query {
+          node(id: \`"PVT_kwHOAFw6AM4BK9-n\`") {
+            ... on ProjectV2 {
+              items(first: 100) {
+                nodes {
+                  id
+                  content {
+                    ... on Issue {
+                      number
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }" --jq ".data.node.items.nodes[] | select(.content.number == $IssueNumber) | .id")
+    
+    gh api graphql -f query="
+        mutation {
+          updateProjectV2ItemFieldValue(
+            input: {
+              projectId: \`"PVT_kwHOAFw6AM4BK9-n\`"
+              itemId: \`"$itemId\`"
+              fieldId: \`"PVTSSF_lAHOAFw6AM4BK9-nzg6rqRo\`"
+              value: { 
+                singleSelectOptionId: \`"$StatusOptionId\`"
+              }
+            }
+          ) {
+            projectV2Item { id }
+          }
+        }"
+}
+
+# Status Option IDs (for "Beer competition" project #9)
+# - Backlog:      f75ad846
+# - In progress:  47fc9ee4
+# - In review:    df73e18b
+# - Done:         98236657
+
+# Usage examples:
+# Bash: update_issue_status 2 "47fc9ee4"  # Move issue #2 to "In progress"
+# PowerShell: Update-IssueStatus -IssueNumber 2 -StatusOptionId "47fc9ee4"
+```
+
+**Status Workflow**:
+1. **Backlog** (f75ad846) → Issue created, not started
+2. **In Progress** (47fc9ee4) → Branch created, actively working
+3. **In Review** (df73e18b) → PR created, awaiting review
+4. **Done** (98236657) → PR merged, issue closed
+
+**Project Configuration (for reference)**:
+- Project ID: `PVT_kwHOAFw6AM4BK9-n` (Beer competition #9)
+- Status Field ID: `PVTSSF_lAHOAFw6AM4BK9-nzg6rqRo`
+- Owner: `jesuscorral`
+- Repo: `beer-competition-saas`
+
+**NEVER skip status updates** - they provide critical project visibility.
+### 6. Validation Checklist
 Before starting implementation, verify:
 - ✅ Branch created from latest `main`
 - ✅ Branch name follows convention: `{issue-number}-{short-description}`
 - ✅ Issue number exists in GitHub
+- ✅ **Issue status updated to "In Progress"**
 - ✅ Relevant ADRs reviewed (see list below)
 - ✅ Multi-tenancy requirements understood
 - ✅ Test strategy planned (unit + integration)

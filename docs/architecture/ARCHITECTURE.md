@@ -6,9 +6,10 @@ Multi-tenant SaaS platform for managing BJCP 2021-compliant homebrew beer compet
 
 **Key Architectural Principles:**
 - **Multi-tenancy**: Strict data isolation using PostgreSQL Row-Level Security (RLS)
+- **Modular Monolith**: Single deployable application with clear internal module boundaries following DDD and vertical slices (see [ADR-009](decisions/ADR-009-modular-monolith-vertical-slices.md))
+- **Code-First Database**: Entity Framework Core migrations with PostgreSQL-specific enhancements (see [ADR-008](decisions/ADR-008-database-migrations-strategy.md))
 - **Event-Driven**: Asynchronous communication via RabbitMQ with CloudEvents format
-- **Microservices**: Domain-driven service boundaries (Competition, Judging, Analytics)
-- **CQRS Pattern**: Command/Query separation using MediatR
+- **CQRS Pattern**: Command/Query separation using MediatR with vertical slice architecture
 - **Offline-First Frontend**: PWA with IndexedDB for judge scoresheets
 - **Observability**: OpenTelemetry with distributed tracing
 
@@ -437,45 +438,108 @@ PATCH  /scoresheets/{id}/consensus       - Update consensus score
 
 ## Project Structure
 
+**Architecture**: Modular Monolith with Vertical Slices and DDD (see [ADR-009](decisions/ADR-009-modular-monolith-vertical-slices.md))
+
 ```
 beer-competition-saas/
 ├── .github/
-│   ├── agents/                         # AI Agent definitions
-│   └── workflows/                      # CI/CD pipelines
-├── services/
-│   ├── competition/                    # Competition Service (.NET 10)
-│   │   ├── Domain/                     # Entities, ValueObjects, Events
-│   │   ├── Application/                # Commands, Queries, Handlers
-│   │   ├── Infrastructure/             # EF Core, RabbitMQ, External APIs
-│   │   └── API/                        # Controllers, Middleware
-│   ├── judging/                        # Judging Service (.NET 10)
-│   │   └── [same structure]
-│   ├── analytics/                      # Analytics Service (Python)
-│   │   ├── app/                        # FastAPI application
-│   │   └── notebooks/                  # Jupyter notebooks
-│   └── bff/                            # Backend-for-Frontend (.NET 10)
-├── frontend/                           # React PWA
+│   ├── agents/                                    # AI Agent definitions
+│   └── workflows/                                 # CI/CD pipelines
+│
+├── backend/                                       # Modular Monolith (.NET 10)
+│   ├── BeerCompetition.Monolith.sln              # Solution file
+│   ├── Modules/                                   # Bounded Contexts (DDD)
+│   │   ├── Competition/                           # Competition Module
+│   │   │   ├── Domain/                            # DDD: Entities, Aggregates, Value Objects, Domain Events
+│   │   │   │   ├── Entities/                      # Competition, Entry, BottleReception
+│   │   │   │   ├── ValueObjects/                  # JudgingNumber, PaymentAmount
+│   │   │   │   ├── Events/                        # CompetitionCreatedEvent, EntrySubmittedEvent
+│   │   │   │   └── Repositories/                  # ICompetitionRepository, IEntryRepository
+│   │   │   ├── Application/                       # Vertical Slices (Feature folders)
+│   │   │   │   └── Features/
+│   │   │   │       ├── CreateCompetition/         # Command + Handler + Validator + Endpoint
+│   │   │   │       ├── SubmitEntry/
+│   │   │   │       ├── GetCompetitionById/        # Query + Handler + Endpoint
+│   │   │   │       └── PublishResults/
+│   │   │   ├── Infrastructure/                    # EF Core, Repositories, Event Publishing
+│   │   │   │   ├── EntityConfigurations/          # CompetitionConfiguration (Fluent API)
+│   │   │   │   ├── Migrations/                    # EF Core Code-First Migrations
+│   │   │   │   ├── Repositories/                  # CompetitionRepository, EntryRepository
+│   │   │   │   └── DependencyInjection.cs         # Module service registration
+│   │   │   └── API/                               # HTTP Endpoints (Minimal APIs)
+│   │   │       └── Endpoints/                     # CompetitionEndpoints.cs
+│   │   │
+│   │   ├── Judging/                               # Judging Module
+│   │   │   ├── Domain/                            # Flight, Scoresheet, BestOfShow
+│   │   │   ├── Application/                       # Vertical Slices
+│   │   │   │   └── Features/
+│   │   │   │       ├── CreateFlight/
+│   │   │   │       ├── AssignJudge/
+│   │   │   │       ├── SubmitScoresheet/
+│   │   │   │       └── CalculateConsensus/
+│   │   │   ├── Infrastructure/
+│   │   │   └── API/
+│   │   │
+│   │   └── Shared/                                # Shared Kernel (Common across modules)
+│   │       ├── Kernel/                            # Base classes, interfaces
+│   │       │   ├── Entity.cs                      # Base entity class
+│   │       │   ├── IAggregateRoot.cs
+│   │       │   ├── IDomainEvent.cs
+│   │       │   ├── ITenantEntity.cs
+│   │       │   └── Result.cs                      # Result<T> pattern
+│   │       ├── Contracts/                         # Integration events (between modules)
+│   │       │   ├── EntrySubmittedIntegrationEvent.cs
+│   │       │   └── ScoresheetSubmittedIntegrationEvent.cs
+│   │       └── Infrastructure/                    # Cross-cutting concerns
+│   │           ├── Logging/                       # Structured logging (Serilog)
+│   │           ├── Telemetry/                     # OpenTelemetry
+│   │           └── MultiTenancy/                  # TenantProvider, TenantContext
+│   │
+│   ├── BFF/                                       # Backend-for-Frontend (API Gateway)
+│   │   └── Gateway/                               # Token validation, routing, rate limiting
+│   │
+│   └── Host/                                      # Application entry point
+│       ├── Program.cs                             # Startup, DI configuration, middleware
+│       ├── appsettings.json
+│       └── Dockerfile
+│
+├── frontend/                                      # React PWA
 │   └── src/
-│       ├── components/
-│       ├── pages/
-│       ├── hooks/
-│       └── services/
+│       ├── components/                            # Reusable UI components
+│       ├── pages/                                 # Route components
+│       ├── hooks/                                 # Custom hooks
+│       ├── store/                                 # Zustand stores
+│       ├── db/                                    # IndexedDB schema (Dexie.js)
+│       └── services/                              # API clients
+│
 ├── infrastructure/
-│   ├── bicep/                          # Azure IaC templates
-│   ├── docker-compose.yml              # Local development
-│   └── terraform/                      # Future multi-cloud IaC
+│   ├── bicep/                                     # Azure IaC templates
+│   ├── docker-compose.yml                         # Local development (PostgreSQL, RabbitMQ, Redis, Keycloak)
+│   └── terraform/                                 # Future multi-cloud IaC
+│
 ├── docs/
 │   ├── architecture/
-│   │   ├── ARCHITECTURE.md             # This file
-│   │   └── decisions/                  # ADRs (Architecture Decision Records)
-│   ├── agents/
-│   │   └── README.md                   # AI Agent documentation
-│   ├── BACKLOG.md                      # Product backlog
-│   └── MVP_DEFINITION.md               # MVP scope
+│   │   ├── ARCHITECTURE.md                        # This file
+│   │   └── decisions/                             # ADRs (Architecture Decision Records)
+│   │       ├── ADR-008-database-migrations-strategy.md     # Code-First migrations
+│   │       └── ADR-009-modular-monolith-vertical-slices.md # Modular Monolith + DDD
+│   ├── agents/                                    # AI Agent documentation
+│   ├── roadmap/                                   # Product backlog, MVP definition, implementation guide
+│   └── deployment/                                # Deployment documentation
+│
 └── tests/
-    ├── integration/                    # Testcontainers integration tests
-    └── e2e/                            # Cypress end-to-end tests
+    ├── integration/                               # Testcontainers integration tests
+    │   ├── Competition/                           # Module-specific tests
+    │   └── Judging/
+    └── e2e/                                       # Cypress end-to-end tests
 ```
+
+**Key Design Notes:**
+- **Modular Monolith**: Single deployment unit with clear internal module boundaries (Competition, Judging, Shared)
+- **Vertical Slices**: Features organized by use case, not technical layers (e.g., `CreateCompetition/` contains command, handler, validator, endpoint)
+- **DDD Tactical Patterns**: Entities, Aggregates, Value Objects, Domain Events, Repositories
+- **Code-First Migrations**: Entity Framework Core migrations in `Infrastructure/Migrations/` with PostgreSQL-specific enhancements (RLS policies)
+- **Future Microservices**: Modules can be extracted to separate services when needed (module = microservice boundary)
 
 ---
 
@@ -608,25 +672,32 @@ beer-competition-saas/
 
 ## Decision Records (ADRs)
 
-Key architectural decisions will be documented as ADRs in `docs/architecture/decisions/`:
+Key architectural decisions are documented as ADRs in `docs/architecture/decisions/`:
 
-- **ADR-001**: Tech Stack Selection (.NET 10 + Python + React)
-- **ADR-002**: Multi-Tenancy Strategy (PostgreSQL RLS)
-- **ADR-003**: Event-Driven Architecture (RabbitMQ + CloudEvents)
-- **ADR-004**: Authentication Provider (Keycloak OIDC)
-- **ADR-005**: CQRS Pattern (MediatR)
-- **ADR-006**: Testing Strategy (Test Pyramid with Testcontainers)
+- **[ADR-001](decisions/ADR-001-tech-stack-selection.md)**: Tech Stack Selection (.NET 10 + Python + React)
+- **[ADR-002](decisions/ADR-002-multi-tenancy-strategy.md)**: Multi-Tenancy Strategy (PostgreSQL RLS)
+- **[ADR-003](decisions/ADR-003-event-driven-architecture.md)**: Event-Driven Architecture (RabbitMQ + CloudEvents)
+- **[ADR-004](decisions/ADR-004-authentication-authorization.md)**: Authentication Provider (Keycloak OIDC)
+- **[ADR-005](decisions/ADR-005-cqrs-implementation.md)**: CQRS Pattern (MediatR)
+- **[ADR-006](decisions/ADR-006-testing-strategy.md)**: Testing Strategy (Test Pyramid with Testcontainers)
+- **[ADR-007](decisions/ADR-007-frontend-architecture.md)**: Frontend Architecture (React PWA + Offline Support)
+- **[ADR-008](decisions/ADR-008-database-migrations-strategy.md)**: Code-First Database Migrations (EF Core + PostgreSQL RLS)
+- **[ADR-009](decisions/ADR-009-modular-monolith-vertical-slices.md)**: Modular Monolith with Vertical Slices and DDD
 
 ---
 
 ## Summary
 
 This architecture provides:
-- ✅ **Scalable multi-tenancy** with strict data isolation
-- ✅ **Event-driven decoupling** for service autonomy
+- ✅ **Scalable multi-tenancy** with strict data isolation (PostgreSQL RLS)
+- ✅ **Modular monolith** with clear domain boundaries ready for microservices extraction
+- ✅ **Code-first database** with Entity Framework Core migrations and PostgreSQL enhancements
+- ✅ **Vertical slices architecture** for high cohesion and low coupling within modules
+- ✅ **Domain-Driven Design** with aggregates, entities, value objects, and repositories
+- ✅ **Event-driven decoupling** for service autonomy (in-process and RabbitMQ)
 - ✅ **BJCP compliance** with blind judging and conflict validation
 - ✅ **Offline-first PWA** for judges in low-connectivity venues
-- ✅ **Full observability** with distributed tracing
+- ✅ **Full observability** with distributed tracing and structured logging
 - ✅ **Production-ready** with CI/CD, IaC, and comprehensive testing
 
-The design balances pragmatism (Docker Compose, Bicep) with future scale (Kubernetes path, Terraform multi-cloud). All architectural decisions prioritize **developer experience** and **operational simplicity** for MVP while maintaining **extensibility** for future growth.
+The design balances pragmatism (modular monolith for MVP) with future scale (microservices extraction path). All architectural decisions prioritize **developer experience** and **operational simplicity** for MVP while maintaining **extensibility** for future growth.

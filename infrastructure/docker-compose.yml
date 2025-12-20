@@ -1,22 +1,137 @@
 name: beer-competition-services
+
 services:
-  db:
-    container_name: beer_competition_db
-    image: postgres:17
+  # PostgreSQL Database
+  postgres:
+    container_name: beercomp_postgres
+    image: postgres:16-alpine
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${POSTGRES_USER:-dev_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-beercomp}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.UTF-8"
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      # Future: Mount init scripts here
+      # - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/01-init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev_user -d beercomp"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
     networks:
-      - beer-network # <--- Conectamos la DB a esta red
+      - beer-network
+
+  # pgAdmin - PostgreSQL Web UI
+  pgadmin:
+    container_name: beercomp_pgadmin
+    image: dpage/pgadmin4:latest
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@beercomp.dev}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - beer-network
+
+  # RabbitMQ Message Broker
+  rabbitmq:
+    container_name: beercomp_rabbitmq
+    image: rabbitmq:3.12-management-alpine
+    restart: unless-stopped
+    hostname: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-dev_user}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-dev_password}
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-/}
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"       # AMQP protocol
+      - "${RABBITMQ_MGMT_PORT:-15672}:15672" # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - rabbitmq_log:/var/log/rabbitmq
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - beer-network
+
+  # Redis Cache
+  redis:
+    container_name: beercomp_redis
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:-dev_password} --appendonly yes
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "--pass", "${REDIS_PASSWORD:-dev_password}", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - beer-network
+
+  # Keycloak Authentication Server
+  keycloak:
+    container_name: beercomp_keycloak
+    image: quay.io/keycloak/keycloak:23.0
+    restart: unless-stopped
+    command: start-dev
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-beercomp}
+      KC_DB_USERNAME: ${POSTGRES_USER:-dev_user}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:-dev_password}
+      KC_HOSTNAME_STRICT: "false"
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "${KEYCLOAK_PORT:-8080}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health/ready || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    networks:
+      - beer-network
 
 volumes:
   postgres_data:
+    name: beercomp_postgres_data
+  pgadmin_data:
+    name: beercomp_pgadmin_data
+  rabbitmq_data:
+    name: beercomp_rabbitmq_data
+  rabbitmq_log:
+    name: beercomp_rabbitmq_log
+  redis_data:
+    name: beercomp_redis_data
 
 networks:
-  beer-network: # Definimos la red explícitamente
-    name: mcp-network # Le damos un nombre real en el sistema
+  beer-network:
+    name: beercomp-network
+    driver: bridge

@@ -94,51 +94,92 @@ A comprehensive, multi-tenant SaaS platform for managing BJCP 2021-compliant hom
 ## Getting Started (Local Development)
 
 ### Prerequisites
-- Docker & Docker Compose
-- .NET 10 SDK
-- Python 3.12
-- Node.js 20+
 
-### Quick Start
+Before starting, ensure you have the following installed:
 
-```bash
-# Clone repository
-git clone https://github.com/your-org/beer-competition-saas.git
+- **Docker Desktop** 4.25+ (includes Docker Compose v2)
+  - [Download for Windows](https://www.docker.com/products/docker-desktop/)
+  - Ensure WSL 2 backend is enabled (Settings → General → Use WSL 2 based engine)
+- **.NET 10 SDK** (for backend services - future)
+  - [Download .NET 10](https://dotnet.microsoft.com/download/dotnet/10.0)
+- **Node.js 20+** and **npm** (for frontend - future)
+  - [Download Node.js](https://nodejs.org/)
+- **Git** for version control
+- **PowerShell 7+** (recommended for Windows)
+
+### Quick Start (Infrastructure Only - Sprint 0)
+
+```powershell
+# 1. Clone repository
+git clone https://github.com/jesuscorral/beer-competition-saas.git
 cd beer-competition-saas
 
-# Copy environment template
-cp .env.example .env
-# Edit .env with your local settings
+# 2. Navigate to infrastructure folder
+cd infrastructure
 
-# Start all services via Docker Compose
+# 3. Copy environment template and configure
+Copy-Item .env.example .env
+# Edit .env with your preferences (default values work for local dev)
+
+# 4. Start all infrastructure services
 docker-compose up -d
 
-# Run database migrations
-./scripts/run-migrations.sh
+# 5. Verify all services are healthy
+docker-compose ps
 
-# Seed BJCP styles
-psql -h localhost -U beercomp_user -d beercomp -f scripts/seed-data.sql
+# Expected output:
+NAME                   STATUS              PORTS
+beercomp_postgres      Up (healthy)        0.0.0.0:5432->5432/tcp
+beercomp_pgadmin       Up                  0.0.0.0:5050->80/tcp
+beercomp_rabbitmq      Up (healthy)        0.0.0.0:5672->5672/tcp, 0.0.0.0:15672->15672/tcp
+beercomp_redis         Up (healthy)        0.0.0.0:6379->6379/tcp
+beercomp_keycloak      Up (healthy)        0.0.0.0:8080->8080/tcp
 
-# Access the application
-# Frontend: http://localhost:3000
-# BFF API: http://localhost:5000
-# Keycloak: http://localhost:8080
-# RabbitMQ Management: http://localhost:15672
+# 6. Access management interfaces:
+- pgAdmin (PostgreSQL UI): http://localhost:5050
+#   Login: admin@beercomp.dev / <your-password>
+# - RabbitMQ Management: http://localhost:15672
+#   Login: <your-username> / <your-password>
+# - Keycloak Admin Console: http://localhost:8080/admin
+#   Login: admin / <your-password>
 ```
 
-### Running Tests
+### Initial Database Configuration (pgAdmin)
 
-```bash
-# .NET unit and integration tests
-dotnet test
+1. Open pgAdmin at http://localhost:5050
+2. **Add Server Connection**:
+   - Right-click "Servers" → Register → Server
+   - **General Tab**:
+     - Name: `Beer Competition Local`
+   - **Connection Tab**:
+     - Host: `postgres` (Docker internal network)
+     - Port: `5432`
+     - Database: `<your-database-name>`
+     - Username: `<your-username>`
+     - Password: `<your-password>`
+   - Click "Save"
 
-# Python tests (Post-MVP)
-cd services/analytics
-pytest
+3. You should now see the `<your-database-name>` database and can browse tables (future: after migrations)
 
-# End-to-end tests
-cd tests/e2e
-npx playwright test
+### Keycloak Initial Setup (Future - Sprint 1)
+
+Keycloak admin console will be configured in Sprint 1 (AUTH-001 issue) with:
+- Realm: `beercomp`
+- Clients: `backend-api`, `frontend-web`
+- Roles: `ORGANIZER`, `JUDGE`, `ENTRANT`, `STEWARD`
+- Test users with various roles
+
+### Stopping Services
+
+```powershell
+# Stop all services (preserves data in volumes)
+docker-compose stop
+
+# Stop and remove containers (preserves data)
+docker-compose down
+
+# DANGER: Remove all data (reset to clean state)
+docker-compose down -v
 ```
 
 ---
@@ -182,15 +223,6 @@ az deployment sub create \
 - CI/CD pipeline automatically deploys on push to `main` branch
 - See [.github/workflows/deploy.yml](.github/workflows/deploy.yml) for full pipeline
 
-**Manual Deployment**:
-```bash
-# Build and push Docker images
-docker build -t beercompregistry.azurecr.io/bff:latest services/bff
-docker push beercompregistry.azurecr.io/bff:latest
-
-# Restart Azure Container Instances
-az container restart --name beercomp-bff --resource-group rg-beercomp-prod
-```
 
 ---
 
