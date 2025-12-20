@@ -276,11 +276,6 @@ function Update-IssueStatus {
 - Repo: `beer-competition-saas`
 
 **NEVER skip status updates** - they provide critical project visibility.
-3. **In Review** → PR created, awaiting review
-4. **Done** → PR merged, issue closed
-
-**NEVER skip status updates** - they provide project visibility.
-
 ### 6. Validation Checklist
 Before starting implementation, verify:
 - ✅ Branch created from latest `main`
