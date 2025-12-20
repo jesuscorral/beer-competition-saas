@@ -94,7 +94,117 @@ This document contains a prioritized list of tasks and issues grouped by epic fo
 
 ---
 
-## Epic 4: Cellar & Logistics
+## Epic 4: Subscription Model Foundations (MVP Phase)
+
+**Goal**: Implement foundational subscription infrastructure for future commercialization without affecting MVP launch. All competitions default to Trial tier (10 entries, free). Full subscription features activate in v2.0.
+
+**Rationale**: Adding database columns and business logic now saves 15-20 days of refactoring and complex data migrations in v2.0 when millions of production rows exist.
+
+### Phase 1: Database Schema (Critical Path - 2.5 days)
+
+- [ ] **#50 - INFRA-008**: Create Subscription and Payment Database Tables  
+  _Size_: **S** | _Priority_: **P0** | _Agent_: @backend  
+  _Description_: Create `subscriptions` table (id, tenant_id, competition_id, tier, status, max_entries, price, start_date, end_date) and `payments` table (id, subscription_id, amount, stripe_payment_intent_id, status, paid_at). Add foreign keys and indexes.  
+  _Dependencies_: None  
+  _Blocks_: #53, #57, #56
+
+- [ ] **#53 - INFRA-009**: Extend Competitions Table for Subscription Model  
+  _Size_: **S** | _Priority_: **P0** | _Agent_: @backend  
+  _Description_: Add columns to `competitions` table: `visibility` (PUBLIC/PRIVATE), `public_slug` (unique), `accepting_entries` (bool), `accepting_judges` (bool), `entry_fee_per_beer` (decimal), `subscription_id` (FK to subscriptions).  
+  _Dependencies_: #50  
+  _Blocks_: #52
+
+- [ ] **#57 - INFRA-010**: Extend Users Table for Public Registration  
+  _Size_: **S** | _Priority_: **P0** | _Agent_: @backend  
+  _Description_: Add columns to `users` table: `registration_source` (enum: INVITE/PUBLIC), `email_verified` (bool), `phone` (varchar), `address` (jsonb). Required for v2.0 public self-registration.  
+  _Dependencies_: #50  
+  _Blocks_: None (non-blocking for subscription logic)
+
+### Phase 2: Domain Layer (Critical Path - 2 days)
+
+- [ ] **#56 - COMP-010**: Create Subscription Domain Entity  
+  _Size_: **S** | _Priority_: **P0** | _Agent_: @backend  
+  _Description_: Create `Subscription` aggregate root with `SubscriptionTier` enum (Trial=0, Starter=1, Standard=2, Professional=3, Enterprise=4), `SubscriptionStatus` enum (Active, Expired, Cancelled), and `CanAddEntry()` method for validation. Implement `CreateTrial()` factory method. Implements `IAggregateRoot` and `ITenantEntity`.  
+  _Dependencies_: #50, Shared.Kernel  
+  _Blocks_: #51, #52, #55
+
+- [ ] **#51 - COMP-011**: Create Subscription Repository  
+  _Size_: **M** | _Priority_: **P0** | _Agent_: @backend  
+  _Description_: Create `ISubscriptionRepository` interface and EF Core implementation. Methods: `GetByIdAsync`, `GetByCompetitionIdAsync`, `AddAsync`, `UpdateAsync`. Include entity configuration (table mapping, indexes) and integration tests with Testcontainers.  
+  _Dependencies_: #50, #56  
+  _Blocks_: #52, #55
+
+### Phase 3: Business Logic Integration (Critical Path - 2 days)
+
+- [ ] **#52 - COMP-012**: Auto-Create Trial Subscription When Creating Competition  
+  _Size_: **S** | _Priority_: **P0** | _Agent_: @backend  
+  _Description_: Modify `CreateCompetitionHandler` to automatically create Trial subscription (Tier=Trial, MaxEntries=10, Price=0, Status=Active) in same transaction. Set `competition.subscription_id` FK. Ensures all MVP competitions have subscription limit tracking.  
+  _Dependencies_: #50, #53, #56, #51  
+  _Blocks_: #55
+
+- [ ] **#55 - COMP-013**: Enforce Entry Limits in SubmitEntryHandler  
+  _Size_: **S** | _Priority_: **P0** | _Agent_: @backend  
+  _Description_: Modify `SubmitEntryHandler` to load subscription via competition_id, call `subscription.CanAddEntry()` before creating entry. Return `Result.Failure()` with clear error message if limit reached. Add integration test: 11th entry to Trial competition fails with "Entry limit reached (10 entries)".  
+  _Dependencies_: #50, #56, #51, #52  
+  _Blocks_: None (final step in critical path)
+
+### Phase 4: Service Interfaces (Parallel - Non-blocking - 2 days)
+
+- [ ] **#58 - INFRA-011**: Create Payment Service Interface with Mock Implementation  
+  _Size_: **S** | _Priority_: **P1** | _Agent_: @backend  
+  _Description_: Create `IPaymentService` interface with methods: `CreatePaymentIntentAsync`, `ConfirmPaymentAsync`, `RefundPaymentAsync`. Implement `MockPaymentService` for MVP (all payments succeed instantly). Real Stripe integration in v2.0.  
+  _Dependencies_: None (parallel track)  
+  _Blocks_: None
+
+- [ ] **#59 - INFRA-012**: Create Email Service Interface with SMTP Implementation  
+  _Size_: **M** | _Priority_: **P1** | _Agent_: @backend  
+  _Description_: Create `IEmailService` interface with methods: `SendEmailAsync`, `SendEntryConfirmationAsync`, `SendPaymentReceiptAsync`. Implement `SmtpEmailService` using MailKit. Use plain text emails for MVP; HTML templates in v2.0. Configure SMTP settings via appsettings.json.  
+  _Dependencies_: None (parallel track)  
+  _Blocks_: None
+
+### MVP Behavior Summary
+
+**What Works in MVP**:
+- ✅ All competitions automatically get Trial subscription (10 entries max, free)
+- ✅ Entry limit validation enforced (11th entry blocked)
+- ✅ Database schema supports future subscription tiers
+- ✅ Mock payment service (no real charges)
+- ✅ Basic SMTP emails
+
+**What's Deferred to v2.0**:
+- ❌ Subscription management UI for organizers
+- ❌ Upgrade/downgrade subscription flows
+- ❌ Stripe payment integration (real charges)
+- ❌ Public competition registration forms
+- ❌ Email verification flow
+- ❌ Subscription analytics dashboard
+
+### Implementation Timeline
+
+**Critical Path** (must be sequential):
+1. Day 1: #50 (DB tables) → #53 (competitions columns)
+2. Day 2: #56 (entity) → #51 (repository)
+3. Day 3: #52 (auto-create) → #55 (enforce limits)
+
+**Parallel Track** (can overlap):
+- Days 1-3: #58 (payment service), #59 (email service), #57 (users columns)
+
+**Total Effort**: 7.5-8 person-days  
+**Elapsed Time**: 3-4 days (with parallelization)
+
+### Acceptance Criteria for Epic Completion
+
+- [x] Issue #54 closed as duplicate of #56
+- [ ] All 9 issues (#50, #51, #52, #53, #55, #56, #57, #58, #59) completed and merged
+- [ ] Integration test passes: Create competition → Trial subscription auto-created
+- [ ] Integration test passes: 10 entries succeed, 11th entry fails with clear error
+- [ ] Migration applied to PostgreSQL with RLS policies
+- [ ] Entity Framework DbContext includes Subscription entity
+- [ ] ADR updated with subscription design decisions (if needed)
+
+---
+
+## Epic 5: Cellar & Logistics
 
 - [ ] **COMP-007**: Implement bottle check-in API (scan/enter judging number)
   _Size_: **M** | _Priority_: **P0**
@@ -114,7 +224,7 @@ This document contains a prioritized list of tasks and issues grouped by epic fo
 
 ---
 
-## Epic 4: Flights & Judge Assignment
+## Epic 6: Flights & Judge Assignment
 
 **Goal**: Enable organizers to create flights and assign judges with conflict validation.
 
@@ -144,7 +254,7 @@ This document contains a prioritized list of tasks and issues grouped by epic fo
 
 ---
 
-## Epic 5: Scoring & Judging
+## Epic 7: Scoring & Judging
 
 **Goal**: Enable judges to score entries on mobile devices with offline capability.
 
@@ -172,7 +282,7 @@ This document contains a prioritized list of tasks and issues grouped by epic fo
 
 ---
 
-## Epic 6: Best of Show & Results
+## Epic 8: Best of Show & Results
 
 **Goal**: Enable BOS candidate marking, BOS judging, and results publication.
 
@@ -206,7 +316,7 @@ This document contains a prioritized list of tasks and issues grouped by epic fo
 
 ---
 
-## Epic 7: Observability & CI/CD
+## Epic 9: Observability & CI/CD
 
 **Goal**: Establish monitoring, logging, and automated deployment pipeline.
 
@@ -236,7 +346,7 @@ This document contains a prioritized list of tasks and issues grouped by epic fo
 
 ---
 
-## Epic 8: Analytics & ML (Post-MVP)
+## Epic 10: Analytics & ML (Post-MVP)
 
 **Goal**: Provide advanced analytics, ML-driven insights, and intelligent judge assignment suggestions.
 
@@ -272,16 +382,16 @@ This document contains a prioritized list of tasks and issues grouped by epic fo
 
 ## Summary Statistics
 
-**Total Tasks**: 54 (47 MVP + 7 Post-MVP)
-**Critical (P0)**: 25
-**High (P1)**: 19
+**Total Tasks**: 63 (55 MVP + 8 Post-MVP)
+**Critical (P0)**: 32 (+7 from Subscription MVP)
+**High (P1)**: 21 (+2 from Subscription MVP)
 **Medium (P2)**: 10
 
 **Estimated Effort**:
-- **Small (S)**: 9 tasks (~27 days)
-- **Medium (M)**: 32 tasks (~192 days)
+- **Small (S)**: 16 tasks (~48 days) [+7 from Subscription MVP]
+- **Medium (M)**: 34 tasks (~204 days) [+2 from Subscription MVP]
 - **Large (L)**: 6 tasks (~75 days)
-- **Total**: ~294 person-days (~14-16 weeks for team of 3-4 engineers)
+- **Total**: ~327 person-days (~15-17 weeks for team of 3-4 engineers)
 
 ---
 
@@ -298,5 +408,8 @@ This document contains a prioritized list of tasks and issues grouped by epic fo
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: 2025-12-18
+**Document Version**: 1.1  
+**Last Updated**: 2025-12-20  
+**Changelog**:
+- v1.1 (2025-12-20): Added Epic 4 - Subscription Model Foundations (9 tasks for MVP prep)
+- v1.0 (2025-12-18): Initial backlog structure
