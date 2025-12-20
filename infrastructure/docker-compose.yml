@@ -18,7 +18,7 @@ services:
       # Future: Mount init scripts here
       # - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/01-init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-dev_user} -d ${POSTGRES_DB:-beercomp}"]
+      test: ["CMD-SHELL", "pg_isready -U dev_user -d beercomp"]
       interval: 5s
       timeout: 3s
       retries: 5
