@@ -1,3 +1,4 @@
+using System.Net.Mail;
 using BeerCompetition.Shared.Kernel;
 
 namespace BeerCompetition.Competition.Domain.Entities;
@@ -59,8 +60,7 @@ public class Tenant : Entity, IAggregateRoot
         if (email.Length > 255)
             return Result<Tenant>.Failure("Email must not exceed 255 characters");
 
-        // Basic email format validation
-        if (!email.Contains('@') || !email.Contains('.'))
+        if (!IsValidEmail(email))
             return Result<Tenant>.Failure("Invalid email format");
 
         var tenant = new Tenant
@@ -146,7 +146,7 @@ public class Tenant : Entity, IAggregateRoot
         if (email.Length > 255)
             return Result.Failure("Email must not exceed 255 characters");
 
-        if (!email.Contains('@') || !email.Contains('.'))
+        if (!IsValidEmail(email))
             return Result.Failure("Invalid email format");
 
         OrganizationName = organizationName;
@@ -154,6 +154,25 @@ public class Tenant : Entity, IAggregateRoot
         MarkAsUpdated();
 
         return Result.Success();
+    }
+
+    /// <summary>
+    /// Validates email format using System.Net.Mail.MailAddress.
+    /// </summary>
+    /// <param name="email">Email address to validate.</param>
+    /// <returns>True if valid email format, false otherwise.</returns>
+    private static bool IsValidEmail(string email)
+    {
+        try
+        {
+            var mailAddress = new MailAddress(email);
+            // Ensure the parsed email matches the input (prevents addresses with display names)
+            return mailAddress.Address == email;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
 
