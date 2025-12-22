@@ -26,7 +26,12 @@ build/
 # Environment files
 .env
 .env.local
+.env.*.local
 *.env
+
+# But allow .env.example files
+!.env.example
+!**/.env.example
 
 # Logs
 logs/
