@@ -39,6 +39,28 @@ public class Tenant : Entity, IAggregateRoot
     }
 
     /// <summary>
+    /// Validates email format using System.Net.Mail.MailAddress.
+    /// </summary>
+    /// <param name="email">The email address to validate.</param>
+    /// <returns>True if email is valid, false otherwise.</returns>
+    private static bool IsValidEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return false;
+
+        try
+        {
+            var mailAddress = new MailAddress(email);
+            // Ensure the parsed address matches the input (prevents issues with display names)
+            return mailAddress.Address == email.Trim();
+        }
+        catch (Exception ex) when (ex is FormatException or ArgumentException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
     /// Factory method to create a new tenant account.
     /// </summary>
     /// <param name="organizationName">Name of the organization.</param>
