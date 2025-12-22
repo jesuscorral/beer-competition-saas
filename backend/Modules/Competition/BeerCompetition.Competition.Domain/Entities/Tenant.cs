@@ -54,7 +54,7 @@ public class Tenant : Entity, IAggregateRoot
             // Ensure the parsed address matches the input (prevents issues with display names)
             return mailAddress.Address == email.Trim();
         }
-        catch (FormatException)
+        catch (Exception ex) when (ex is FormatException or ArgumentException)
         {
             return false;
         }
