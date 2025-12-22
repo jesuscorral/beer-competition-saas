@@ -169,8 +169,9 @@ public class Tenant : Entity, IAggregateRoot
             // Ensure the parsed email matches the input (prevents addresses with display names)
             return mailAddress.Address == email;
         }
-        catch
+        catch (Exception)
         {
+            // MailAddress constructor throws ArgumentException, FormatException, etc. for invalid emails
             return false;
         }
     }
