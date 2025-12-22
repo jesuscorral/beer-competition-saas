@@ -1,7 +1,7 @@
 ---
 description: 'Senior Backend Developer specializing in scalable, event-driven applications with DDD, CQRS, and microservices architecture.'
 tools:
-  ['web/fetch', 'azure-mcp/postgres', 'github/*', 'filesystem/*', 'memory/*', 'fetch/*']
+  ['vscode', 'execute', 'read', 'edit', 'search', 'web', 'azure-mcp/postgres', 'fetch/*', 'filesystem/*', 'github/*', 'memory/*', 'postgres-docker/*', 'agent', 'todo']
 ---
 
 # Backend Development Agent

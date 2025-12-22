@@ -4,6 +4,75 @@
 
 This folder contains the Docker Compose configuration for running the complete Beer Competition SaaS platform infrastructure locally.
 
+## 🚀 Quick Start
+
+**First time setup:**
+
+```powershell
+# 1. Copy the example environment file
+Copy-Item .env.example .env
+
+# 2. Edit .env with your credentials (replace all <placeholder> values)
+# Use any text editor or VS Code
+
+# 3. Validate environment configuration
+.\validate-env.ps1
+
+# 4. Start all services
+docker-compose up -d
+
+# 5. Verify services are healthy
+docker-compose ps
+```
+
+**⚠️ IMPORTANT**: Never commit the `.env` file to version control! It's already in `.gitignore`.
+
+## Environment Configuration
+
+### Files Structure
+
+```
+infrastructure/
+├── .env                # ← Your local credentials (git-ignored)
+├── .env.example        # ← Template file (committed to git)
+├── .gitignore          # ← Protects .env from being committed
+├── docker-compose.yml  # ← Service definitions
+└── README.md
+```
+
+### How Docker Compose Reads .env
+
+Docker Compose **automatically reads** the `.env` file in the same directory. Variables are substituted using `${VARIABLE_NAME}` syntax:
+
+```yaml
+# In docker-compose.yml
+environment:
+  POSTGRES_USER: ${POSTGRES_USER}        # ← Reads from .env
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD} # ← Reads from .env
+```
+
+### Security Best Practices
+
+1. ✅ **Always use `.env` file** - Never hardcode secrets in `docker-compose.yml`
+2. ✅ **Copy from `.env.example`** - Replace all `<placeholder>` values
+3. ✅ **Use strong passwords** - Even in local development
+4. ❌ **Never commit `.env`** - Already protected by `.gitignore`
+5. 🔒 **Production uses Azure Key Vault** - No `.env` files in production
+
+### Example .env Setup
+
+```bash
+# Copy the template
+cp .env.example .env
+
+# Edit with your values
+POSTGRES_PASSWORD=my_secure_password_123!
+PGADMIN_PASSWORD=my_pgadmin_pass
+RABBITMQ_PASSWORD=my_rabbitmq_pass
+REDIS_PASSWORD=my_redis_pass
+KEYCLOAK_ADMIN_PASSWORD=my_keycloak_pass
+```
+
 ## Services Included
 
 ### Core Services
@@ -98,30 +167,6 @@ All services communicate via the `beercomp-network` bridge network. This allows:
 - Services to resolve each other by container name (e.g., `postgres`, `rabbitmq`)
 - Future application services to connect without exposing ports externally
 
-## Environment Variables
-
-**Configuration files:**
-
-- `.env` - Active environment variables (git-ignored)
-- `.env.example` - Template with placeholders for all variables
-
-**IMPORTANT SECURITY NOTES:**
-
-1. ⚠️ **Never commit `.env` to version control** - It's already in `.gitignore`
-2. ⚠️ **Docker Compose default values** (in `docker-compose.yml`) are for **local development convenience only**
-3. ✅ **Always create your own `.env` file** from `.env.example` with your own passwords
-4. ✅ **Replace all placeholders** in `.env.example` with actual values in your `.env` file
-5. 🔒 **Production must use Azure Key Vault** or similar secrets management
-
-**Example**: 
-```bash
-# docker-compose.yml has defaults like:
-POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dev_password}
-
-# This means: use env var if set, otherwise use "dev_password"
-# For better security, always set your own value in .env file
-```
-
 ## Service Dependencies
 
 Health checks ensure proper startup order:
@@ -133,16 +178,51 @@ Health checks ensure proper startup order:
 
 ## Accessing Services
 
-| Service | URL | Credentials |
-|---------|-----|-------------|
-| PostgreSQL | `localhost:5432` | From `.env` file |
-| pgAdmin | http://localhost:5050 | From `.env` file |
-| RabbitMQ AMQP | `localhost:5672` | From `.env` file |
-| RabbitMQ Management | http://localhost:15672 | From `.env` file |
-| Redis | `localhost:6379` | From `.env` file |
-| Keycloak Admin | http://localhost:8080/admin | From `.env` file |
+All service credentials are defined in your `.env` file:
 
-**Note**: All credentials are defined in your `.env` file. See `.env.example` for reference.
+| Service | URL | Default Credentials (.env) |
+|---------|-----|----------------------------|
+| PostgreSQL | `localhost:5432` | `${POSTGRES_USER}` / `${POSTGRES_PASSWORD}` |
+| pgAdmin | http://localhost:5050 | `${PGADMIN_EMAIL}` / `${PGADMIN_PASSWORD}` |
+| RabbitMQ AMQP | `localhost:5672` | `${RABBITMQ_USER}` / `${RABBITMQ_PASSWORD}` |
+| RabbitMQ Management | http://localhost:15672 | Same as AMQP |
+| Redis | `localhost:6379` | Password: `${REDIS_PASSWORD}` |
+| Keycloak Admin | http://localhost:8080/admin | `${KEYCLOAK_ADMIN}` / `${KEYCLOAK_ADMIN_PASSWORD}` |
+
+**Connection String Example** (for .NET applications):
+
+```csharp
+// PostgreSQL
+"Host=localhost;Port=5432;Database=beer_competition;Username=<POSTGRES_USER>;Password=<POSTGRES_PASSWORD>"
+
+// Redis
+"localhost:6379,password=<REDIS_PASSWORD>"
+
+// RabbitMQ
+"amqp://<RABBITMQ_USER>:<RABBITMQ_PASSWORD>@localhost:5672/"
+```
+
+## Troubleshooting
+
+### Services won't start
+
+```powershell
+# Check if .env file exists
+Test-Path .env
+
+# Verify environment variables are loaded
+docker-compose config
+
+# Check for port conflicts
+netstat -ano | findstr "5432 5672 6379 8080"
+```
+
+### Permission issues with volumes
+
+```powershell
+# On Windows, ensure Docker has access to drives
+# Docker Desktop → Settings → Resources → File Sharing
+```
 
 ### Reset Everything
 
@@ -177,7 +257,8 @@ See [docs/deployment/DEPLOYMENT.md](../docs/deployment/DEPLOYMENT.md) for produc
 
 ---
 
-**Related ADRs:**
+**Related Documentation:**
+- [Secrets Management Guide](SECRETS_MANAGEMENT.md) - Comprehensive guide on managing secrets
 - [ADR-001: Tech Stack Selection](../docs/architecture/decisions/ADR-001-tech-stack-selection.md)
 - [ADR-002: Multi-Tenancy Strategy](../docs/architecture/decisions/ADR-002-multi-tenancy-strategy.md)
 - [ADR-003: Event-Driven Architecture](../docs/architecture/decisions/ADR-003-event-driven-architecture.md)
