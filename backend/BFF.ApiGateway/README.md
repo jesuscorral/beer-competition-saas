@@ -148,7 +148,7 @@ dotnet test BFF.ApiGateway.Tests/BeerCompetition.BFF.ApiGateway.Tests.csproj
 2. Call BFF with token:
    ```bash
    curl -H "Authorization: Bearer <token>" \
-     http://localhost:5000/api/competitions
+     http://localhost:5190/api/competitions
    ```
 
 3. Verify headers in downstream service logs:
