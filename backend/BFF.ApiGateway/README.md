@@ -114,12 +114,12 @@ cd backend/BFF.ApiGateway
 dotnet run
 ```
 
-The BFF will start on `http://localhost:5000`.
+The BFF will start on `http://localhost:5190`.
 
 ### Health Check
 
 ```bash
-curl http://localhost:5000/health
+curl http://localhost:5190/health
 ```
 
 Expected response: `200 OK` with status details.
