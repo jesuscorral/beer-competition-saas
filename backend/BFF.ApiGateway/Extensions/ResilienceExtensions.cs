@@ -1,8 +1,6 @@
 using Microsoft.Extensions.Http.Resilience;
-using Polly;
 
 namespace BeerCompetition.BFF.ApiGateway.Extensions;
-
 /// <summary>
 /// Extension methods for configuring resilience policies (circuit breaker, retry) for HTTP clients.
 /// Implements resilience patterns as specified in issue #67.
