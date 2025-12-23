@@ -1,10 +1,4 @@
 ﻿namespace BeerCompetition.BFF.ApiGateway.Tests;
 
-public class UnitTest1
-{
-    [Fact]
-    public void Test1()
-    {
-
-    }
-}
+// This file previously contained a placeholder test with no assertions.
+// Middleware and API tests are implemented in dedicated test files.
