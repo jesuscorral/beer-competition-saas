@@ -21,15 +21,17 @@ builder.Services.AddKeycloakAuthentication(builder.Configuration);
 // Add authorization policies
 builder.Services.AddBffAuthorizationPolicies();
 
-// Add resilience policies (circuit breaker, retry)
-builder.Services.AddResiliencePolicies();
-
 // Add health checks
 builder.Services.AddHealthChecks();
 
 // Add YARP reverse proxy
 builder.Services.AddReverseProxy()
-    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
+    .ConfigureHttpClient((context, handler) =>
+    {
+        // Configure YARP's SocketsHttpHandler for optimal performance
+        handler.ConfigureForYarp();
+    });
 
 var app = builder.Build();
 

@@ -42,9 +42,10 @@ Competition Service | Judging Service
    - Ensures data isolation at the gateway level
 
 4. **Resilience**:
-   - Circuit breaker: Opens after 50% failure rate (5+ requests in 10s)
-   - Retry policy: 3 attempts with exponential backoff
-   - Timeout: 30 seconds per request
+   - **Connection Pooling**: YARP reuses HTTP connections for up to 5 minutes
+   - **HTTP/2 Support**: Multiple streams per connection for better performance
+   - **Service-Level Resilience**: Downstream services (Competition, Judging) implement their own circuit breakers, retries, and timeouts
+   - **Future Enhancement**: Gateway-level resilience can be added via custom `IForwarderHttpClientFactory` if needed
 
 5. **Observability** (ADR-003):
    - Distributed tracing with OpenTelemetry
@@ -180,18 +181,27 @@ The request pipeline executes in this order:
 | `JudgeOrOrganizer` | Judge, Organizer | Flight/scoresheet access |
 | `OrganizerOrSteward` | Organizer, Steward | Logistics management |
 
-## Resilience Configuration
+## HTTP Client Configuration
 
-### Circuit Breaker
-- **Sampling Duration**: 10 seconds
-- **Failure Ratio**: 50%
-- **Minimum Throughput**: 5 requests
-- **Break Duration**: 30 seconds
+The BFF configures YARP's HTTP client with optimized settings:
 
-### Retry Policy
-- **Max Attempts**: 3
-- **Backoff**: Exponential with jitter
-- **Total Timeout**: 30 seconds
+### Connection Management
+- **Connection Lifetime**: 5 minutes (prevents stale connections)
+- **Idle Timeout**: 2 minutes (releases unused connections)
+- **HTTP/2**: Multiple streams per connection enabled
+- **Proxy**: Direct connection to services (no intermediary proxy)
+
+### Resilience Strategy
+
+**Service-Level Resilience** (Recommended):
+- Downstream services (Competition Service, Judging Service) implement their own resilience patterns
+- Each service has circuit breakers, retries, and timeouts appropriate to its domain
+- This provides better granularity and control over failure scenarios
+
+**Gateway-Level Resilience** (Future Enhancement):
+- Can be implemented using a custom `IForwarderHttpClientFactory`
+- Would wrap YARP's `HttpMessageInvoker` with Polly policies
+- Consider this if cross-cutting resilience requirements emerge
 
 ## Observability
 
@@ -234,10 +244,10 @@ View traces in console (development) or export to OTLP collector (production).
 - JWT token must include `tenant_id` claim
 - Configure Keycloak client mapper to include `tenant_id`
 
-### 503 Service Unavailable (Circuit Breaker Open)
-- Downstream service is down or slow
-- Check Competition/Judging Service health
-- Circuit breaker will close after 30 seconds if service recovers
+### 503 Service Unavailable
+- Downstream service (Competition/Judging) is down or unreachable
+- Check service health endpoints
+- Review service logs for errors
 
 ### CORS Errors
 - Verify frontend origin is in `Cors:AllowedOrigins` configuration
