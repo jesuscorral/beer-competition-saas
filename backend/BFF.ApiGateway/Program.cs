@@ -58,8 +58,8 @@ app.UseAuthorization();
 // Tenant extraction (after authentication)
 app.UseMiddleware<TenantExtractionMiddleware>();
 
-// Health check endpoint
-app.MapHealthChecks("/health");
+// Health check endpoint (allow anonymous access for monitoring systems)
+app.MapHealthChecks("/health").AllowAnonymous();
 
 // YARP reverse proxy routes
 app.MapReverseProxy();
