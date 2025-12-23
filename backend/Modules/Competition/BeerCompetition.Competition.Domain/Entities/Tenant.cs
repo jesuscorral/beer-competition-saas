@@ -177,47 +177,4 @@ public class Tenant : Entity, IAggregateRoot
 
         return Result.Success();
     }
-
-    /// <summary>
-    /// Validates email format using System.Net.Mail.MailAddress.
-    /// </summary>
-    /// <param name="email">Email address to validate.</param>
-    /// <returns>True if valid email format, false otherwise.</returns>
-    private static bool IsValidEmail(string email)
-    {
-        try
-        {
-            var mailAddress = new MailAddress(email);
-            // Ensure the parsed email matches the input (prevents addresses with display names)
-            return mailAddress.Address == email;
-        }
-        catch (Exception ex) when (ex is ArgumentException or FormatException)
-        {
-            // Invalid email format
-            return false;
-        }
-    }
-}
-
-/// <summary>
-/// Status of a tenant account.
-/// </summary>
-public enum TenantStatus
-{
-    /// <summary>
-    /// Account is active and can create/access competitions.
-    /// </summary>
-    Active,
-
-    /// <summary>
-    /// Account is suspended (e.g., payment issues, policy violation).
-    /// Cannot create new competitions or access existing data.
-    /// </summary>
-    Suspended,
-
-    /// <summary>
-    /// Account is marked as deleted (soft delete).
-    /// Data is retained for audit purposes but account is inactive.
-    /// </summary>
-    Deleted
 }
