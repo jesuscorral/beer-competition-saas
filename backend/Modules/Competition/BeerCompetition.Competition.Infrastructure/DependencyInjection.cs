@@ -19,7 +19,35 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // Database
+        // Add database configuration
+        services.AddDatabaseConfiguration(configuration);
+
+        // Add Repositories
+        services.AddDIRepositories();
+
+        // Add MediatR configuration
+        services.AddMediatRConfiguration();
+
+        services.AddFluentValidationConfiguration();
+
+        // MediatR pipeline behaviors could be added here (e.g., validation, logging, transactions)
+
+        return services;
+    }
+
+    /// <summary>
+    /// Configures the database context for the Competition module.
+    /// </summary>
+    /// <param name="services"></param>
+    /// <param name="configuration"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public static IServiceCollection AddDatabaseConfiguration(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        // Additional database-related configurations can be added here in the future
+
         services.AddDbContext<CompetitionDbContext>(options =>
         {
             var connectionString = configuration.GetConnectionString("PostgreSQL")
@@ -39,20 +67,37 @@ public static class DependencyInjection
             }
         });
 
-        // Repositories
-        services.AddScoped<ICompetitionRepository, CompetitionRepository>();
+        return services;
+    }
 
+    /// <summary>
+    /// Configures the repositories for the Competition module.
+    /// </summary>
+    public static IServiceCollection AddDIRepositories(this IServiceCollection services)
+    {
+        services.AddScoped<ICompetitionRepository, CompetitionRepository>();
+        return services;
+    }
+
+    /// <summary>
+    /// Configures MediatR for the Competition module.
+    /// </summary>
+    public static IServiceCollection AddMediatRConfiguration(this IServiceCollection services)
+    {
         // MediatR handlers from Application layer
         services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssembly(typeof(CreateCompetitionCommand).Assembly);
         });
 
+        return services;
+    }
+
+    public static IServiceCollection AddFluentValidationConfiguration(this IServiceCollection services)
+    {
         // FluentValidation
         services.AddValidatorsFromAssembly(typeof(CreateCompetitionValidator).Assembly);
 
-        // MediatR pipeline behaviors could be added here (e.g., validation, logging, transactions)
-
         return services;
-    }
+    } 
 }

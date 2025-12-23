@@ -11,7 +11,7 @@ public static class ServiceCollectionExtensions
     /// <summary>
     /// Registers shared infrastructure services including multi-tenancy support.
     /// </summary>
-    public static IServiceCollection AddSharedInfrastructure(this IServiceCollection services)
+    public static IServiceCollection AddSharedInfrastructureServices(this IServiceCollection services)
     {
         // HTTP context accessor (required for TenantProvider to access request context)
         services.AddHttpContextAccessor();
