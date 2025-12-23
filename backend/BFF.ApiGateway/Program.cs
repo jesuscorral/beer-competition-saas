@@ -42,12 +42,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Observability middleware
-app.UseObservability();
-
-// Custom middleware
+// Custom middleware (must run before observability so correlation ID is available for logging)
 app.UseMiddleware<CorrelationIdMiddleware>();
 
+// Observability middleware
+app.UseObservability();
 // CORS
 app.UseBffCors();
 
