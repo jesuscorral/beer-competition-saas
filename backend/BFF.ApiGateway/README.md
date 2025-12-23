@@ -9,7 +9,7 @@ The BFF serves as the single entry point for the frontend application (React PWA
 - **Authorization**: Role-based access control (RBAC)
 - **Multi-tenancy**: Tenant isolation enforcement
 - **Routing**: Reverse proxy to backend microservices
-- **Resilience**: Circuit breaker and retry policies
+- **Connection Management**: Optimized HTTP client with connection pooling and HTTP/2 support
 - **Observability**: Distributed tracing and structured logging
 
 ## Architecture
