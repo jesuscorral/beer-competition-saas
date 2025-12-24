@@ -1,4 +1,5 @@
 using BeerCompetition.Competition.Application.Features.CreateCompetition;
+using BeerCompetition.Competition.Application.Features.GetCompetitions;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -16,6 +17,25 @@ public static class CompetitionEndpoints
     {
         var group = app.MapGroup("/api/competitions")
             .WithTags("Competitions");
+
+        // GET /api/competitions - List all competitions
+        group.MapGet("/", async (
+            IMediator mediator,
+            CancellationToken ct) =>
+        {
+            var query = new GetCompetitionsQuery();
+            var result = await mediator.Send(query, ct);
+
+            return result.IsSuccess
+                ? Results.Ok(result.Value)
+                : Results.BadRequest(new { error = result.Error });
+        })
+        .WithName("GetCompetitions")
+        .WithSummary("Get all competitions")
+        .WithDescription("Retrieves all competitions for the current tenant. Automatically filtered by tenant_id.")
+        .Produces<List<CompetitionDto>>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest);
+        // TODO: Add .RequireAuthorization() when auth is implemented
 
         // POST /api/competitions - Create new competition
         group.MapPost("/", async (
@@ -37,7 +57,6 @@ public static class CompetitionEndpoints
         // TODO: Add .RequireAuthorization("OrganizerOnly") when auth is implemented
 
         // Additional endpoints will be added here:
-        // - GET /api/competitions (list all)
         // - GET /api/competitions/{id} (get by id)
         // - PATCH /api/competitions/{id}/open (open for registration)
         // - PATCH /api/competitions/{id}/start-judging

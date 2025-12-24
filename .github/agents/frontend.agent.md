@@ -1,7 +1,7 @@
 ---
 description: 'Senior Frontend Developer specializing in modern React PWAs with offline-first architecture, accessibility, and mobile-first design.'
 tools:
-  ['web/fetch', 'github/*', 'filesystem/*', 'memory/*', 'fetch/*']
+  ['vscode', 'execute', 'read', 'edit', 'search', 'web', 'fetch/*', 'github/*', 'memory/*', 'agent', 'cweijan.vscode-postgresql-client2/dbclient-getDatabases', 'cweijan.vscode-postgresql-client2/dbclient-getTables', 'cweijan.vscode-postgresql-client2/dbclient-executeQuery', 'todo']
 ---
 
 # Frontend Development Agent

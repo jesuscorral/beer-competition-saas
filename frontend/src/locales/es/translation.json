@@ -1,0 +1,80 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "comingSoon": "Próximamente",
+    "required": "Requerido"
+  },
+  "navbar": {
+    "title": "Plataforma de Competición de Cerveza",
+    "createCompetition": "Crear Competición"
+  },
+  "home": {
+    "welcome": "Bienvenido a la Plataforma de Competición de Cerveza",
+    "subtitle": "Gestiona competiciones de cerveza casera compatibles con BJCP con facilidad",
+    "organizeCompetitions": {
+      "title": "🏆 Organizar Competiciones",
+      "description": "Crea y gestiona competiciones de cerveza con cata ciega, asignación de vuelos y más.",
+      "action": "Crear Competición"
+    },
+    "judgeOffline": {
+      "title": "📝 Juzgar Sin Conexión",
+      "description": "Califica cervezas usando nuestra PWA que funciona sin conexión, perfecto para lugares con WiFi poco confiable.",
+      "action": "Próximamente"
+    },
+    "mvpPhase": {
+      "title": "🚀 Fase MVP - Issue #80",
+      "description": "Esta es la implementación inicial del frontend. Autenticación y características avanzadas próximamente."
+    }
+  },
+  "competition": {
+    "list": {
+      "title": "Competiciones",
+      "createButton": "Crear Competición",
+      "error": "Error al cargar las competiciones",
+      "registrationDeadline": "Registro",
+      "judgingDate": "Cata",
+      "maxEntries": "Máx. Entradas",
+      "viewDetails": "Ver Detalles",
+      "total": "{{count}} competición(es)",
+      "empty": {
+        "title": "No hay competiciones aún",
+        "description": "¡Crea tu primera competición de cerveza para comenzar!",
+        "action": "Crear Primera Competición"
+      }
+    },
+    "create": {
+      "title": "Crear Nueva Competición",
+      "subtitle": "Completa los detalles a continuación para crear una nueva competición de cerveza.",
+      "formTitle": "Crear Competición",
+      "name": {
+        "label": "Nombre de la Competición",
+        "placeholder": "ej., Clásico de Primavera 2025"
+      },
+      "description": {
+        "label": "Descripción",
+        "placeholder": "Descripción opcional de la competición..."
+      },
+      "registrationDeadline": {
+        "label": "Fecha Límite de Registro"
+      },
+      "judgingDate": {
+        "label": "Fecha de Cata"
+      },
+      "submit": "Crear Competición",
+      "submitting": "Creando...",
+      "success": "¡Competición creada exitosamente! ID: {{id}}",
+      "error": "Error al crear la competición",
+      "errorMessage": "Error: {{message}}"
+    },
+    "validation": {
+      "nameRequired": "El nombre de la competición es obligatorio",
+      "nameMaxLength": "El nombre de la competición debe tener menos de 255 caracteres",
+      "descriptionMaxLength": "La descripción debe tener menos de 1000 caracteres",
+      "registrationDeadlineFuture": "La fecha límite de registro debe ser en el futuro",
+      "judgingDateFuture": "La fecha de cata debe ser en el futuro",
+      "judgingDateAfterRegistration": "La fecha de cata debe ser posterior a la fecha límite de registro"
+    }
+  }
+}

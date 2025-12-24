@@ -1,0 +1,170 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "🌐 Frontend Only (Chrome)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/frontend/src",
+      "sourceMaps": true,
+      "preLaunchTask": "npm: dev",
+      "skipFiles": [
+        "<node_internals>/**",
+        "**/node_modules/**"
+      ],
+      "sourceMapPathOverrides": {
+        "webpack:///./src/*": "${webRoot}/*"
+      },
+      "runtimeArgs": [
+        "--disable-web-security"
+      ]
+    },
+    {
+      "name": "Attach to Chrome",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9222,
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/frontend/src",
+      "sourceMaps": true,
+      "skipFiles": [
+        "<node_internals>/**",
+        "**/node_modules/**"
+      ]
+    },
+    {
+      "name": "Launch Edge (Frontend)",
+      "type": "msedge",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/frontend/src",
+      "sourceMaps": true,
+      "preLaunchTask": "npm: dev",
+      "skipFiles": [
+        "<node_internals>/**",
+        "**/node_modules/**"
+      ]
+    },
+    {
+      "name": "Debug Vite Server",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    },
+    {
+      "name": "⚙️ .NET BFF (API Gateway)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-bff",
+      "program": "${workspaceFolder}/backend/BFF.ApiGateway/bin/Debug/net10.0/BeerCompetition.BFF.ApiGateway.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/backend/BFF.ApiGateway",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "https://localhost:7038"
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "openOnSessionStart"
+    },
+    {
+      "name": "⚙️ .NET Host (Competition Service)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-host",
+      "program": "${workspaceFolder}/backend/Host/BeerCompetition.Host/bin/Debug/net10.0/BeerCompetition.Host.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/backend/Host/BeerCompetition.Host",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5001"
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "openOnSessionStart"
+    },
+    {
+      "name": "⚙️ Backend Only (BFF + Host)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-all-backend",
+      "program": "${workspaceFolder}/backend/BFF.ApiGateway/bin/Debug/net10.0/BeerCompetition.BFF.ApiGateway.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/backend/BFF.ApiGateway",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "https://localhost:7038"
+      },
+      "console": "integratedTerminal"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "🚀 Full Stack (Frontend + BFF + Host)",
+      "configurations": [
+        "⚙️ .NET Host (Competition Service)",
+        "⚙️ .NET BFF (API Gateway)",
+        "🌐 Frontend Only (Chrome)"
+      ],
+      "presentation": {
+        "hidden": false,
+        "group": "1_fullstack",
+        "order": 1
+      },
+      "stopAll": true,
+      "preLaunchTask": "Start Infrastructure Services"
+    },
+    {
+      "name": "🎯 Backend + Frontend (No DB)",
+      "configurations": [
+        "⚙️ .NET Host (Competition Service)",
+        "⚙️ .NET BFF (API Gateway)",
+        "🌐 Frontend Only (Chrome)"
+      ],
+      "presentation": {
+        "hidden": false,
+        "group": "1_fullstack",
+        "order": 2
+      },
+      "stopAll": true
+    },
+    {
+      "name": "🔧 Backend Only (BFF + Host)",
+      "configurations": [
+        "⚙️ .NET Host (Competition Service)",
+        "⚙️ .NET BFF (API Gateway)"
+      ],
+      "presentation": {
+        "hidden": false,
+        "group": "2_backend",
+        "order": 1
+      },
+      "stopAll": true
+    },
+    {
+      "name": "Full Stack Debug (Frontend + Server)",
+      "configurations": [
+        "Debug Vite Server",
+        "🌐 Frontend Only (Chrome)"
+      ],
+      "presentation": {
+        "hidden": true,
+        "group": "9_legacy",
+        "order": 1
+      },
+      "stopAll": true
+    }
+  ]
+}
