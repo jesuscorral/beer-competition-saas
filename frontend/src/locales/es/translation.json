@@ -16,6 +16,7 @@
     "organizeCompetitions": {
       "title": "🏆 Organizar Competiciones",
       "description": "Crea y gestiona competiciones de cerveza con cata ciega, asignación de vuelos y más.",
+      "viewAction": "Ver Competiciones",
       "action": "Crear Competición"
     },
     "judgeOffline": {

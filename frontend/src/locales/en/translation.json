@@ -16,6 +16,7 @@
     "organizeCompetitions": {
       "title": "🏆 Organize Competitions",
       "description": "Create and manage beer competitions with blind judging, flight assignments, and more.",
+      "viewAction": "View Competitions",
       "action": "Create Competition"
     },
     "judgeOffline": {
