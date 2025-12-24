@@ -19,7 +19,7 @@ export function CompetitionForm() {
     try {
       const result = await createCompetitionMutation.mutateAsync(data);
       toast.success(t('competition.create.success', { id: result.id || 'N/A' }));
-      setTimeout(() => navigate('/'), 2000);
+      navigate('/');
     } catch (error: unknown) {
       let errorMessage = t('competition.create.error');
 
