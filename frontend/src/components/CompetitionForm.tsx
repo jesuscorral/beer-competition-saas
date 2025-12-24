@@ -20,10 +20,18 @@ export function CompetitionForm() {
       const result = await createCompetitionMutation.mutateAsync(data);
       toast.success(t('competition.create.success', { id: result.id || 'N/A' }));
       setTimeout(() => navigate('/'), 2000);
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.title ||
-                          t('competition.create.error');
+    } catch (error: unknown) {
+      let errorMessage = t('competition.create.error');
+
+      if (error && typeof error === 'object' && 'response' in error) {
+        const response = (error as { response?: { data?: { message?: string; title?: string } } }).response;
+        const data = response?.data;
+        if (data && typeof data === 'object') {
+          const message = (data as { message?: string }).message;
+          const title = (data as { title?: string }).title;
+          errorMessage = message || title || errorMessage;
+        }
+      }
       toast.error(t('competition.create.errorMessage', { message: errorMessage }));
     }
   };
