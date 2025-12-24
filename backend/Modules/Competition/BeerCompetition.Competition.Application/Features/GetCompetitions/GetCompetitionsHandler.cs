@@ -52,10 +52,16 @@ public class GetCompetitionsHandler : IRequestHandler<GetCompetitionsQuery, Resu
 
             return Result<List<CompetitionDto>>.Success(competitionDtos);
         }
+        catch (OperationCanceledException)
+        {
+            _logger.LogWarning("Fetching competitions was canceled");
+            return Result<List<CompetitionDto>>.Failure("Fetching competitions was canceled.");
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching competitions");
-            return Result<List<CompetitionDto>>.Failure("Failed to retrieve competitions");
+            return Result<List<CompetitionDto>>.Failure(
+                $"Failed to retrieve competitions due to unexpected error type '{ex.GetType().Name}'. See logs for more details.");
         }
     }
 }
