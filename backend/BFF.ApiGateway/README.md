@@ -115,12 +115,12 @@ cd backend/BFF.ApiGateway
 dotnet run
 ```
 
-The BFF will start on `http://localhost:5190`.
+The BFF will start on `https://localhost:7038`.
 
 ### Health Check
 
 ```bash
-curl http://localhost:5190/health
+curl https://localhost:7038/health
 ```
 
 Expected response: `200 OK` with status details.
@@ -149,7 +149,7 @@ dotnet test BFF.ApiGateway.Tests/BeerCompetition.BFF.ApiGateway.Tests.csproj
 2. Call BFF with token:
    ```bash
    curl -H "Authorization: Bearer <token>" \
-     http://localhost:5190/api/competitions
+     https://localhost:7038/api/competitions
    ```
 
 3. Verify headers in downstream service logs:

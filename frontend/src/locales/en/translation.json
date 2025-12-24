@@ -1,0 +1,81 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "comingSoon": "Coming Soon",
+    "required": "Required"
+  },
+  "navbar": {
+    "title": "Beer Competition Platform",
+    "createCompetition": "Create Competition"
+  },
+  "home": {
+    "welcome": "Welcome to Beer Competition Platform",
+    "subtitle": "Manage BJCP-compliant homebrew beer competitions with ease",
+    "organizeCompetitions": {
+      "title": "🏆 Organize Competitions",
+      "description": "Create and manage beer competitions with blind judging, flight assignments, and more.",
+      "viewAction": "View Competitions",
+      "action": "Create Competition"
+    },
+    "judgeOffline": {
+      "title": "📝 Judge Offline",
+      "description": "Score beers using our PWA that works offline, perfect for venues with unreliable WiFi.",
+      "action": "Coming Soon"
+    },
+    "mvpPhase": {
+      "title": "🚀 MVP Phase - Issue #80",
+      "description": "This is the initial frontend implementation. Authentication and advanced features coming soon."
+    }
+  },
+  "competition": {
+    "list": {
+      "title": "Competitions",
+      "createButton": "Create Competition",
+      "error": "Failed to load competitions",
+      "registrationDeadline": "Registration",
+      "judgingDate": "Judging",
+      "maxEntries": "Max Entries",
+      "viewDetails": "View Details",
+      "total": "{{count}} competition(s)",
+      "empty": {
+        "title": "No competitions yet",
+        "description": "Create your first beer competition to get started!",
+        "action": "Create First Competition"
+      }
+    },
+    "create": {
+      "title": "Create New Competition",
+      "subtitle": "Fill in the details below to create a new beer competition.",
+      "formTitle": "Create Competition",
+      "name": {
+        "label": "Competition Name",
+        "placeholder": "e.g., Spring Classic 2025"
+      },
+      "description": {
+        "label": "Description",
+        "placeholder": "Optional description of the competition..."
+      },
+      "registrationDeadline": {
+        "label": "Registration Deadline"
+      },
+      "judgingDate": {
+        "label": "Judging Date"
+      },
+      "submit": "Create Competition",
+      "submitting": "Creating...",
+      "success": "Competition created successfully! ID: {{id}}",
+      "error": "Failed to create competition",
+      "errorMessage": "Error: {{message}}"
+    },
+    "validation": {
+      "nameRequired": "Competition name is required",
+      "nameMaxLength": "Competition name must be less than 255 characters",
+      "descriptionMaxLength": "Description must be less than 1000 characters",
+      "registrationDeadlineFuture": "Registration deadline must be in the future",
+      "judgingDateFuture": "Judging date must be in the future",
+      "judgingDateAfterRegistration": "Judging date must be after registration deadline"
+    }
+  }
+}
