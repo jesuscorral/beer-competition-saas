@@ -11,7 +11,7 @@ export default defineConfig({
         target: 'https://localhost:7038',  // BFF API Gateway
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path  // Mantener el path /api/*
+        rewrite: (path) => path  // Keep the /api/* path
       },
     },
   },
