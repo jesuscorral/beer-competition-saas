@@ -92,12 +92,20 @@ Users can switch languages using the language selector in the navbar. All user-f
 ### Development (`.env.development`)
 ```bash
 VITE_API_BASE_URL=http://localhost:7038
+VITE_TENANT_ID=11111111-1111-1111-1111-111111111111
 ```
 
 ### Production (`.env.production`)
 ```bash
 VITE_API_BASE_URL=https://api.beercomp.com
+VITE_TENANT_ID=<your-tenant-id>
 ```
+
+**Important**: 
+- `VITE_TENANT_ID` must be set to a valid tenant ID for your environment
+- The default development tenant ID (`11111111-1111-1111-1111-111111111111`) matches the tenant inserted by `Insert-DevelopmentTenant.ps1`
+- Using the development tenant ID in production will trigger a console warning
+- In the future, tenant ID will be extracted from the JWT token after authentication
 
 ## 📝 Available Scripts
 
@@ -120,7 +128,7 @@ npm run lint
 The frontend connects to the BFF (Backend-for-Frontend) API Gateway:
 - **Development**: `http://localhost:5190` (BFF HTTP endpoint)
 - **HTTPS Alternative**: `https://localhost:7038` (requires SSL cert trust)
-- **Tenant ID**: Hardcoded as `11111111-1111-1111-1111-111111111111` for MVP (auto-injected via axios interceptor)
+- **Tenant ID**: Configured via `VITE_TENANT_ID` environment variable (defaults to `11111111-1111-1111-1111-111111111111` for local development)
 - **BFF Gateway handles**:
   - Routing to microservices (Competition Service, Judging Service)
   - Authentication (Keycloak) - Coming soon

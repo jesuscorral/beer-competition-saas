@@ -1,6 +1,24 @@
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://localhost:7038';
+const TENANT_ID = import.meta.env.VITE_TENANT_ID;
+const DEV_TENANT_ID = '11111111-1111-1111-1111-111111111111';
+
+// Warn developers if using default development tenant ID in production
+if (import.meta.env.PROD && TENANT_ID === DEV_TENANT_ID) {
+  console.warn(
+    '⚠️ WARNING: Using default development tenant ID in production build. ' +
+    'Set VITE_TENANT_ID environment variable to a valid production tenant ID.'
+  );
+}
+
+// Warn if tenant ID is not configured
+if (!TENANT_ID) {
+  console.warn(
+    '⚠️ WARNING: VITE_TENANT_ID not configured. ' +
+    'Set VITE_TENANT_ID environment variable in your .env file.'
+  );
+}
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -16,9 +34,11 @@ apiClient.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
   
-  // Add tenant ID header (hardcoded for MVP - will come from auth later)
+  // Add tenant ID header (from environment variable - will come from auth JWT later)
   // This matches the development tenant inserted via Insert-DevelopmentTenant.ps1
-  config.headers['X-Tenant-ID'] = '11111111-1111-1111-1111-111111111111';
+  if (TENANT_ID) {
+    config.headers['X-Tenant-ID'] = TENANT_ID;
+  }
   
   return config;
 });
