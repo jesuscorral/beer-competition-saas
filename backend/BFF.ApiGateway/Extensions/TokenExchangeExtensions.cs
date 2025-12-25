@@ -31,25 +31,18 @@ public static class TokenExchangeExtensions
         this IReverseProxyBuilder builder,
         IConfiguration configuration)
     {
-        var serviceClients = configuration.GetSection("ServiceClients");
+        // Build explicit cluster-to-audience mapping from configuration
+        var clusterToAudienceMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "competition-cluster", configuration["ServiceClients:CompetitionService:Audience"] ?? "competition-service" },
+            { "judging-cluster", configuration["ServiceClients:JudgingService:Audience"] ?? "judging-service" }
+        };
 
         builder.AddTransforms(builderContext =>
         {
-            // Determine target audience based on cluster
+            // Lookup target audience using explicit mapping
             var clusterId = builderContext.Route.ClusterId;
-            string? targetAudience = null;
-
-            if (clusterId?.Contains("competition", StringComparison.OrdinalIgnoreCase) == true)
-            {
-                targetAudience = serviceClients["CompetitionService:Audience"];
-            }
-            else if (clusterId?.Contains("judging", StringComparison.OrdinalIgnoreCase) == true)
-            {
-                targetAudience = serviceClients["JudgingService:Audience"];
-            }
-
-            // Add token exchange transform if target audience is configured
-            if (!string.IsNullOrWhiteSpace(targetAudience))
+            if (clusterId != null && clusterToAudienceMap.TryGetValue(clusterId, out var targetAudience))
             {
                 builderContext.AddRequestTransform(async transformContext =>
                 {

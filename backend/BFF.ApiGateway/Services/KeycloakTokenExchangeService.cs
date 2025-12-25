@@ -54,7 +54,7 @@ public class KeycloakTokenExchangeService : ITokenExchangeService
             var httpClient = _httpClientFactory.CreateClient();
             
             // RFC 8693: Token Exchange Request
-            var requestContent = new FormUrlEncodedContent(new Dictionary<string, string>
+            using var requestContent = new FormUrlEncodedContent(new Dictionary<string, string>
             {
                 { "grant_type", "urn:ietf:params:oauth:grant-type:token-exchange" },
                 { "client_id", _clientId },
