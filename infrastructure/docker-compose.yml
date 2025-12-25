@@ -94,7 +94,7 @@ services:
     container_name: beercomp_keycloak
     image: quay.io/keycloak/keycloak:23.0
     restart: unless-stopped
-    command: start-dev
+    command: start-dev --import-realm
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
@@ -103,10 +103,14 @@ services:
       KC_DB_USERNAME: ${POSTGRES_USER}
       KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
       KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_URL: http://localhost:${KEYCLOAK_PORT}
+      KC_HOSTNAME_ADMIN_URL: http://localhost:${KEYCLOAK_PORT}
       KC_HTTP_ENABLED: "true"
       KC_HEALTH_ENABLED: "true"
     ports:
       - "${KEYCLOAK_PORT}:8080"
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
     depends_on:
       postgres:
         condition: service_healthy

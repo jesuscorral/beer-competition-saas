@@ -21,12 +21,16 @@ builder.Services.AddKeycloakAuthentication(builder.Configuration);
 // Add authorization policies
 builder.Services.AddBffAuthorizationPolicies();
 
+// Add token exchange service
+builder.Services.AddTokenExchange(builder.Configuration);
+
 // Add health checks
 builder.Services.AddHealthChecks();
 
-// Add YARP reverse proxy
+// Add YARP reverse proxy with token exchange transforms
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
+    .AddTokenExchangeTransforms(builder.Configuration)
     .ConfigureHttpClient((context, handler) =>
     {
         // Configure YARP's SocketsHttpHandler for optimal performance
