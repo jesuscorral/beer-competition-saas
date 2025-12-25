@@ -373,7 +373,7 @@ TOKEN=$(curl -s -X POST \
   http://localhost:8080/realms/beercomp/protocol/openid-connect/token \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "grant_type=password" \
-  -d "client_id=backend-api" \
+  -d "client_id=bff-api" \
   -d "client_secret=<your-secret>" \
   -d "username=organizer@beercomp.local" \
   -d "password=organizer123" \
