@@ -173,7 +173,6 @@ public class JwtValidationTests : IClassFixture<WebApplicationFactory<Program>>
     public async Task RolesExtraction_ShouldIncludeAllRoles()
     {
         // Arrange
-        var client = _factory.CreateClient();
         var roles = new[] { "organizer", "judge", "entrant" };
         var token = GenerateJwtToken(
             userId: "user-123",
