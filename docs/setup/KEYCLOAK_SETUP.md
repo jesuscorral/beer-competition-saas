@@ -298,11 +298,10 @@ All clients have custom protocol mappers to include required claims in JWT token
 
 ## Test Users
 
-Five test users are pre-configured in the realm:
+Four test users are pre-configured in the realm:
 
 | Username                  | Password      | Roles              | Tenant ID                            |
 |---------------------------|---------------|--------------------|--------------------------------------|
-| `admin@beercomp.local`    | `admin123`    | `admin`, `organizer` | `11111111-1111-1111-1111-111111111111` |
 | `organizer@beercomp.local`| `organizer123`| `organizer`        | `11111111-1111-1111-1111-111111111111` |
 | `judge@beercomp.local`    | `judge123`    | `judge`, `entrant` | `11111111-1111-1111-1111-111111111111` |
 | `entrant@beercomp.local`  | `entrant123`  | `entrant`          | `11111111-1111-1111-1111-111111111111` |
