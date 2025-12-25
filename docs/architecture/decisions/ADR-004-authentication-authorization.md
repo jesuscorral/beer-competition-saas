@@ -155,30 +155,111 @@ How do we implement authentication/authorization that balances **security, devel
 
 #### Realm Setup
 ```bash
-# Create realm: beer-competition-saas
-Realm: beer-competition-saas
-Themes: Custom (branded login page)
+# Create realm: beercomp
+Realm: beercomp
+Display Name: Beer Competition Platform
 Session Settings:
-  - Access Token Lifespan: 15 minutes
-  - Refresh Token Lifespan: 30 days
-  - SSO Session Idle: 12 hours
+  - Access Token Lifespan: 15 minutes (900 seconds)
+  - Refresh Token Lifespan: 24 hours
+  - SSO Session Idle: 30 minutes
 ```
 
 #### Client Configuration
+
+**Three clients for service-specific audiences:**
+
+1. **bff-api** (Confidential - BFF/Gateway)
 ```json
 {
-  "clientId": "beer-competition-spa",
+  "clientId": "bff-api",
   "protocol": "openid-connect",
   "publicClient": false,
+  "standardFlowEnabled": true,
+  "directAccessGrantsEnabled": true,
+  "serviceAccountsEnabled": true,
+  "attributes": {
+    "oauth2.token.exchange.grant.enabled": "true"
+  },
+  "protocolMappers": [
+    {
+      "name": "audience-bff",
+      "protocolMapper": "oidc-audience-mapper",
+      "config": {
+        "included.client.audience": "bff-api",
+        "access.token.claim": "true"
+      }
+    }
+  ]
+}
+```
+
+2. **competition-service** (Bearer-Only)
+```json
+{
+  "clientId": "competition-service",
+  "bearerOnly": true,
+  "serviceAccountsEnabled": true,
+  "protocolMappers": [
+    {
+      "name": "audience-competition",
+      "protocolMapper": "oidc-audience-mapper",
+      "config": {
+        "included.client.audience": "competition-service",
+        "access.token.claim": "true"
+      }
+    }
+  ]
+}
+```
+
+3. **judging-service** (Bearer-Only)
+```json
+{
+  "clientId": "judging-service",
+  "bearerOnly": true,
+  "serviceAccountsEnabled": true,
+  "protocolMappers": [
+    {
+      "name": "audience-judging",
+      "protocolMapper": "oidc-audience-mapper",
+      "config": {
+        "included.client.audience": "judging-service",
+        "access.token.claim": "true"
+      }
+    }
+  ]
+}
+```
+
+4. **frontend-spa** (Public with PKCE)
+```json
+{
+  "clientId": "frontend-spa",
+  "protocol": "openid-connect",
+  "publicClient": true,
   "redirectUris": [
-    "https://app.beercompetition.com/auth/callback",
-    "http://localhost:3000/auth/callback"
+    "http://localhost:5173/*",
+    "http://localhost:5173/auth/callback"
   ],
-  "webOrigins": ["+"],
-  "standardFlowEnabled": true,  // Authorization Code Flow
-  "implicitFlowEnabled": false,  // Deprecated, don't use
-  "directAccessGrantsEnabled": false,  // No password grants
-  "serviceAccountsEnabled": false
+  "webOrigins": [
+    "http://localhost:5173"
+  ],
+  "standardFlowEnabled": true,
+  "implicitFlowEnabled": false,
+  "directAccessGrantsEnabled": false,
+  "attributes": {
+    "pkce.code.challenge.method": "S256"
+  },
+  "protocolMappers": [
+    {
+      "name": "audience-bff",
+      "protocolMapper": "oidc-audience-mapper",
+      "config": {
+        "included.client.audience": "bff-api",
+        "access.token.claim": "true"
+      }
+    }
+  ]
 }
 ```
 
@@ -194,6 +275,8 @@ Session Settings:
 }
 ```
 
+**Note**: Admin role removed per project requirements - four roles sufficient.
+
 #### Custom User Attributes
 ```json
 {
@@ -207,13 +290,13 @@ Session Settings:
 
 #### Identity Providers (SSO)
 ```bash
-# Google
+# Google (Post-MVP)
 Identity Provider: Google
 Client ID: <from Google Console>
 Client Secret: <from Google Console>
 Scopes: openid email profile
 
-# Azure AD
+# Azure AD (Post-MVP)
 Identity Provider: Microsoft
 Client ID: <from Azure AD>
 Tenant ID: <organization tenant>
@@ -221,7 +304,37 @@ Tenant ID: <organization tenant>
 
 ---
 
-### 2. BFF (API Gateway) - Token Validation
+### 2. BFF (API Gateway) - Token Exchange & Validation
+
+#### OAuth 2.0 Token Exchange (RFC 8693)
+
+The BFF implements token exchange to convert frontend tokens into service-specific tokens:
+
+**Flow:**
+1. Frontend authenticates with Keycloak → receives JWT with `aud: "bff-api"`
+2. Frontend calls BFF with this token
+3. BFF validates token (audience check)
+4. BFF exchanges token for service-specific token:
+   ```http
+   POST /realms/beercomp/protocol/openid-connect/token
+   Content-Type: application/x-www-form-urlencoded
+
+   grant_type=urn:ietf:params:oauth:grant-type:token-exchange
+   &client_id=bff-api
+   &client_secret=<secret>
+   &subject_token=<frontend_token>
+   &subject_token_type=urn:ietf:params:oauth:token-type:access_token
+   &requested_token_type=urn:ietf:params:oauth:token-type:access_token
+   &audience=competition-service
+   ```
+5. Keycloak returns new JWT with `aud: "competition-service"`
+6. BFF forwards request to service with exchanged token
+7. Service validates token (audience + signature)
+
+**Benefits:**
+- **Audience Isolation**: Services only accept tokens with their specific audience
+- **Zero Trust**: Tokens cannot be reused across service boundaries
+- **Least Privilege**: Each service gets only the claims it needs
 
 #### Startup Configuration
 ```csharp
@@ -231,23 +344,103 @@ public void ConfigureServices(IServiceCollection services)
     services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>
         {
-            options.Authority = "https://keycloak.beercompetition.com/realms/beer-competition-saas";
-            options.Audience = "beer-competition-spa";
-            options.RequireHttpsMetadata = true;  // Enforce HTTPS in prod
+            options.Authority = "http://localhost:8080/realms/beercomp";
+            options.Audience = "bff-api";  // BFF validates frontend tokens
+            options.RequireHttpsMetadata = false;  // Development only
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
                 ValidateAudience = true,
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
-                ClockSkew = TimeSpan.FromMinutes(5)
+                ClockSkew = TimeSpan.FromMinutes(5),
+                RoleClaimType = "roles"  // Keycloak claim name
             };
         });
+
+    // Token exchange service
+    services.AddHttpClient();
+    services.AddSingleton<ITokenExchangeService, KeycloakTokenExchangeService>();
+
+    // YARP reverse proxy with token exchange transforms
+    services.AddReverseProxy()
+        .LoadFromConfig(configuration.GetSection("ReverseProxy"))
+        .AddTokenExchangeTransforms(configuration);
 
     // Authorization policies
     services.AddAuthorization(options =>
     {
-        options.AddPolicy("OrganizerOnly", policy => 
+        options.AddPolicy("AuthenticatedUser", policy => 
+            policy.RequireAuthenticatedUser());
+        
+        options.AddPolicy("Organizer", policy => 
+            policy.RequireRole("organizer"));
+        
+        options.AddPolicy("Judge", policy => 
+            policy.RequireRole("judge"));
+        
+        options.AddPolicy("Entrant", policy => 
+            policy.RequireRole("entrant"));
+        
+        options.AddPolicy("Steward", policy => 
+            policy.RequireRole("steward"));
+        
+        options.AddPolicy("JudgeOrOrganizer", policy => 
+            policy.RequireRole("judge", "organizer"));
+        
+        options.AddPolicy("OrganizerOrSteward", policy => 
+            policy.RequireRole("organizer", "steward"));
+    });
+}
+```
+
+#### YARP Configuration (appsettings.json)
+```json
+{
+  "Keycloak": {
+    "Authority": "http://localhost:8080/realms/beercomp",
+    "Audience": "bff-api",
+    "ClientId": "bff-api",
+    "ClientSecret": "<secret>",
+    "TokenEndpoint": "http://localhost:8080/realms/beercomp/protocol/openid-connect/token"
+  },
+  "ServiceClients": {
+    "CompetitionService": {
+      "ClientId": "competition-service",
+      "Audience": "competition-service"
+    },
+    "JudgingService": {
+      "ClientId": "judging-service",
+      "Audience": "judging-service"
+    }
+  },
+  "ReverseProxy": {
+    "Routes": {
+      "competition-route": {
+        "ClusterId": "competition-cluster",
+        "AuthorizationPolicy": "Organizer",
+        "Match": {
+          "Path": "/api/competitions/{**catch-all}"
+        }
+      },
+      "entries-route": {
+        "ClusterId": "competition-cluster",
+        "AuthorizationPolicy": "AuthenticatedUser",
+        "Match": {
+          "Path": "/api/entries/{**catch-all}"
+        }
+      },
+      "scoresheets-route": {
+        "ClusterId": "judging-cluster",
+        "AuthorizationPolicy": "Judge",
+        "Match": {
+          "Path": "/api/scoresheets/{**catch-all}"
+        }
+      }
+    }
+  }
+}
+``` 
             policy.RequireRole("organizer"));
         
         options.AddPolicy("JudgeOnly", policy => 

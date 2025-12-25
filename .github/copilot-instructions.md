@@ -2,7 +2,7 @@
 
 **Project**: Multi-tenant SaaS platform for managing BJCP-compliant homebrew beer competitions  
 **Status**: Active Development (MVP Phase)  
-**Last Updated**: 2025-12-19
+**Last Updated**: 2025-12-25
 
 ---
 
@@ -13,6 +13,7 @@ You are working on a **Beer Competition SaaS Platform** that enables competition
 - Offline scoresheet entry for judges (PWA)
 - Multi-tenant data isolation (PostgreSQL RLS)
 - Event-driven microservices architecture
+- Service-specific audiences with OAuth 2.0 token exchange (zero-trust security)
 - Support for 200+ entrants, 50+ concurrent judges, 600+ bottles per competition
 
 ---
@@ -315,8 +316,16 @@ Before starting implementation, verify:
 4. **[ADR-004: Authentication](docs/architecture/decisions/ADR-004-authentication-authorization.md)**
    - Keycloak OIDC provider
    - BFF (Backend-for-Frontend) pattern for token validation
+   - OAuth 2.0 Token Exchange (RFC 8693) for service-specific tokens
+   - Service-specific audiences (bff-api, competition-service, judging-service)
    - JWT with `tenant_id` + `roles` claims
-   - Roles: Organizer, Judge, Entrant, Steward
+   - Roles: Organizer, Judge, Entrant, Steward (no admin role)
+
+**CRITICAL**: When creating new microservices, **ALWAYS implement service-specific audience validation**:
+- Create Keycloak bearer-only client with audience mapper
+- Configure JWT authentication with service-specific audience
+- Update BFF configuration for token exchange
+- See: [Service Audiences & Token Exchange Guide](docs/architecture/SERVICE_AUDIENCES_TOKEN_EXCHANGE.md)
 
 5. **[ADR-005: CQRS](docs/architecture/decisions/ADR-005-cqrs-implementation.md)**
    - MediatR for command/query separation

@@ -6,6 +6,7 @@ Backend-for-Frontend (BFF) API Gateway for the Beer Competition SaaS Platform.
 
 The BFF serves as the single entry point for the frontend application (React PWA), handling:
 - **Authentication**: JWT token validation with Keycloak
+- **Token Exchange**: OAuth 2.0 Token Exchange (RFC 8693) for service-specific tokens
 - **Authorization**: Role-based access control (RBAC)
 - **Multi-tenancy**: Tenant isolation enforcement
 - **Routing**: Reverse proxy to backend microservices
@@ -17,7 +18,13 @@ The BFF serves as the single entry point for the frontend application (React PWA
 ```
 Frontend (PWA)
       ↓
+   (JWT with aud: bff-api)
+      ↓
 BFF API Gateway (this project)
+      ↓
+   Token Exchange
+      ↓
+   (JWT with aud: service-name)
       ↓
    YARP Reverse Proxy
       ↓
@@ -27,13 +34,19 @@ Competition Service | Judging Service
 ### Key Responsibilities
 
 1. **Authentication** (ADR-004):
-   - Validates JWT tokens from Keycloak
+   - Validates JWT tokens from Keycloak (audience: `bff-api`)
    - Extracts `tenant_id`, `sub` (user ID), and `roles` claims
    - Returns 401 Unauthorized for invalid tokens
 
-2. **Authorization** (ADR-004):
+2. **Token Exchange** (RFC 8693):
+   - Exchanges frontend tokens for service-specific tokens
+   - Each downstream service receives token with its own audience
+   - Prevents token reuse across service boundaries (zero-trust security)
+   - See: `docs/architecture/SERVICE_AUDIENCES_TOKEN_EXCHANGE.md`
+
+3. **Authorization** (ADR-004):
    - Enforces role-based policies: Organizer, Judge, Entrant, Steward
-   - Route-level authorization (e.g., scoresheets require Judge or Organizer role)
+   - Route-level authorization (e.g., competitions require Organizer role)
    - Returns 403 Forbidden for insufficient permissions
 
 3. **Multi-Tenancy** (ADR-002):
@@ -60,7 +73,12 @@ Competition Service | Judging Service
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `Keycloak__Authority` | Keycloak realm URL | `http://localhost:8080/realms/beercomp` |
-| `Keycloak__Audience` | JWT audience claim | `bff-api` |
+| `Keycloak__Audience` | JWT audience claim for BFF | `bff-api` |
+| `Keycloak__ClientId` | BFF client ID for token exchange | `bff-api` |
+| `Keycloak__ClientSecret` | BFF client secret for token exchange | `<secret>` |
+| `Keycloak__TokenEndpoint` | Keycloak token endpoint | `http://localhost:8080/realms/beercomp/protocol/openid-connect/token` |
+| `ServiceClients__CompetitionService__Audience` | Competition Service audience | `competition-service` |
+| `ServiceClients__JudgingService__Audience` | Judging Service audience | `judging-service` |
 | `Services__Competition` | Competition Service URL | `http://localhost:5001` |
 | `Services__Judging` | Judging Service URL | `http://localhost:5002` |
 | `Cors__AllowedOrigins__0` | Frontend origin | `http://localhost:5173` |
@@ -72,7 +90,20 @@ Competition Service | Judging Service
   "Keycloak": {
     "Authority": "http://localhost:8080/realms/beercomp",
     "Audience": "bff-api",
+    "ClientId": "bff-api",
+    "ClientSecret": "<secret>",
+    "TokenEndpoint": "http://localhost:8080/realms/beercomp/protocol/openid-connect/token",
     "RequireHttpsMetadata": false
+  },
+  "ServiceClients": {
+    "CompetitionService": {
+      "ClientId": "competition-service",
+      "Audience": "competition-service"
+    },
+    "JudgingService": {
+      "ClientId": "judging-service",
+      "Audience": "judging-service"
+    }
   },
   "Services": {
     "Competition": "http://localhost:5001",
@@ -84,6 +115,30 @@ Competition Service | Judging Service
 }
 ```
 
+## Token Exchange Flow
+
+### OAuth 2.0 Token Exchange (RFC 8693)
+
+1. Frontend authenticates with Keycloak → receives JWT with `aud: "bff-api"`
+2. Frontend calls BFF API with this token
+3. BFF validates token (audience check)
+4. BFF exchanges token for service-specific token:
+   ```http
+   POST /realms/beercomp/protocol/openid-connect/token
+   
+   grant_type=urn:ietf:params:oauth:grant-type:token-exchange
+   &subject_token=<frontend_token>
+   &audience=competition-service
+   ```
+5. Keycloak returns JWT with `aud: "competition-service"`
+6. BFF forwards request to service with exchanged token
+7. Service validates token (audience + signature)
+
+**Benefits:**
+- **Audience Isolation**: Each service only accepts its own audience
+- **Zero Trust**: Tokens cannot be reused across services
+- **Least Privilege**: Each service gets only required claims
+
 ## API Routes
 
 All routes require authentication (JWT Bearer token).
@@ -92,11 +147,17 @@ All routes require authentication (JWT Bearer token).
 - `GET/POST /api/competitions/**` → Competition Service
 - `GET/POST/PUT /api/entries/**` → Competition Service
 
-**Authorization**: Authenticated users (all roles)
+**Authorization**: 
+- Competitions: Organizer role required
+- Entries: Authenticated users (all roles)
 
 ### Judging Service Routes
 - `GET /api/flights/**` → Judging Service
 - `GET/POST /api/scoresheets/**` → Judging Service
+
+**Authorization**:
+- Flights: Judge or Organizer role required
+- Scoresheets: Judge role required
 
 **Authorization**: Judge or Organizer roles only
 

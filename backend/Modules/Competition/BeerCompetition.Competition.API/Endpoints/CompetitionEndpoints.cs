@@ -34,8 +34,8 @@ public static class CompetitionEndpoints
         .WithSummary("Get all competitions")
         .WithDescription("Retrieves all competitions for the current tenant. Automatically filtered by tenant_id.")
         .Produces<List<CompetitionDto>>(StatusCodes.Status200OK)
-        .ProducesProblem(StatusCodes.Status400BadRequest);
-        // TODO: Add .RequireAuthorization() when auth is implemented
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .RequireAuthorization(); // Requires authentication (any authenticated user can list competitions)
 
         // POST /api/competitions - Create new competition
         group.MapPost("/", async (
@@ -53,8 +53,8 @@ public static class CompetitionEndpoints
         .WithSummary("Create a new competition")
         .WithDescription("Creates a new beer competition in Draft status. Organizer role required.")
         .Produces<Guid>(StatusCodes.Status201Created)
-        .ProducesProblem(StatusCodes.Status400BadRequest);
-        // TODO: Add .RequireAuthorization("OrganizerOnly") when auth is implemented
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .RequireAuthorization(); // Authorization policy enforced at BFF level ("AuthenticatedUser" policy)
 
         // Additional endpoints will be added here:
         // - GET /api/competitions/{id} (get by id)
