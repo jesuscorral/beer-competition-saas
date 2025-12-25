@@ -325,7 +325,7 @@ POST http://localhost:8080/realms/beercomp/protocol/openid-connect/token
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=password
-&client_id=backend-api
+&client_id=bff-api
 &client_secret=<your-client-secret>
 &username=organizer@beercomp.local
 &password=organizer123
