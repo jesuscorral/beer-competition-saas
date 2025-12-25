@@ -19,7 +19,7 @@ public class JwtValidationTests : IClassFixture<WebApplicationFactory<Program>>
 {
     private readonly WebApplicationFactory<Program> _factory;
     private readonly string _testIssuer = "http://localhost:8080/realms/beercomp";
-    private readonly string _testAudience = "backend-api";
+    private readonly string _testAudience = "bff-api";
     private readonly SymmetricSecurityKey _signingKey;
 
     public JwtValidationTests(WebApplicationFactory<Program> factory)
