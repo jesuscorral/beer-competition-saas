@@ -421,7 +421,7 @@
       "credentials": [
         {
           "type": "password",
-          "value": "organizer123",
+          "value": "<your-password>",
           "temporary": false
         }
       ],
@@ -440,7 +440,7 @@
       "credentials": [
         {
           "type": "password",
-          "value": "judge123",
+          "value": "<your-password>",
           "temporary": false
         }
       ],
@@ -459,7 +459,7 @@
       "credentials": [
         {
           "type": "password",
-          "value": "entrant123",
+          "value": "<your-password>",
           "temporary": false
         }
       ],
@@ -478,7 +478,7 @@
       "credentials": [
         {
           "type": "password",
-          "value": "steward123",
+          "value": "<your-password>",
           "temporary": false
         }
       ],
