@@ -8,15 +8,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Configure observability (Serilog, OpenTelemetry)
 builder.AddObservability();
 
-// Add services to the container
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
 // Add CORS
 builder.Services.AddBffCors(builder.Configuration);
 
-// Add authentication (Keycloak JWT Bearer)
-builder.Services.AddKeycloakAuthentication(builder.Configuration);
+// Add authentication with Keycloak JWT validation
+builder.Services.AddBffAuthentication(builder.Configuration);
 
 // Add authorization policies
 builder.Services.AddBffAuthorizationPolicies();
@@ -39,18 +35,12 @@ builder.Services.AddReverseProxy()
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
 // Custom middleware (must run before observability so correlation ID is available for logging)
 app.UseMiddleware<CorrelationIdMiddleware>();
 
 // Observability middleware
 app.UseObservability();
+
 // CORS
 app.UseBffCors();
 

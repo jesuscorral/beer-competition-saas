@@ -1,4 +1,3 @@
-using System.Net.Http.Headers;
 using System.Text.Json;
 
 namespace BeerCompetition.BFF.ApiGateway.Services;
@@ -25,7 +24,7 @@ public class KeycloakTokenExchangeService : ITokenExchangeService
         _configuration = configuration;
         _logger = logger;
 
-        var keycloakSettings = configuration.GetSection("Keycloak");
+        var keycloakSettings = _configuration.GetSection("Keycloak");
         _tokenEndpoint = keycloakSettings["TokenEndpoint"] 
             ?? throw new InvalidOperationException("Keycloak:TokenEndpoint not configured");
         _clientId = keycloakSettings["ClientId"] 

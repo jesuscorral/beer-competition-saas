@@ -1,14 +1,14 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
-namespace BeerCompetition.BFF.ApiGateway.Extensions;
+namespace BeerCompetition.Host.Extensions;
 
 /// <summary>
-/// Extension methods for configuring JWT Bearer authentication with Keycloak in BFF.
+/// Extension methods for configuring JWT Bearer authentication with Keycloak.
 /// </summary>
 public static class AuthenticationExtensions
 {
-    public static IServiceCollection AddBffAuthentication(
+    public static IServiceCollection AddJwtAuthentication(
         this IServiceCollection services,
         IConfiguration configuration)
     {
@@ -47,7 +47,7 @@ public static class AuthenticationExtensions
                     var logger = context.HttpContext.RequestServices
                         .GetRequiredService<ILogger<Program>>();
                     logger.LogWarning(context.Exception, 
-                        "BFF JWT Authentication failed for request {Path}", 
+                        "JWT Authentication failed for request {Path}", 
                         context.Request.Path);
                     return Task.CompletedTask;
                 },
@@ -58,7 +58,7 @@ public static class AuthenticationExtensions
                     var tenantId = context.Principal?.FindFirst("tenant_id")?.Value;
                     var userId = context.Principal?.FindFirst("sub")?.Value;
                     logger.LogInformation(
-                        "BFF JWT Token validated for User {UserId}, Tenant {TenantId}", 
+                        "JWT Token validated for User {UserId}, Tenant {TenantId}", 
                         userId, 
                         tenantId);
                     return Task.CompletedTask;
@@ -68,4 +68,5 @@ public static class AuthenticationExtensions
 
         return services;
     }
+
 }
