@@ -48,7 +48,11 @@ public static class SwaggerExtensions
                         }
                     }
                 },
-                Description = "OAuth2 Authorization Code Flow with PKCE (S256) via Keycloak"
+                Description = "OAuth2 Authorization Code Flow with PKCE (S256) via Keycloak",
+                Extensions = new Dictionary<string, Microsoft.OpenApi.Interfaces.IOpenApiExtension>
+                {
+                    { "x-pkce", new Microsoft.OpenApi.Any.OpenApiBoolean(true) }
+                }
             });
 
             // Apply security requirement globally
@@ -60,7 +64,7 @@ public static class SwaggerExtensions
                         Reference = new OpenApiReference
                         {
                             Type = ReferenceType.SecurityScheme,
-                            Id = "KeycloakPKCE"
+                            Id = "oauth2"
                         }
                     },
                     new[] { "openid", "profile", "email" }

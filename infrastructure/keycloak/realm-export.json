@@ -1308,12 +1308,12 @@
         },
         {
           "id": "bdf5b1be-f064-4f42-91eb-1d16c8229131",
-          "name": "audience-competition",
+          "name": "audience-bff",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-audience-mapper",
           "consentRequired": false,
           "config": {
-            "included.client.audience": "competition-service",
+            "included.client.audience": "bff-api",
             "id.token.claim": "false",
             "access.token.claim": "true",
             "userinfo.token.claim": "false"
