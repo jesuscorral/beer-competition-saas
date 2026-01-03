@@ -1390,7 +1390,7 @@
       "protocol": "openid-connect",
       "attributes": {
         "access.token.lifespan": "900",
-        "post.logout.redirect.uris": ["https://localhost:54421/*"],
+        "post.logout.redirect.uris": "https://localhost:54421/*",
         "pkce.code.challenge.method": "S256"
       },
       "authenticationFlowBindingOverrides": {},
