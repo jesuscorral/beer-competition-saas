@@ -648,9 +648,7 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "**********",
       "redirectUris": [
-        "http://localhost:5190/*",
         "https://localhost:54421/swagger/oauth2-redirect.html",
-        "http://localhost:54422/swagger/oauth2-redirect.html",
         "https://localhost:7038/*"
       ],
       "webOrigins": [
@@ -945,14 +943,11 @@
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://oauth.pstmn.io/v1/browser-callback",
         "https://localhost:54421/auth/callback",
         "https://localhost:54421/*",
-        "https://oauth.pstmn.io/v1/callback",
         "https://localhost:54421/swagger/oauth2-redirect.html"
       ],
       "webOrigins": [
-        "https://oauth.pstmn.io",
         "https://localhost:54421"
       ],
       "notBefore": 0,
@@ -1251,11 +1246,17 @@
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
         "https://localhost:54421/swagger/oauth2-redirect.html",
-        "http://localhost:54422/swagger/oauth2-redirect.html"
+        "https://localhost:54421/oauth2-redirect.html",
+        "http://localhost:54422/swagger/oauth2-redirect.html",
+        "http://localhost:54422/oauth2-redirect.html",
+        "https://localhost:54421/auth/callback",
+        "https://oauth.pstmn.io/v1/browser-callback",
+        "https://oauth.pstmn.io/v1/callback"      
       ],
       "webOrigins": [
         "https://localhost:54421",
-        "http://localhost:54422"
+        "http://localhost:54422",
+        "https://oauth.pstmn.io"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -1269,7 +1270,7 @@
       "protocol": "openid-connect",
       "attributes": {
         "access.token.lifespan": "900",
-        "post.logout.redirect.uris": "+",
+        "post.logout.redirect.uris": ["https://localhost:54421/*"],
         "pkce.code.challenge.method": "S256"
       },
       "authenticationFlowBindingOverrides": {},
