@@ -29,7 +29,7 @@ public static class WebApplicationExtensions
                 
                 // OAuth2 Configuration for Swagger UI with PKCE S256
                 options.OAuthUsePkce();  // Enable PKCE with S256 challenge method
-                options.OAuthClientId("frontend-spa");  // Public client for Swagger OAuth2
+                options.OAuthClientId("swagger-ui");  // Dedicated Keycloak client for Swagger OAuth2
                 options.OAuthAppName("Beer Competition API");
                 options.OAuthScopes("openid", "profile", "email");
             });
