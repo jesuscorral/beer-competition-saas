@@ -8,7 +8,7 @@ This document provides manual verification steps for the Keycloak `competition_i
 
 ### Protocol Mappers Added
 
-Added the following protocol mapper to all Keycloak clients (bff-api, competition-service, judging-service, frontend-spa):
+Added the following protocol mapper to the token-issuing Keycloak clients (`bff-api`, `frontend-spa`):
 
 1. **competition_id** - Maps user attribute `competition_id` to JWT claim
 
