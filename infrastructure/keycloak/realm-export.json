@@ -828,7 +828,7 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "Password123!",
+      "secret": "<competition-service-client-secret>",
       "redirectUris": [],
       "webOrigins": [],
       "notBefore": 0,
