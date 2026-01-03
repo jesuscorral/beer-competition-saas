@@ -17,8 +17,6 @@ public static class WebApplicationExtensions
     {
         if (app.Environment.IsDevelopment())
         {
-            var keycloakAuthority = app.Configuration["Keycloak:Authority"] ?? "http://localhost:8080/realms/beercomp";
-            
             app.UseSwagger();
             app.UseSwaggerUI(options =>
             {
