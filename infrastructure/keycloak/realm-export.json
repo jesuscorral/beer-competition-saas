@@ -646,7 +646,7 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "Password123!",
+      "secret": "<bff-api-client-secret>",
       "redirectUris": [
         "https://localhost:54421/swagger/oauth2-redirect.html",
         "https://localhost:7038/*"
