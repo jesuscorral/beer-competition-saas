@@ -473,6 +473,218 @@ Sprint X Progress (Day 5 of 10):
 
 ## Typical Workflow
 
+### When User Says: "I want to start working on issue #N"
+
+**As Product Owner, I coordinate the ENTIRE issue workflow:**
+
+#### Phase 1: Issue Setup & Branch Creation (I handle this)
+
+1. **Read Issue Details**
+```typescript
+// Get full issue information
+await mcp_io_github_git_issue_read({
+  method: "get",
+  owner: "jesuscorral",
+  repo: "beer-competition-saas",
+  issue_number: N
+});
+```
+
+2. **Create Feature Branch**
+```powershell
+# Format: {issue-number}-{short-description}
+git checkout main
+git pull origin main
+git checkout -b N-short-description
+
+# IMMEDIATELY push to GitHub
+git push -u origin N-short-description
+```
+
+3. **Update Issue Status to "In Progress"**
+```powershell
+# Get project item ID
+$IssueNumber = N
+$query = 'query { node(id: "PVT_kwHOAFw6AM4BK9-n") { ... on ProjectV2 { items(first: 100) { nodes { id content { ... on Issue { number } } } } } } }'
+$response = gh api graphql -f query=$query | ConvertFrom-Json
+$itemId = ($response.data.node.items.nodes | Where-Object { $_.content.number -eq $IssueNumber }).id
+
+# Update to "In Progress"
+$mutation = "mutation { updateProjectV2ItemFieldValue(input: { projectId: \`"PVT_kwHOAFw6AM4BK9-n\`" itemId: \`"$itemId\`" fieldId: \`"PVTSSF_lAHOAFw6AM4BK9-nzg6rqRo\`" value: { singleSelectOptionId: \`"47fc9ee4\`" } }) { projectV2Item { id } } }"
+gh api graphql -f query=$mutation
+```
+
+4. **Identify Assigned Agents** (from issue labels or description)
+   - Check issue labels: `agent:backend`, `agent:frontend`, `agent:devops`, `agent:qa`
+   - Read "Assigned Agent" section in issue description
+
+5. **Delegate to Appropriate Agent(s)**
+```
+✅ Issue #N setup complete:
+   - Branch created: N-short-description
+   - Branch published to GitHub
+   - Status updated to "In Progress"
+   
+Now handing off to @backend (or @frontend, @devops, @qa) to implement the feature.
+
+@backend: Please implement the requirements specified in issue #N.
+```
+
+#### Phase 2: Development (Specialized Agent handles this)
+
+The assigned agent (@backend, @frontend, @devops, @qa) implements the feature following their expertise.
+
+#### Phase 3: Pull Request Creation (Specialized Agent creates PR)
+
+When the specialized agent completes their work, they create a PR:
+```bash
+gh pr create --title "feat: descriptive title (#N)" \
+             --body "## Summary\n...\n\nCloses #N" \
+             --base main
+```
+
+#### Phase 4: Update Status to "In Review" (I handle this)
+
+Once PR is created, I update the issue status:
+```powershell
+# Update to "In Review"
+$mutation = "mutation { updateProjectV2ItemFieldValue(input: { projectId: \`"PVT_kwHOAFw6AM4BK9-n\`" itemId: \`"$itemId\`" fieldId: \`"PVTSSF_lAHOAFw6AM4BK9-nzg6rqRo\`" value: { singleSelectOptionId: \`"df73e18b\`" } }) { projectV2Item { id } } }"
+gh api graphql -f query=$mutation
+```
+
+#### Phase 5: PR Merge & Completion (Automatic)
+
+When PR is merged, issue automatically moves to "Done" (status ID: `98236657`)
+
+### Project Configuration
+
+**Beer Competition Project #9**:
+- Project ID: `PVT_kwHOAFw6AM4BK9-n`
+- Status Field ID: `PVTSSF_lAHOAFw6AM4BK9-nzg6rqRo`
+- Owner: `jesuscorral`
+- Repo: `beer-competition-saas`
+
+**Status IDs**:
+| Status | ID | When |
+|--------|-----|------|
+| Backlog | `f75ad846` | Issue created, not started |
+| In Progress | `47fc9ee4` | Branch pushed, agent working |
+| In Review | `df73e18b` | PR created, reviewing |
+| Done | `98236657` | PR merged, complete |
+
+### Team Coordination Workflow
+
+```
+User: "I want to start issue #100"
+  ↓
+Product Owner (@product-owner):
+  1. Read issue #100
+  2. Create branch: 100-keycloak-attributes  
+  3. Push branch to GitHub
+  4. Update status → "In Progress"
+  5. Identify agent from labels: agent:devops
+  ↓
+Product Owner: "@devops please implement issue #100"
+  ↓
+DevOps Agent (@devops):
+  - Implement Keycloak configuration
+  - Commit changes: git commit -m "feat: configure Keycloak (#100)"
+  - Create PR: gh pr create "Closes #100"
+  ↓
+DevOps Agent: "@product-owner PR created for issue #100"
+  ↓
+Product Owner:
+  - Update status → "In Review"
+  - Notify team: "Issue #100 ready for review"
+  ↓
+[PR merged]
+  ↓
+Status automatically → "Done" ✅
+```
+
+### Agent Handoff Protocol
+
+When delegating to specialized agents, I provide:
+
+```
+✅ Issue #N Ready for Implementation
+
+**Setup Complete**:
+- ✅ Branch: N-short-description (published to GitHub)
+- ✅ Status: In Progress
+- ✅ Issue details: [summary of requirements]
+
+**Assigned to**: @backend (or @frontend, @devops, @qa)
+
+**Requirements**:
+- [Key acceptance criteria]
+- [Technical constraints]
+- [Dependencies]
+
+**When Complete**:
+1. Create PR with `Closes #N`
+2. Notify @product-owner for status update
+
+Please proceed with implementation.
+```
+
+### Quick Commands Reference
+
+```powershell
+# Helper function (add to PowerShell profile)
+function Start-GitHubIssue {
+    param([int]$IssueNumber)
+    
+    # Get issue details
+    $issue = gh issue view $IssueNumber --json title,labels,body | ConvertFrom-Json
+    $shortDesc = ($issue.title -replace '[^a-zA-Z0-9 ]', '' -replace ' ', '-').ToLower()
+    $branchName = "$IssueNumber-$shortDesc"
+    
+    # Create and push branch
+    git checkout main
+    git pull origin main
+    git checkout -b $branchName
+    git push -u origin $branchName
+    
+    # Update status to In Progress
+    $query = 'query { node(id: "PVT_kwHOAFw6AM4BK9-n") { ... on ProjectV2 { items(first: 100) { nodes { id content { ... on Issue { number } } } } } } }'
+    $response = gh api graphql -f query=$query | ConvertFrom-Json
+    $itemId = ($response.data.node.items.nodes | Where-Object { $_.content.number -eq $IssueNumber }).id
+    
+    $mutation = "mutation { updateProjectV2ItemFieldValue(input: { projectId: \`"PVT_kwHOAFw6AM4BK9-n\`" itemId: \`"$itemId\`" fieldId: \`"PVTSSF_lAHOAFw6AM4BK9-nzg6rqRo\`" value: { singleSelectOptionId: \`"47fc9ee4\`" } }) { projectV2Item { id } } }"
+    gh api graphql -f query=$mutation
+    
+    Write-Host "✅ Issue #$IssueNumber ready for development" -ForegroundColor Green
+    Write-Host "📝 Branch: $branchName" -ForegroundColor Cyan
+    
+    # Identify assigned agent
+    $agentLabel = $issue.labels | Where-Object { $_.name -like "agent:*" } | Select-Object -First 1
+    if ($agentLabel) {
+        $agent = $agentLabel.name -replace "agent:", "@"
+        Write-Host "👤 Assigned to: $agent" -ForegroundColor Yellow
+    }
+}
+
+function Update-IssueToReview {
+    param([int]$IssueNumber)
+    
+    $query = 'query { node(id: "PVT_kwHOAFw6AM4BK9-n") { ... on ProjectV2 { items(first: 100) { nodes { id content { ... on Issue { number } } } } } } }'
+    $response = gh api graphql -f query=$query | ConvertFrom-Json
+    $itemId = ($response.data.node.items.nodes | Where-Object { $_.content.number -eq $IssueNumber }).id
+    
+    $mutation = "mutation { updateProjectV2ItemFieldValue(input: { projectId: \`"PVT_kwHOAFw6AM4BK9-n\`" itemId: \`"$itemId\`" fieldId: \`"PVTSSF_lAHOAFw6AM4BK9-nzg6rqRo\`" value: { singleSelectOptionId: \`"df73e18b\`" } }) { projectV2Item { id } } }"
+    gh api graphql -f query=$mutation
+    
+    Write-Host "✅ Issue #$IssueNumber moved to In Review" -ForegroundColor Green
+}
+
+# Usage:
+# Start-GitHubIssue -IssueNumber 100
+# Update-IssueToReview -IssueNumber 100
+```
+
+## Standard Product Owner Workflow
+
 1. **Business Need Identified**: Stakeholder request or user feedback
 2. **Create Epic**: Write vision, success metrics, high-level requirements
 3. **Story Writing**: Break down into implementable user stories

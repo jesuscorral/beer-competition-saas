@@ -646,7 +646,7 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "**********",
+      "secret": "<bff-api-client-secret>",
       "redirectUris": [
         "https://localhost:54421/swagger/oauth2-redirect.html",
         "https://localhost:7038/*"
@@ -693,6 +693,21 @@
             "id.token.claim": "true",
             "access.token.claim": "true",
             "claim.name": "tenant_id",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "id": "a1b2c3d4-5678-4e90-a123-456789abcdef",
+          "name": "competition_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "competition_id",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "competition_id",
             "jsonType.label": "String"
           }
         },
@@ -813,7 +828,7 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "**********",
+      "secret": "<competition-service-client-secret>",
       "redirectUris": [],
       "webOrigins": [],
       "notBefore": 0,
@@ -834,21 +849,6 @@
       "fullScopeAllowed": true,
       "nodeReRegistrationTimeout": -1,
       "protocolMappers": [
-        {
-          "id": "a4f8fc96-bf85-4ec7-8b41-2f621353a6fd",
-          "name": "tenant_id",
-          "protocol": "openid-connect",
-          "protocolMapper": "oidc-usermodel-attribute-mapper",
-          "consentRequired": false,
-          "config": {
-            "userinfo.token.claim": "true",
-            "user.attribute": "tenant_id",
-            "id.token.claim": "true",
-            "access.token.claim": "true",
-            "claim.name": "tenant_id",
-            "jsonType.label": "String"
-          }
-        },
         {
           "id": "13c23baf-acb9-4bb3-9f9f-08f97d1151e5",
           "name": "roles",
@@ -990,6 +990,21 @@
           }
         },
         {
+          "id": "g6g7h8i9-0123-4e56-g789-0123456fghij",
+          "name": "competition_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "competition_id",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "competition_id",
+            "jsonType.label": "String"
+          }
+        },
+        {
           "id": "e93c30ba-675b-427d-8e94-16bc09f40d55",
           "name": "roles",
           "protocol": "openid-connect",
@@ -1037,7 +1052,7 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "**********",
+      "secret": "<judging-service-client-secret>",
       "redirectUris": [],
       "webOrigins": [],
       "notBefore": 0,
@@ -1070,70 +1085,7 @@
             "access.token.claim": "true",
             "userinfo.token.claim": "false"
           }
-        },
-        {
-          "id": "8b620b3a-b787-4526-9c88-1f9cd86c3e61",
-          "name": "Client ID",
-          "protocol": "openid-connect",
-          "protocolMapper": "oidc-usersessionmodel-note-mapper",
-          "consentRequired": false,
-          "config": {
-            "user.session.note": "client_id",
-            "introspection.token.claim": "true",
-            "id.token.claim": "true",
-            "access.token.claim": "true",
-            "claim.name": "client_id",
-            "jsonType.label": "String"
-          }
-        },
-        {
-          "id": "477a84b9-6a1b-4157-a7b0-04ef7668cd3d",
-          "name": "Client Host",
-          "protocol": "openid-connect",
-          "protocolMapper": "oidc-usersessionmodel-note-mapper",
-          "consentRequired": false,
-          "config": {
-            "user.session.note": "clientHost",
-            "introspection.token.claim": "true",
-            "id.token.claim": "true",
-            "access.token.claim": "true",
-            "claim.name": "clientHost",
-            "jsonType.label": "String"
-          }
-        },
-        {
-          "id": "42598641-9a02-482f-87a5-6cb5f6bc6c01",
-          "name": "Client IP Address",
-          "protocol": "openid-connect",
-          "protocolMapper": "oidc-usersessionmodel-note-mapper",
-          "consentRequired": false,
-          "config": {
-            "user.session.note": "clientAddress",
-            "introspection.token.claim": "true",
-            "id.token.claim": "true",
-            "access.token.claim": "true",
-            "claim.name": "clientAddress",
-            "jsonType.label": "String"
-          }
-        },
-        {
-          "id": "058a5468-c9ae-4e6d-93a8-42c5dd0884bd",
-          "name": "tenant_id",
-          "protocol": "openid-connect",
-          "protocolMapper": "oidc-usermodel-attribute-mapper",
-          "consentRequired": false,
-          "config": {
-            "userinfo.token.claim": "true",
-            "user.attribute": "tenant_id",
-            "id.token.claim": "true",
-            "access.token.claim": "true",
-            "claim.name": "tenant_id",
-            "jsonType.label": "String"
-          }
-        },
-        {
-          "id": "69fbd6db-7beb-44d9-9941-5c12de59b2b4",
-          "name": "roles",
+        }
           "protocol": "openid-connect",
           "protocolMapper": "oidc-usermodel-realm-role-mapper",
           "consentRequired": false,
@@ -1270,7 +1222,7 @@
       "protocol": "openid-connect",
       "attributes": {
         "access.token.lifespan": "900",
-        "post.logout.redirect.uris": ["https://localhost:54421/*"],
+        "post.logout.redirect.uris": "https://localhost:54421/*",
         "pkce.code.challenge.method": "S256"
       },
       "authenticationFlowBindingOverrides": {},

@@ -86,16 +86,92 @@ Login: admin@example.com / <your-password>
 
 ## MANDATORY Workflow: Starting New Issues
 
-**BEFORE implementing any GitHub issue, ALWAYS follow this workflow:**
+**TEAM-BASED APPROACH**: When starting work on a GitHub issue, we follow a coordinated workflow where the **Product Owner Agent** acts as the workflow coordinator, setting up the issue and delegating to specialized agents.
 
-### 1. Create Feature Branch (AUTOMATIC)
+### Workflow Overview
+
+```
+User Request: "I want to start issue #100"
+       ↓
+Product Owner Agent (@product-owner)
+       ↓
+   [PHASE 1: Setup]
+   1. Read issue details
+   2. Create feature branch: {issue-number}-{description}
+   3. Push branch to GitHub immediately
+   4. Update issue status → "In Progress"
+   5. Identify assigned agent from labels
+       ↓
+   [PHASE 2: Delegate]
+   Hand off to specialized agent:
+   - @backend for API/database work
+   - @frontend for UI/UX work  
+   - @devops for infrastructure
+   - @qa for testing strategy
+       ↓
+Specialized Agent (e.g., @backend)
+       ↓
+   [PHASE 3: Implementation]
+   - Implement feature
+   - Write tests
+   - Commit with convention: "feat: description (#N)"
+   - Create PR: "Closes #N"
+       ↓
+   [PHASE 4: Review]
+   Specialized Agent notifies @product-owner
+       ↓
+Product Owner Agent
+       ↓
+   - Update issue status → "In Review"
+       ↓
+   [PHASE 5: Complete]
+   PR merged → Status auto-updates to "Done"
+```
+
+### How to Start an Issue
+
+**User says**: "I want to start working on issue #100"
+
+**Copilot invokes**: `@product-owner` agent
+
+**Product Owner**:
+1. Reads issue #100 using `mcp_io_github_git_issue_read`
+2. Creates branch: `100-short-description` from main
+3. Pushes branch: `git push -u origin 100-short-description`
+4. Updates status to "In Progress" using GraphQL API
+5. Identifies agent from issue labels (e.g., `agent:devops`)
+6. Delegates: "@devops please implement issue #100"
+
+**Specialized Agent** (e.g., @devops):
+- Implements the feature
+- Creates PR with `Closes #100`
+- Notifies: "@product-owner PR created for #100"
+
+**Product Owner**:
+- Updates status to "In Review"
+
+**After PR merge**:
+- Status automatically moves to "Done"
+
+### Step-by-Step Automated Process
+
+#### Step 1: Read Issue Details
+```typescript
+// Use GitHub MCP to get issue details
+await mcp_io_github_git_issue_read({
+  method: "get",
+  owner: "jesuscorral",
+  repo: "beer-competition-saas",
+  issue_number: 16
+});
+```
+
+#### Step 2: Create Feature Branch
 ```bash
-# ALWAYS start from main branch
+# Create branch using naming convention: {issue-number}-{short-description}
+# Example for issue #16: "API endpoint for entry submission"
 git checkout main
 git pull origin main
-
-# Create branch using format: {issue-number}-{short-description}
-# Example for issue #16: "API endpoint for entry submission"
 git checkout -b 16-entry-submission-api
 
 # Other examples:
@@ -103,14 +179,87 @@ git checkout -b 16-entry-submission-api
 # Issue #45: "Add scoresheet offline storage" → 45-scoresheet-offline-storage
 ```
 
-### 2. Branch Naming Convention
-**Format**: `{issue-number}-{short-description}`
+**Branch Naming Convention**:
+- **Format**: `{issue-number}-{short-description}`
 - Use issue number from GitHub (e.g., #16, #23, #45)
 - Use lowercase with hyphens for description
 - Keep description short (3-5 words max)
 - Focus on WHAT, not HOW
 
-### 3. Commit Convention
+#### Step 3: Push Branch to GitHub (IMMEDIATE)
+```bash
+# CRITICAL: Push empty branch immediately to publish it on GitHub
+git push -u origin 16-entry-submission-api
+```
+
+**Why push immediately?**
+- Makes branch visible in GitHub UI
+- Enables collaboration
+- Allows status tracking
+- Prevents local-only work
+
+#### Step 4: Update Issue Status to "In Progress"
+
+**Project Configuration**:
+- Project ID: `PVT_kwHOAFw6AM4BK9-n` (Beer competition #9)
+- Status Field ID: `PVTSSF_lAHOAFw6AM4BK9-nzg6rqRo`
+- Owner: `jesuscorral`
+- Repo: `beer-competition-saas`
+
+**Status Option IDs**:
+- Backlog: `f75ad846`
+- In Progress: `47fc9ee4` ⬅️ Use this
+- In Review: `df73e18b`
+- Done: `98236657`
+
+**Update using GraphQL API**:
+```bash
+# PowerShell (Windows)
+# Step 1: Get Project Item ID
+$query = @"
+query {
+  node(id: "PVT_kwHOAFw6AM4BK9-n") {
+    ... on ProjectV2 {
+      items(first: 100) {
+        nodes {
+          id
+          content {
+            ... on Issue {
+              number
+            }
+          }
+        }
+      }
+    }
+  }
+}
+"@
+
+$response = gh api graphql -f query=$query | ConvertFrom-Json
+$itemId = ($response.data.node.items.nodes | Where-Object { $_.content.number -eq 16 }).id
+
+# Step 2: Update status to "In Progress"
+$mutation = @"
+mutation {
+  updateProjectV2ItemFieldValue(
+    input: {
+      projectId: "PVT_kwHOAFw6AM4BK9-n"
+      itemId: "$itemId"
+      fieldId: "PVTSSF_lAHOAFw6AM4BK9-nzg6rqRo"
+      value: { 
+        singleSelectOptionId: "47fc9ee4"
+      }
+    }
+  ) {
+    projectV2Item { id }
+  }
+}
+"@
+
+gh api graphql -f query=$mutation
+```
+
+#### Step 5: Implement Feature with Proper Commits
 ```bash
 # ALWAYS reference issue number in commits
 # ALWAYS write commit messages in ENGLISH
@@ -134,13 +283,10 @@ git commit -m "feat: implementar API de envío de entradas (#16)"
 git commit -m "feat: implement entry submission API (#16)"
 ```
 
-### 4. Push and Create PR
+#### Step 6: Create Pull Request
 ```bash
-# Push branch to remote
-git push -u origin 16-entry-submission-api
-
-# Create PR via GitHub CLI
 # ALWAYS write PR title and body in ENGLISH
+# ALWAYS link to the issue with "Closes #N"
 gh pr create --title "feat: implement entry submission API (#16)" \
              --body "## Summary
 
@@ -151,141 +297,232 @@ Complete implementation of entry submission API endpoint.
 - Implemented validation with FluentValidation
 - Added unit and integration tests
 
+## Testing
+- ✅ Unit tests passing
+- ✅ Integration tests with Testcontainers
+- ✅ Manual testing completed
+
 Closes #16" \
              --base main
-
-# ❌ WRONG (Spanish in PR)
-gh pr create --title "feat: implementar API de envío (#16)" \
-             --body "Implementación completa..."
-
-# ✅ CORRECT (English in PR)
-gh pr create --title "feat: implement entry submission API (#16)" \
-             --body "Complete implementation..."
 ```
 
-### 5. Issue Status Management
-**CRITICAL**: Update issue status at each workflow stage using GraphQL API:
-
+#### Step 7: Update Issue Status to "In Review"
 ```bash
-# Helper: Get Project Item ID for an issue
-get_project_item_id() {
-  gh api graphql -f query="
-    query {
-      node(id: \"PVT_kwHOAFw6AM4BK9-n\") {
-        ... on ProjectV2 {
-          items(first: 100) {
-            nodes {
-              id
-              content {
-                ... on Issue {
-                  number
-                }
-              }
-            }
-          }
-        }
+# PowerShell: Update to "In Review" after PR creation
+$response = gh api graphql -f query=$query | ConvertFrom-Json
+$itemId = ($response.data.node.items.nodes | Where-Object { $_.content.number -eq 16 }).id
+
+$mutation = @"
+mutation {
+  updateProjectV2ItemFieldValue(
+    input: {
+      projectId: "PVT_kwHOAFw6AM4BK9-n"
+      itemId: "$itemId"
+      fieldId: "PVTSSF_lAHOAFw6AM4BK9-nzg6rqRo"
+      value: { 
+        singleSelectOptionId: "df73e18b"
       }
-    }" --jq ".data.node.items.nodes[] | select(.content.number == $1) | .id"
+    }
+  ) {
+    projectV2Item { id }
+  }
 }
+"@
 
-# Update issue status function
-update_issue_status() {
-  local issue_number=$1
-  local status_option_id=$2
-  local item_id=$(get_project_item_id $issue_number)
-  
-  gh api graphql -f query="
-    mutation {
-      updateProjectV2ItemFieldValue(
-        input: {
-          projectId: \"PVT_kwHOAFw6AM4BK9-n\"
-          itemId: \"$item_id\"
-          fieldId: \"PVTSSF_lAHOAFw6AM4BK9-nzg6rqRo\"
-          value: { 
-            singleSelectOptionId: \"$status_option_id\"
-          }
-        }
-      ) {
-        projectV2Item { id }
-      }
-    }"
-}
-
-# PowerShell version for Windows
-function Update-IssueStatus {
-    param(
-        [int]$IssueNumber,
-        [string]$StatusOptionId
-    )
-    
-    $itemId = (gh api graphql -f query="
-        query {
-          node(id: \`"PVT_kwHOAFw6AM4BK9-n\`") {
-            ... on ProjectV2 {
-              items(first: 100) {
-                nodes {
-                  id
-                  content {
-                    ... on Issue {
-                      number
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }" --jq ".data.node.items.nodes[] | select(.content.number == $IssueNumber) | .id")
-    
-    gh api graphql -f query="
-        mutation {
-          updateProjectV2ItemFieldValue(
-            input: {
-              projectId: \`"PVT_kwHOAFw6AM4BK9-n\`"
-              itemId: \`"$itemId\`"
-              fieldId: \`"PVTSSF_lAHOAFw6AM4BK9-nzg6rqRo\`"
-              value: { 
-                singleSelectOptionId: \`"$StatusOptionId\`"
-              }
-            }
-          ) {
-            projectV2Item { id }
-          }
-        }"
-}
-
-# Status Option IDs (for "Beer competition" project #9)
-# - Backlog:      f75ad846
-# - In progress:  47fc9ee4
-# - In review:    df73e18b
-# - Done:         98236657
-
-# Usage examples:
-# Bash: update_issue_status 2 "47fc9ee4"  # Move issue #2 to "In progress"
-# PowerShell: Update-IssueStatus -IssueNumber 2 -StatusOptionId "47fc9ee4"
+gh api graphql -f query=$mutation
 ```
 
-**Status Workflow**:
-1. **Backlog** (f75ad846) → Issue created, not started
-2. **In Progress** (47fc9ee4) → Branch created, actively working
-3. **In Review** (df73e18b) → PR created, awaiting review
-4. **Done** (98236657) → PR merged, issue closed
+#### Step 8: PR Merge → Status Updates to "Done"
 
-**Project Configuration (for reference)**:
-- Project ID: `PVT_kwHOAFw6AM4BK9-n` (Beer competition #9)
-- Status Field ID: `PVTSSF_lAHOAFw6AM4BK9-nzg6rqRo`
-- Owner: `jesuscorral`
-- Repo: `beer-competition-saas`
+After PR is reviewed and merged:
+```bash
+# Status automatically should update to "Done"
+# If not automatic, manually update:
+$mutation = @"
+mutation {
+  updateProjectV2ItemFieldValue(
+    input: {
+      projectId: "PVT_kwHOAFw6AM4BK9-n"
+      itemId: "$itemId"
+      fieldId: "PVTSSF_lAHOAFw6AM4BK9-nzg6rqRo"
+      value: { 
+        singleSelectOptionId: "98236657"
+      }
+    }
+  ) {
+    projectV2Item { id }
+  }
+}
+"@
 
-**NEVER skip status updates** - they provide critical project visibility.
-### 6. Validation Checklist
+gh api graphql -f query=$mutation
+```
+
+### Complete Status Workflow
+
+```
+┌─────────────┐
+│   Backlog   │ (f75ad846) - Issue created
+└──────┬──────┘
+       │ Create branch + Push
+       ↓
+┌─────────────┐
+│ In Progress │ (47fc9ee4) - Branch pushed, working
+└──────┬──────┘
+       │ Create PR
+       ↓
+┌─────────────┐
+│  In Review  │ (df73e18b) - PR open, reviewing
+└──────┬──────┘
+       │ Merge PR
+       ↓
+┌─────────────┐
+│    Done     │ (98236657) - PR merged, complete
+└─────────────┘
+```
+
+### Validation Checklist
+
 Before starting implementation, verify:
+- ✅ Issue read and understood using `mcp_io_github_git_issue_read`
 - ✅ Branch created from latest `main`
 - ✅ Branch name follows convention: `{issue-number}-{short-description}`
-- ✅ Issue number exists in GitHub
-- ✅ **Issue status updated to "In Progress"**
+- ✅ **Branch pushed to GitHub immediately** with `git push -u origin branch-name`
+- ✅ **Issue status updated to "In Progress"** using GraphQL API
 - ✅ Relevant ADRs reviewed (see list below)
 - ✅ Multi-tenancy requirements understood
 - ✅ Test strategy planned (unit + integration)
+
+### Quick Reference Commands
+
+**Get Issue Details:**
+```bash
+gh issue view 16
+```
+
+**Create and Push Branch:**
+```bash
+git checkout -b 16-entry-submission-api
+git push -u origin 16-entry-submission-api
+```
+
+**Update to In Progress:**
+```bash
+# Use GraphQL mutation with status ID: 47fc9ee4
+```
+
+**Create PR:**
+```bash
+gh pr create --title "feat: description (#16)" --body "...Closes #16"
+```
+
+**Update to In Review:**
+```bash
+# Use GraphQL mutation with status ID: df73e18b
+```
+
+**NEVER skip any of these steps** - they provide critical project visibility and ensure proper collaboration.
+
+### Agent Responsibilities
+
+**@product-owner (Workflow Coordinator)**:
+- ✅ Read issue details
+- ✅ Create and push feature branch
+- ✅ Update issue to "In Progress"
+- ✅ Identify and delegate to specialized agent
+- ✅ Update issue to "In Review" when PR created
+- ✅ Coordinate releases and sprint planning
+- ❌ Does NOT implement code (delegates to specialists)
+
+**@backend (API & Business Logic)**:
+- ✅ Implement API endpoints, CQRS handlers, domain models
+- ✅ Write unit and integration tests
+- ✅ Create database migrations
+- ✅ Create PR when complete
+- ✅ Notify @product-owner when PR is ready
+- ❌ Does NOT create branches or update issue status
+
+**@frontend (User Interface)**:
+- ✅ Implement React components and pages
+- ✅ Write component, integration, and E2E tests
+- ✅ Ensure accessibility (WCAG 2.1 AA)
+- ✅ Implement offline-first PWA features
+- ✅ Create PR when complete
+- ✅ Notify @product-owner when PR is ready
+- ❌ Does NOT create branches or update issue status
+
+**@devops (Infrastructure & CI/CD)**:
+- ✅ Configure cloud infrastructure (Azure, Docker)
+- ✅ Create CI/CD pipelines
+- ✅ Set up monitoring and observability
+- ✅ Manage secrets and configurations
+- ✅ Create PR when complete
+- ✅ Notify @product-owner when PR is ready
+- ❌ Does NOT create branches or update issue status
+
+**@qa (Testing & Quality Assurance)**:
+- ✅ Define comprehensive test strategies
+- ✅ Write E2E and load tests
+- ✅ Validate acceptance criteria
+- ✅ Perform security and performance testing
+- ✅ Create PR when complete
+- ✅ Notify @product-owner when PR is ready
+- ❌ Does NOT create branches or update issue status
+
+### Real-World Team Simulation
+
+This workflow replicates a professional software development team:
+
+1. **Product Owner** manages backlog, coordinates sprints, tracks progress
+2. **Specialized Developers** focus on their domain expertise
+3. **Clear Handoffs** with explicit communication between roles
+4. **Centralized Coordination** prevents duplication and conflicts
+5. **Status Visibility** for stakeholders through GitHub Projects
+
+**Example Flow**:
+```
+User: "I want to start issue #100"
+  ↓
+@product-owner:
+  - Reads issue: "Configure Keycloak user attributes"
+  - Creates branch: 100-keycloak-user-attributes
+  - Pushes to GitHub
+  - Updates status → "In Progress"
+  - Sees label: "agent:devops"
+  - Delegates: "@devops please configure Keycloak for issue #100"
+  ↓
+@devops:
+  - Updates realm-export.json with protocol mappers
+  - Tests JWT token generation
+  - Commits: "feat: configure Keycloak user attributes (#100)"
+  - Creates PR: "Closes #100"
+  - Notifies: "@product-owner PR #X created for issue #100"
+  ↓
+@product-owner:
+  - Updates status → "In Review"
+  - Notifies team: "Issue #100 ready for review"
+  ↓
+[PR reviewed and merged]
+  ↓
+Status automatically → "Done" ✅
+```
+
+### Key Principles
+
+**DO**:
+- ✅ Always invoke `@product-owner` when starting a new issue
+- ✅ Let Product Owner handle ALL branch creation and status updates
+- ✅ Have specialized agents focus ONLY on implementation
+- ✅ Create PRs that link to issues with "Closes #N"
+- ✅ Notify Product Owner when PR is created
+- ✅ Use conventional commit messages referencing issue numbers
+
+**DON'T**:
+- ❌ Never have specialized agents create branches directly
+- ❌ Never duplicate status update logic across agents
+- ❌ Never skip the Product Owner for issue setup
+- ❌ Never commit directly to main (always use feature branches)
+- ❌ Never create PRs without linking to the issue
 
 ---
 
