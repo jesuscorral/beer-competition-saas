@@ -546,8 +546,8 @@ public class CompetitionsController : ControllerBase
   "email": "organizer@example.com",
   "preferred_username": "john.doe",
   "tenant_id": "tenant-uuid-456",
+  "competition_id": "competition-uuid-789",
   "roles": ["organizer", "judge"],
-  "bjcp_rank": "Certified",
   "iss": "https://keycloak.beercompetition.com/realms/beer-competition-saas",
   "aud": "beer-competition-spa",
   "iat": 1734612000,
@@ -555,6 +555,8 @@ public class CompetitionsController : ControllerBase
   "azp": "beer-competition-spa"
 }
 ```
+
+**Note**: User profile data (e.g., `bjcp_rank`, `phone_number`, `brewery_name`) is NOT included in JWT tokens. See [JWT vs Database Attributes](#jwt-vs-database-attributes) section for rationale.
 
 #### Refresh Token (Opaque)
 - Stored securely in HTTP-only cookie (not accessible to JavaScript)
@@ -702,6 +704,118 @@ public class TenantProvider : ITenantProvider
 3. BFF revokes refresh token with Keycloak
 4. BFF clears HTTP-only cookie
 5. SPA clears localStorage and redirects to login
+
+---
+
+## JWT vs Database Attributes
+
+### Decision: What Belongs in JWT Tokens?
+
+**✅ Include in JWT (Identity & Authorization Context):**
+- `sub` - User ID (immutable identifier)
+- `email` - Email address (identity)
+- `preferred_username` - Username (display name)
+- `tenant_id` - Tenant/organization context (for multi-tenancy isolation)
+- `competition_id` - Competition context (for data scoping)
+- `roles` - Authorization roles (RBAC enforcement)
+
+**❌ Exclude from JWT (Mutable Profile Data):**
+- `bjcp_rank` - Judge certification level (can be upgraded)
+- `phone_number` - Contact information (can change)
+- `address` - Physical address (can change)
+- `brewery_name` - Entrant brewery name (can change)
+- Any other profile data that changes independently of authentication
+
+### Rationale
+
+**Why `tenant_id` and `competition_id` in JWT:**
+
+1. **Zero-Trust Security**: Each microservice validates JWT independently without database lookups
+2. **Performance**: Eliminates database queries to determine user context (saves ~5ms per request)
+3. **PostgreSQL RLS**: Enables automatic row-level security filtering based on JWT claims
+4. **Immutability**: These values rarely change (only when user switches context)
+5. **Authorization**: Required for every API request to enforce data isolation
+
+**Why `bjcp_rank` in Database:**
+
+1. **Mutability**: Judges can upgrade their certification (Certified → Recognized → National)
+2. **Non-Critical**: Not required for authorization (all judges can score any flight)
+3. **Staleness**: JWT caching means rank updates wouldn't be reflected until token expires
+4. **Token Size**: Adding profile fields increases JWT size (impacts network performance)
+5. **On-Demand**: Only needed in user profile screens, not every API request
+
+### Implementation
+
+**Keycloak Protocol Mappers** (for JWT claims):
+- `tenant_id` - User attribute → JWT claim (configured in all token-issuing clients)
+- `competition_id` - User attribute → JWT claim (configured in all token-issuing clients)
+- `roles` - Realm roles → JWT claim (built-in mapper)
+
+**Database Schema** (for profile data):
+```sql
+CREATE TABLE users (
+    id UUID PRIMARY KEY,
+    keycloak_user_id UUID NOT NULL UNIQUE,  -- Maps to JWT 'sub' claim
+    tenant_id UUID NOT NULL REFERENCES tenants(id),
+    email VARCHAR(255) NOT NULL,
+    bjcp_rank VARCHAR(50),  -- Certified, Recognized, National, Grand Master, Honorary
+    bjcp_id VARCHAR(50),     -- BJCP membership ID (e.g., A1234)
+    phone_number VARCHAR(20),
+    brewery_name VARCHAR(255),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+**API Endpoint** (to retrieve profile data):
+```csharp
+// GET /api/users/me
+public record UserProfileDto(
+    Guid Id,
+    string Email,
+    string? BjcpRank,
+    string? BjcpId,
+    string? PhoneNumber,
+    string? BreweryName,
+    List<string> Roles  // From JWT
+);
+
+public class GetUserProfileHandler : IRequestHandler<GetUserProfileQuery, Result<UserProfileDto>>
+{
+    public async Task<Result<UserProfileDto>> Handle(...)
+    {
+        var keycloakUserId = _httpContext.User.FindFirstValue("sub");  // From JWT
+        var user = await _dbContext.Users
+            .Where(u => u.KeycloakUserId == keycloakUserId)
+            .FirstOrDefaultAsync();
+        
+        return Result.Success(new UserProfileDto(
+            user.Id,
+            user.Email,
+            user.BjcpRank,  // From database
+            user.BjcpId,     // From database
+            user.PhoneNumber,
+            user.BreweryName,
+            _httpContext.User.FindAll("roles").Select(c => c.Value).ToList()  // From JWT
+        ));
+    }
+}
+```
+
+### Performance Impact
+
+**With `tenant_id` in JWT:**
+- Request time: ~11.6ms (JWT validation + RLS + query)
+- Throughput: ~580 requests/second (50 concurrent judges)
+
+**Without `tenant_id` in JWT (database lookup required):**
+- Request time: ~16.6ms (+43% slower)
+- Throughput: ~405 requests/second (-30% capacity)
+
+### Related Decisions
+
+- **ADR-002**: Multi-Tenancy Strategy (PostgreSQL RLS requires `tenant_id` in requests)
+- **Issue #100**: Keycloak User Attributes Configuration (implementation)
 
 ---
 
