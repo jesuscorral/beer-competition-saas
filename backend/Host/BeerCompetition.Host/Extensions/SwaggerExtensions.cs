@@ -12,7 +12,6 @@ public static class SwaggerExtensions
         IConfiguration configuration)
     {
         var keycloakAuthority = configuration["Keycloak:Authority"] ?? "http://localhost:8080/realms/beercomp";
-        var audience = configuration["Keycloak:Audience"] ?? "competition-service";
 
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(options =>
