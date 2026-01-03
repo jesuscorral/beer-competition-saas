@@ -89,10 +89,15 @@ For each **token-issuing client** (`bff-api`, `frontend-spa`):
 
 ### Testing JWT Claims
 
-**Automated Test Script**:
+**Planned automated test script (future enhancement)**:
+
+> NOTE: The `Test-KeycloakUserAttributes.ps1` script is not yet implemented in this repository.
+> Until it is added, use the manual JWT verification steps described below.
+
 ```powershell
-cd infrastructure/scripts
-.\Test-KeycloakUserAttributes.ps1 -AdminPassword "admin_password"
+# Planned location (future enhancement; script not yet implemented)
+# cd infrastructure/scripts
+# .\Test-KeycloakUserAttributes.ps1 -AdminPassword "<your-password>"
 ```
 
 **Manual JWT Verification**:
