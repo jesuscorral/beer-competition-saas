@@ -26,27 +26,45 @@ public static class AuthorizationPolicies
 
             // Organizer role (lowercase to match Keycloak realm roles)
             options.AddPolicy(Organizer, policy =>
-                policy.RequireRole("organizer"));
+            {
+                policy.RequireAuthenticatedUser();
+                policy.RequireRole("organizer");
+            });
 
             // Judge role (lowercase to match Keycloak realm roles)
             options.AddPolicy(Judge, policy =>
-                policy.RequireRole("judge"));
+            {
+                policy.RequireAuthenticatedUser();
+                policy.RequireRole("judge");
+            });
 
             // Entrant role (lowercase to match Keycloak realm roles)
             options.AddPolicy(Entrant, policy =>
-                policy.RequireRole("entrant"));
+            {
+                policy.RequireAuthenticatedUser();
+                policy.RequireRole("entrant");
+            });
 
             // Steward role (lowercase to match Keycloak realm roles)
             options.AddPolicy(Steward, policy =>
-                policy.RequireRole("steward"));
+            {
+                policy.RequireAuthenticatedUser();
+                policy.RequireRole("steward");
+            });
 
             // Judge or Organizer (lowercase to match Keycloak realm roles)
             options.AddPolicy(JudgeOrOrganizer, policy =>
-                policy.RequireRole("judge", "organizer"));
+            {
+                policy.RequireAuthenticatedUser();
+                policy.RequireRole("judge", "organizer");
+            });
 
             // Organizer or Steward (lowercase to match Keycloak realm roles)
             options.AddPolicy(OrganizerOrSteward, policy =>
-                policy.RequireRole("organizer", "steward"));
+            {
+                policy.RequireAuthenticatedUser();
+                policy.RequireRole("organizer", "steward");
+            });
         });
     }
 }

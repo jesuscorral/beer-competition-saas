@@ -44,7 +44,7 @@ Successfully implemented **service-specific audiences** and **OAuth 2.0 Token Ex
 
 ```bash
 # BFF API Gateway client secret
-KEYCLOAK_BFF_CLIENT_SECRET=TavSFpYLDiXdANR2UiBQ8BuAdzRuvc2Q
+KEYCLOAK_BFF_CLIENT_SECRET=KEYCLOAK_BFF_CLIENT_SECRET_VALUE
 
 # Competition Service client secret
 KEYCLOAK_COMPETITION_CLIENT_SECRET=CompetitionServiceSecret123456789

@@ -111,14 +111,18 @@ Four clients are configured for service-specific audiences and token exchange:
 - **Direct Access Grants**: Enabled (for testing with Postman)
 - **Service Accounts**: Enabled
 - **Token Exchange**: Enabled (`oauth2.token.exchange.grant.enabled`)
-- **Valid Redirect URIs**:
+- **Redirect URIs**:
   - `http://localhost:5190/*`
   - `https://localhost:7038/*`
+  - `http://localhost:54422/swagger/oauth2-redirect.html` (Competition.Host Swagger)
+  - `https://localhost:54421/swagger/oauth2-redirect.html` (Competition.Host Swagger)
 - **Web Origins**: 
   - `http://localhost:5190`
   - `https://localhost:7038`
   - `http://localhost:5173`
   - `https://localhost:5173`
+  - `http://localhost:54422` (Competition.Host)
+  - `https://localhost:54421` (Competition.Host)
 
 **Client Secret:**
 - Navigate to **Clients** → **bff-api** → **Credentials** tab
@@ -315,6 +319,10 @@ Four test users are pre-configured in the realm:
 
 ## Testing Authentication
 
+**IMPORTANT:** Use only standard OpenID Connect scopes: `openid profile email`
+
+The `roles` scope is **NOT** a standard OIDC scope and will cause `[invalid_scope]` errors. User roles are automatically included in the JWT token via Keycloak's client scope configuration (`roles` client scope with realm role mapper).
+
 ### Option 1: Using Postman
 
 #### Step 1: Get Access Token (Direct Grant)
@@ -329,7 +337,7 @@ grant_type=password
 &client_secret=<your-client-secret>
 &username=organizer@beercomp.local
 &password=organizer123
-&scope=openid profile email roles
+&scope=openid profile email
 ```
 
 **Response:**
@@ -342,7 +350,7 @@ grant_type=password
   "token_type": "Bearer",
   "not-before-policy": 0,
   "session_state": "uuid",
-  "scope": "openid profile email roles"
+  "scope": "openid profile email"
 }
 ```
 
@@ -377,7 +385,7 @@ TOKEN=$(curl -s -X POST \
   -d "client_secret=<your-secret>" \
   -d "username=organizer@beercomp.local" \
   -d "password=organizer123" \
-  -d "scope=openid profile email roles" \
+  -d "scope=openid profile email" \
   | jq -r '.access_token')
 
 # Call protected API
@@ -385,7 +393,19 @@ curl -H "Authorization: Bearer $TOKEN" \
   http://localhost:5190/api/competitions
 ```
 
-### Option 3: Decode JWT Token
+### Option 3: Using Swagger UI (Competition.Host)
+
+**Easiest Method**: The Competition.Host Swagger UI includes an **Authorize** button for OAuth2 authentication.
+
+1. Start Competition.Host: `dotnet run` (from `backend/Host/BeerCompetition.Host/`)
+2. Open browser: **https://localhost:54421** or **http://localhost:54422**
+3. Click **Authorize** button (lock icon)
+4. Login with test user (e.g., `organizer@beercomp.local` / `organizer123`)
+5. Test endpoints directly in Swagger
+
+**Full Guide**: See [backend/Host/BeerCompetition.Host/SWAGGER_OAUTH2_SETUP.md](../../backend/Host/BeerCompetition.Host/SWAGGER_OAUTH2_SETUP.md)
+
+### Option 4: Decode JWT Token
 
 Use [jwt.io](https://jwt.io) to decode the access token and verify claims:
 
@@ -401,7 +421,7 @@ Use [jwt.io](https://jwt.io) to decode the access token and verify claims:
   "typ": "Bearer",
   "azp": "bff-api",
   "session_state": "uuid",
-  "scope": "openid profile email roles",
+  "scope": "openid profile email",
   "email_verified": true,
   "preferred_username": "organizer",
   "email": "organizer@beercomp.local",

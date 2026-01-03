@@ -22,6 +22,14 @@ public static class WebApplicationExtensions
             {
                 options.SwaggerEndpoint("/swagger/v1/swagger.json", "Beer Competition API v1");
                 options.RoutePrefix = string.Empty;  // Serve Swagger at root
+                options.DocumentTitle = "Beer Competition API";
+                options.DisplayRequestDuration();
+                
+                // OAuth2 Configuration for Swagger UI with PKCE S256
+                options.OAuthUsePkce();  // Enable PKCE with S256 challenge method
+                options.OAuthClientId("swagger-ui");  // Dedicated Keycloak client for Swagger OAuth2
+                options.OAuthAppName("Beer Competition API");
+                options.OAuthScopes("openid", "profile", "email");
             });
         }
 
@@ -29,16 +37,12 @@ public static class WebApplicationExtensions
     }
 
     /// <summary>
-    /// Configures security middleware (HTTPS, Authentication, Authorization)
+    /// Configures security middleware (HTTPS)
+    /// Authentication and Authorization are configured separately in Program.cs
     /// </summary>
     public static WebApplication UseSecurityMiddleware(this WebApplication app)
     {
         app.UseHttpsRedirection();
-
-        // TODO: Add authentication middleware when Keycloak integration is ready
-        // app.UseAuthentication();
-        // app.UseAuthorization();
-
         return app;
     }
 
@@ -77,7 +81,7 @@ public static class WebApplicationExtensions
         app.MapCompetitionEndpoints();
         // Future: app.MapJudgingEndpoints();
 
-        // Health check endpoint
+        // Health check endpoint (anonymous access)
         app.MapGet("/health", () => Results.Ok(new
         {
             status = "healthy",
@@ -85,7 +89,8 @@ public static class WebApplicationExtensions
             environment = app.Environment.EnvironmentName
         }))
         .WithName("HealthCheck")
-        .WithTags("Health");
+        .WithTags("Health")
+        .AllowAnonymous();
 
         return app;
     }

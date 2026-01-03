@@ -32,10 +32,11 @@ public static class CompetitionEndpoints
         })
         .WithName("GetCompetitions")
         .WithSummary("Get all competitions")
-        .WithDescription("Retrieves all competitions for the current tenant. Automatically filtered by tenant_id.")
+        .WithDescription("Retrieves all competitions for the current tenant. Automatically filtered by tenant_id. Requires authentication.")
         .Produces<List<CompetitionDto>>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
-        .RequireAuthorization(); // Requires authentication (any authenticated user can list competitions)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .RequireAuthorization("AuthenticatedUser"); // Policy: Authenticated user with tenant_id claim
 
         // POST /api/competitions - Create new competition
         group.MapPost("/", async (
@@ -51,15 +52,17 @@ public static class CompetitionEndpoints
         })
         .WithName("CreateCompetition")
         .WithSummary("Create a new competition")
-        .WithDescription("Creates a new beer competition in Draft status. Organizer role required.")
+        .WithDescription("Creates a new beer competition in Draft status. **Organizer role required**.")
         .Produces<Guid>(StatusCodes.Status201Created)
         .ProducesProblem(StatusCodes.Status400BadRequest)
-        .RequireAuthorization(); // Authorization policy enforced at BFF level ("AuthenticatedUser" policy)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status403Forbidden)
+        .RequireAuthorization("OrganizerOnly"); // Policy: Organizer role + tenant_id claim
 
         // Additional endpoints will be added here:
-        // - GET /api/competitions/{id} (get by id)
-        // - PATCH /api/competitions/{id}/open (open for registration)
-        // - PATCH /api/competitions/{id}/start-judging
-        // - PATCH /api/competitions/{id}/publish-results
+        // - GET /api/competitions/{id} (get by id) - AuthenticatedUser
+        // - PATCH /api/competitions/{id}/open (open for registration) - OrganizerOnly
+        // - PATCH /api/competitions/{id}/start-judging - OrganizerOnly
+        // - PATCH /api/competitions/{id}/publish-results - OrganizerOnly
     }
 }
