@@ -1,3 +1,4 @@
+using BeerCompetition.Shared.Infrastructure.ExternalServices;
 using BeerCompetition.Shared.Infrastructure.MultiTenancy;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,6 +19,9 @@ public static class ServiceCollectionExtensions
         
         // Tenant provider with HttpContext integration
         services.AddScoped<ITenantProvider, TenantProvider>();
+        
+        // Keycloak service with HttpClient
+        services.AddHttpClient<IKeycloakService, KeycloakService>();
         
         return services;
     }

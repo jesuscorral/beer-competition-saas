@@ -76,6 +76,7 @@ public static class DependencyInjection
     public static IServiceCollection AddDIRepositories(this IServiceCollection services)
     {
         services.AddScoped<ICompetitionRepository, CompetitionRepository>();
+        services.AddScoped<ITenantRepository, TenantRepository>();
         return services;
     }
 
