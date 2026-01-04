@@ -1,0 +1,7 @@
+<Project>
+	<PropertyGroup>
+		<GlobalTargetFramework>net10.0</GlobalTargetFramework>
+		<!-- Enable Central Package Management -->
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+	</PropertyGroup>
+</Project>
