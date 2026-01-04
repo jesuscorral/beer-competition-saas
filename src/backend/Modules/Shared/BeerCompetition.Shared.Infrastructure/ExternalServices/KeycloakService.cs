@@ -43,7 +43,7 @@ public class KeycloakService : IKeycloakService
         {
             var tokenEndpoint = $"{KeycloakBaseUrl}/realms/master/protocol/openid-connect/token";
 
-            var content = new FormUrlEncodedContent(new Dictionary<string, string>
+            using var content = new FormUrlEncodedContent(new Dictionary<string, string>
             {
                 ["client_id"] = "admin-cli",
                 ["username"] = AdminUsername,
@@ -112,7 +112,7 @@ public class KeycloakService : IKeycloakService
                 }
             };
 
-            var request = new HttpRequestMessage(HttpMethod.Post, createUserUrl)
+            using var request = new HttpRequestMessage(HttpMethod.Post, createUserUrl)
             {
                 Content = JsonContent.Create(userRepresentation),
                 Headers =
@@ -166,7 +166,7 @@ public class KeycloakService : IKeycloakService
         {
             // First, get the role representation
             var getRoleUrl = $"{KeycloakBaseUrl}/admin/realms/{Realm}/roles/{roleName}";
-            var getRoleRequest = new HttpRequestMessage(HttpMethod.Get, getRoleUrl)
+            using var getRoleRequest = new HttpRequestMessage(HttpMethod.Get, getRoleUrl)
             {
                 Headers =
                 {
@@ -186,7 +186,7 @@ public class KeycloakService : IKeycloakService
 
             // Now assign the role to the user
             var assignRoleUrl = $"{KeycloakBaseUrl}/admin/realms/{Realm}/users/{userId}/role-mappings/realm";
-            var assignRoleRequest = new HttpRequestMessage(HttpMethod.Post, assignRoleUrl)
+            using var assignRoleRequest = new HttpRequestMessage(HttpMethod.Post, assignRoleUrl)
             {
                 Content = JsonContent.Create(new[] { role }),
                 Headers =
@@ -231,7 +231,7 @@ public class KeycloakService : IKeycloakService
         {
             // First, get the user to retrieve existing attributes
             var getUserUrl = $"{KeycloakBaseUrl}/admin/realms/{Realm}/users/{userId}";
-            var getUserRequest = new HttpRequestMessage(HttpMethod.Get, getUserUrl)
+            using var getUserRequest = new HttpRequestMessage(HttpMethod.Get, getUserUrl)
             {
                 Headers =
                 {
@@ -261,7 +261,7 @@ public class KeycloakService : IKeycloakService
 
             // Update the user with new attributes
             var updateUserUrl = $"{KeycloakBaseUrl}/admin/realms/{Realm}/users/{userId}";
-            var updateUserRequest = new HttpRequestMessage(HttpMethod.Put, updateUserUrl)
+            using var updateUserRequest = new HttpRequestMessage(HttpMethod.Put, updateUserUrl)
             {
                 Content = JsonContent.Create(new { attributes }),
                 Headers =
@@ -303,7 +303,7 @@ public class KeycloakService : IKeycloakService
         try
         {
             var deleteUserUrl = $"{KeycloakBaseUrl}/admin/realms/{Realm}/users/{userId}";
-            var request = new HttpRequestMessage(HttpMethod.Delete, deleteUserUrl)
+            using var request = new HttpRequestMessage(HttpMethod.Delete, deleteUserUrl)
             {
                 Headers =
                 {
