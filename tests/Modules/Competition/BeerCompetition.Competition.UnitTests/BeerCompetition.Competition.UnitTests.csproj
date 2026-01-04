@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>$(GlobalTargetFramework)</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<IsPackable>false</IsPackable>
+		<RootNamespace>BeerCompetition.Competition.UnitTests</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="coverlet.collector" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" />
+		<PackageReference Include="xunit" />
+		<PackageReference Include="FluentAssertions" />
+
+		<PackageReference Include="NSubstitute" />
+		<PackageReference Include="xunit.runner.visualstudio" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Using Include="Xunit" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\..\src\backend\Modules\Competition\BeerCompetition.Competition.API\BeerCompetition.Competition.API.csproj" />
+		<ProjectReference Include="..\..\..\..\src\backend\Modules\Competition\BeerCompetition.Competition.Application\BeerCompetition.Competition.Application.csproj" />
+		<ProjectReference Include="..\..\..\..\src\backend\Modules\Competition\BeerCompetition.Competition.Infrastructure\BeerCompetition.Competition.Infrastructure.csproj" />
+		<ProjectReference Include="..\..\..\..\src\backend\Modules\Shared\BeerCompetition.Shared.Infrastructure\BeerCompetition.Shared.Infrastructure.csproj" />
+	</ItemGroup>
+
+</Project>

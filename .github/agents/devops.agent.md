@@ -2,6 +2,11 @@
 description: 'Senior DevOps Engineer specializing in cloud infrastructure, containerization, IaC, CI/CD pipelines, and observability.'
 tools:
   ['vscode', 'execute', 'read', 'edit', 'search', 'web', 'fetch/*', 'filesystem/*', 'github/*', 'memory/*', 'agent', 'todo']
+handoffs:
+  - backend
+  - frontend
+  - qa
+  - product-owner
 ---
 
 # DevOps & Infrastructure Agent

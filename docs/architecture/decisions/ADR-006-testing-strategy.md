@@ -1,7 +1,7 @@
 # ADR-006: Testing Strategy
 
 **Date**: 2025-12-19  
-**Status**: Accepted  
+**Status**: Accepted (Updated 2026-01-04)  
 **Deciders**: Architecture Team  
 **Context**: Beer Competition SaaS Platform
 
@@ -238,7 +238,95 @@ public class EntryTests
 
 ---
 
-### 2. Integration Tests (Testcontainers)
+### 2. Integration Tests (Testcontainers + WebApplicationFactory + Respawn)
+
+**Updated Implementation (2026-01-04)**: The project uses **WebApplicationFactory**, **Testcontainers**, **Respawn**, and **Builder Pattern** for clean, maintainable integration tests.
+
+#### Key Components
+
+1. **IntegrationTestWebApplicationFactory**: Custom `WebApplicationFactory` managing PostgreSQL containers (Testcontainers), applies migrations, and provides test infrastructure (mocked services, `TestTenantProvider`)
+
+2. **IntegrationTestBase**: Base class for all integration tests with **Respawn** for intelligent database cleanup (truncates data, preserves schema)
+
+3. **TestTenantProvider**: Dynamic tenant context provider for tests - allows switching tenant context with `SetTenant(Guid)` and `ClearTenant()`, eliminating need for `IgnoreQueryFilters()` in most tests
+
+4. **Builder Pattern**: Fluent builders for test data:
+   - `TenantBuilder`: Creates Tenant entities with sensible defaults
+   - `CompetitionBuilder`: Creates Competition entities with sensible defaults
+   - Validates domain rules at build time
+
+#### Example Integration Test
+
+```csharp
+public class RegisterOrganizerIntegrationTests : IntegrationTestBase
+{
+    [Fact]
+    public async Task Handle_CompleteFlow_CreatesAllEntities()
+    {
+        // Arrange: Mock external services
+        Factory.KeycloakService
+            .Setup(s => s.CreateUserAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(Result<Guid>.Success(Guid.NewGuid()));
+
+        var command = new RegisterOrganizerCommand(
+            Email: "john@example.com",
+            OrganizationName: "John's Homebrew Club");
+
+        // Act: Execute command via MediatR
+        var result = await _mediator.Send(command);
+
+        // Assert: Set tenant context and verify
+        result.IsSuccess.Should().BeTrue();
+        Factory.TenantProvider.SetTenant(result.Value.TenantId);
+
+        var verifyContext = GetFreshDbContext();
+        var tenant = await verifyContext.Tenants.FirstOrDefaultAsync();
+        tenant.Should().NotBeNull();
+        tenant!.Email.Should().Be("john@example.com");
+    }
+
+    [Fact]
+    public async Task Handle_MultipleOrganizers_IsolatesTenants()
+    {
+        // Arrange: Use builders for test data
+        var tenant1 = TenantBuilder.Default()
+            .WithEmail("org1@example.com")
+            .Build();
+
+        var context = GetFreshDbContext();
+        await context.Tenants.AddAsync(tenant1);
+        await context.SaveChangesAsync();
+
+        Factory.TenantProvider.SetTenant(tenant1.Id);
+        var competition1 = CompetitionBuilder.Default()
+            .WithTenantId(tenant1.Id)
+            .WithName("Tenant 1 Competition")
+            .Build();
+        await context.Competitions.AddAsync(competition1);
+        await context.SaveChangesAsync();
+
+        // Act: Query as Tenant 1
+        var verifyContext = GetFreshDbContext();
+        var competitions = await verifyContext.Competitions.ToListAsync();
+
+        // Assert: Multi-tenancy enforced
+        competitions.Should().HaveCount(1);
+        competitions[0].Name.Should().Be("Tenant 1 Competition");
+    }
+}
+```
+
+#### Benefits
+
+- ✅ Real PostgreSQL 16 container (no database mocks)
+- ✅ Automatic migrations and cleanup (Respawn)
+- ✅ Dynamic tenant context (TestTenantProvider)
+- ✅ Builder pattern for readable test setup
+- ✅ Fast execution (~1-5 seconds per test)
+
+---
+
+### 2. Integration Tests (Original Testcontainers Approach)
 
 #### Test Fixture (PostgreSQL Container)
 ```csharp

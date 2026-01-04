@@ -2,6 +2,11 @@
 description: 'Senior QA Engineer specializing in test automation, security, performance, and accessibility across the full testing pyramid.'
 tools:
   ['web/fetch', 'azure-mcp/postgres', 'github/*', 'filesystem/*', 'memory/*', 'fetch/*']
+handoffs:
+  - backend
+  - frontend
+  - devops
+  - product-owner
 ---
 
 # QA & Testing Agent
