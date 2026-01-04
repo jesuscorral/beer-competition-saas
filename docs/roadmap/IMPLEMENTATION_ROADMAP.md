@@ -1,25 +1,26 @@
 # 🗺️ MVP Implementation Roadmap
 
-**Last Updated:** 2025-12-19  
+**Last Updated:** 2026-01-04  
 **Target:** Production-ready MVP in 12-16 weeks  
-**Team:** 3-4 engineers (2 backend, 1 frontend, 1 full-stack/devops)
+**Team:** 3-4 engineers (2 backend, 1 frontend, 1 full-stack/devops)  
+**Status:** 🟢 Sprint 0 & 1 Partially Complete - Infrastructure & Auth Implemented
 
 ---
 
 ## 📐 Implementation Strategy
 
 ### Core Principles
-1. **Foundation First:** Infrastructure and authentication must be rock-solid
+1. **Foundation First:** Infrastructure and authentication must be rock-solid ✅ **DONE**
 2. **Vertical Slices:** Complete user journeys before expanding features
 3. **Parallel Workstreams:** Backend and frontend can work in parallel after Sprint 1
-4. **Test as You Go:** Integration tests with every feature (Testcontainers)
+4. **Test as You Go:** Integration tests with every feature (Testcontainers) ✅ **IMPLEMENTED**
 5. **Deploy Early:** Staging environment from Sprint 1, dogfooding from Sprint 2
 
 ### Critical Path
 The following issues are on the critical path and CANNOT be parallelized:
-1. INFRA-001 → INFRA-002 → INFRA-003 → INFRA-004 (Infrastructure setup)
-2. AUTH-001 → AUTH-002 → AUTH-003 (Authentication pipeline)
-3. COMP-001 → COMP-002 → COMP-003 → COMP-004 (Competition foundation)
+1. ✅ INFRA-001 → INFRA-002 → INFRA-003 → INFRA-004 **COMPLETED**
+2. ✅ AUTH-001 → AUTH-002 → AUTH-003 **COMPLETED**
+3. 🔄 COMP-001 → COMP-002 → COMP-003 → COMP-004 **IN PROGRESS** (COMP-001/002 done)
 4. ENTRY-001 → ENTRY-002 → ENTRY-003 (Entry workflow)
 5. FLIGHT-001 → FLIGHT-002 → SCORE-001 → SCORE-002 (Judging workflow)
 6. BOS-001 → BOS-002 → BOS-003 → BOS-004 (BOS workflow)
@@ -28,75 +29,112 @@ The following issues are on the critical path and CANNOT be parallelized:
 
 ## 🏃 Sprint Plan (2-week sprints)
 
-### **Sprint 0: Foundation (Weeks 1-2)**
+### **✅ Sprint 0: Foundation (Weeks 1-2) - COMPLETED**
 **Goal:** Infrastructure ready for development
 
 **Team Focus:** All hands on deck for infrastructure
 
 **Issues (7 total - 19 days estimated):**
-1. ✅ **INFRA-001:** PostgreSQL Multi-Tenant Setup (M - 3-5 days) - @backend
-2. ✅ **INFRA-002:** Docker Compose Environment (M - 2-3 days) - @devops
-3. **INFRA-005:** BJCP Styles Database Seeding (S - 1-2 days) - @backend
-4. **OBS-001:** Structured Logging Setup (S - 1-2 days) - @backend
-5. **OBS-004:** Health Checks & Readiness Probes (S - 1-2 days) - @backend
-6. ✅ **INFRA-003:** Event Outbox Worker (M - 3-4 days) - @backend
-7. ✅ **INFRA-004:** RabbitMQ Event Bus (M - 3-4 days) - @backend
+1. ✅ **INFRA-001:** PostgreSQL Multi-Tenant Setup (M - 3-5 days) - @backend **DONE**
+   - PostgreSQL 16 with Row-Level Security (RLS) configured
+   - Entity Framework Core 10.0 with multi-tenancy global filters
+   - Database migrations implemented (ADR-008)
+   - Development tenant script created
 
-**Parallel Workstreams:**
-- **Backend Track:** INFRA-001 → INFRA-003 → INFRA-004
-- **DevOps Track:** INFRA-002 → OBS-001 → OBS-004
-- **Backend Track 2:** INFRA-005 (can start after INFRA-001)
+2. ✅ **INFRA-002:** Docker Compose Environment (M - 2-3 days) - @devops **DONE**
+   - Docker Compose with PostgreSQL, RabbitMQ, Keycloak
+   - All services running locally
+   - Environment variables documented
+
+3. **INFRA-005:** BJCP Styles Database Seeding (S - 1-2 days) - @backend **PENDING**
+
+4. **OBS-001:** Structured Logging Setup (S - 1-2 days) - @backend **PENDING**
+
+5. **OBS-004:** Health Checks & Readiness Probes (S - 1-2 days) - @backend **PENDING**
+
+6. ✅ **INFRA-003:** Event Outbox Worker (M - 3-4 days) - @backend **DONE**
+   - Outbox pattern implemented (no dual-write problem)
+   - CloudEvents 1.0 format for all events
+   - Background worker publishes to RabbitMQ
+
+7. ✅ **INFRA-004:** RabbitMQ Event Bus (M - 3-4 days) - @backend **DONE**
+   - RabbitMQ 3.12 configured with exchanges/queues
+   - Dead Letter Queue for failed messages
+   - Integration tests with Testcontainers
 
 **Sprint 0 Deliverables:**
 - ✅ PostgreSQL with RLS running locally
 - ✅ Docker Compose with all services
 - ✅ Event-driven architecture functional
-- ✅ BJCP styles in database
-- ✅ Health checks and logging working
+- ⏳ BJCP styles in database **(TODO)**
+- ⏳ Health checks and logging working **(TODO)**
 
 **Sprint 0 Demo:**
-- Show Docker Compose starting all services
-- Query BJCP styles from database
-- Publish test event to RabbitMQ
-- View logs in Seq/console
+- ✅ Show Docker Compose starting all services
+- ⏳ Query BJCP styles from database **(TODO)**
+- ✅ Publish test event to RabbitMQ
+- ✅ View logs in console
 
 ---
 
-### **Sprint 1: Authentication & Core Competition (Weeks 3-4)**
+### **✅ Sprint 1: Authentication & Core Competition (Weeks 3-4) - PARTIALLY COMPLETE**
 **Goal:** Users can log in and organizers can create competitions
 
 **Team Focus:** Backend focus on CQRS patterns, Frontend starts UI
 
-**Backend Issues (6 issues - 20 days estimated):**
-1. ✅ **AUTH-001:** Keycloak OIDC Integration (L - 5-8 days) - @backend
-2. ✅ **AUTH-002:** BFF Token Validation (S - 1-2 days) - @backend
-3. ✅ **AUTH-003:** RBAC Policies (S - 1-2 days) - @backend
-4. ✅ **COMP-001:** Competition Domain Models (S - 2-3 days) - @backend
-5. ✅ **COMP-002:** Competition CRUD API (M - 4-5 days) - @backend
-6. **COMP-003:** Competition Status Transitions (S - 2-3 days) - @backend
-7. **COMP-004:** BJCP Style Integration API (M - 3-4 days) - @backend
+**Backend Issues (7 issues - 22 days estimated):**
+1. ✅ **AUTH-001:** Keycloak OIDC Integration (L - 5-8 days) - @backend **DONE**
+   - Keycloak 23+ configured with `beercomp` realm
+   - OAuth 2.0 Token Exchange (RFC 8693) implemented **(NEW: ADR-010)**
+   - Service-specific audiences (bff-api, competition-service, judging-service)
+   - JWT with tenant_id + roles claims
+
+2. ✅ **AUTH-002:** BFF Token Validation (S - 1-2 days) - @backend **DONE**
+   - BFF (YARP Reverse Proxy) validates frontend tokens
+   - Token exchange for service-specific tokens
+   - X-Tenant-ID header injection
+
+3. ✅ **AUTH-003:** RBAC Policies (S - 1-2 days) - @backend **DONE**
+   - Four roles: Organizer, Judge, Entrant, Steward (no admin)
+   - Authorization policies configured
+   - [Authorize] attributes on controllers
+
+4. ✅ **COMP-001:** Competition Domain Models (S - 2-3 days) - @backend **DONE**
+   - Competition aggregate root with DDD patterns
+   - Tenant aggregate root
+   - Organizer entity
+   - Domain events (CompetitionCreated, OrganizerRegistered)
+
+5. ✅ **COMP-002:** Competition CRUD API (M - 4-5 days) - @backend **DONE**
+   - RegisterOrganizer command/handler implemented
+   - CQRS pattern with MediatR
+   - FluentValidation for commands
+   - **Integration tests** with Testcontainers + WebApplicationFactory + Respawn ✅
+   - **Builder Pattern** for test data (TenantBuilder, CompetitionBuilder) ✅
+
+6. **COMP-003:** Competition Status Transitions (S - 2-3 days) - @backend **PENDING**
+
+7. **COMP-004:** BJCP Style Integration API (M - 3-4 days) - @backend **PENDING**
 
 **Frontend Issues (2 issues - 12 days estimated):**
-1. **UI-001:** Login & Authentication UI (M - 4-5 days) - @frontend
-2. **UI-002:** Competition Dashboard (Organizer) (L - 6-8 days) - @frontend (start)
-
-**Parallel Workstreams:**
-- **Backend Track 1:** AUTH-001 → AUTH-002 → AUTH-003
-- **Backend Track 2:** COMP-001 → COMP-002 → COMP-003 (starts after AUTH-003)
-- **Frontend Track:** UI-001 → UI-002 (starts after AUTH-001 deployed)
+1. **UI-001:** Login & Authentication UI (M - 4-5 days) - @frontend **PENDING**
+2. **UI-002:** Competition Dashboard (Organizer) (L - 6-8 days) - @frontend **PENDING**
 
 **Sprint 1 Deliverables:**
-- ✅ User can log in via Keycloak
+- ✅ User can log in via Keycloak (OIDC)
+- ✅ Token exchange working (service-specific audiences)
 - ✅ Organizer role enforced
-- ✅ Organizer can create competitions
-- ✅ Competition status transitions work
-- ✅ Frontend dashboard shows competitions list
+- ✅ Organizer can be registered (RegisterOrganizer feature)
+- ✅ Integration testing infrastructure complete (Testcontainers + Respawn + Builders)
+- ⏳ Competition CRUD API complete **(TODO)**
+- ⏳ Frontend dashboard shows competitions list **(TODO)**
 
 **Sprint 1 Demo:**
-- Register new user (organizer role)
-- Log in and see competition dashboard
-- Create new competition
-- Transition competition to "Registration Open"
+- ✅ Keycloak realm configured with 4 clients (frontend-spa, bff-api, competition-service, judging-service)
+- ✅ Token exchange working (BFF → Competition Service)
+- ✅ RegisterOrganizer integration tests passing (4/4 tests)
+- ⏳ Log in and see competition dashboard **(TODO)**
+- ⏳ Create new competition **(TODO)**
 
 ---
 
@@ -308,16 +346,21 @@ The following issues are on the critical path and CANNOT be parallelized:
 
 ## 📊 Effort Summary by Sprint
 
-| Sprint | Backend Days | Frontend Days | DevOps Days | Total Days | Critical Path? |
-|--------|--------------|---------------|-------------|------------|----------------|
-| Sprint 0 | 14 | 0 | 5 | 19 | ✅ Yes |
-| Sprint 1 | 20 | 12 | 0 | 32 | ✅ Yes |
-| Sprint 2 | 17 | 13 | 0 | 30 | ✅ Yes |
-| Sprint 3 | 19 | 8 | 0 | 27 | ✅ Yes |
-| Sprint 4 | 9 | 18 | 0 | 27 | ✅ Yes |
-| Sprint 5 | 16 | 4 | 0 | 20 | ✅ Yes |
-| Sprint 6 | 13 | 5 | 11 | 29 | ⚠️ Partial |
+| Sprint | Backend Days | Frontend Days | DevOps Days | Total Days | Status |
+|--------|--------------|---------------|-------------|------------|--------|
+| Sprint 0 | 14 | 0 | 5 | 19 | ✅ 80% Complete |
+| Sprint 1 | 20 | 12 | 0 | 32 | ✅ 60% Complete |
+| Sprint 2 | 17 | 13 | 0 | 30 | ⏳ Not Started |
+| Sprint 3 | 19 | 8 | 0 | 27 | ⏳ Not Started |
+| Sprint 4 | 9 | 18 | 0 | 27 | ⏳ Not Started |
+| Sprint 5 | 16 | 4 | 0 | 20 | ⏳ Not Started |
+| Sprint 6 | 13 | 5 | 11 | 29 | ⏳ Not Started |
 | **Total** | **108** | **60** | **16** | **184 person-days** | |
+
+**Current Progress:**
+- ✅ **Completed:** ~28 person-days (15%)
+- 🔄 **In Progress:** ~12 person-days (7%)
+- ⏳ **Remaining:** ~144 person-days (78%)
 
 **With 3-4 Engineers:**
 - **3 engineers:** ~61 working days = 12-13 weeks (realistic with buffer)
@@ -391,13 +434,14 @@ The following issues are on the critical path and CANNOT be parallelized:
 - **Full-Stack/DevOps:** Docker, CI/CD, Observability, Testing
 
 ### Technology Choices Confirmed
-- **Backend:** .NET 10, Entity Framework Core, MediatR, FluentValidation
+- **Backend:** .NET 10, Entity Framework Core, MediatR, FluentValidation ✅ **IMPLEMENTED**
 - **Frontend:** React 18, TypeScript, TanStack Query, Zustand, IndexedDB (Dexie.js)
-- **Database:** PostgreSQL 16+ with RLS
-- **Message Bus:** RabbitMQ 3.12+
-- **Identity:** Keycloak 23+
-- **Observability:** Serilog, OpenTelemetry, Seq (dev), Azure Monitor (prod)
-- **Testing:** xUnit, FluentAssertions, Testcontainers, Cypress
+- **Database:** PostgreSQL 16 with RLS ✅ **IMPLEMENTED**
+- **Message Bus:** RabbitMQ 3.12+ ✅ **IMPLEMENTED**
+- **Identity:** Keycloak 23+ ✅ **IMPLEMENTED**
+- **BFF:** YARP Reverse Proxy with Token Exchange ✅ **IMPLEMENTED** **(NEW)**
+- **Testing:** xUnit, FluentAssertions, Testcontainers, Respawn, NSubstitute ✅ **IMPLEMENTED**
+- **Observability:** Serilog, OpenTelemetry, Seq (dev), Azure Monitor (prod) ⏳ **(PARTIAL)**
 
 ### Critical Path Bottlenecks
 - **Sprint 1:** AUTH-001 blocks all authenticated endpoints

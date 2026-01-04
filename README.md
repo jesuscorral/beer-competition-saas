@@ -1,10 +1,23 @@
 # Beer Competition SaaS Platform
 
+**Status**: 🟢 MVP in Progress (Sprint 0 & 1 Partially Complete)  
+**Last Updated**: 2026-01-04
+
 ## Overview
 
 A comprehensive, multi-tenant SaaS platform for managing BJCP 2021-compliant homebrew beer competitions. The system enforces blind judging, conflict-of-interest rules, and accurate scoring while supporting typical scales of 200 entrants, 50 concurrent judges, and 600 bottles per competition.
 
 **Target Users**: Competition organizers, homebrewers (entrants), BJCP judges, stewards.
+
+**Current Implementation Status**:
+- ✅ PostgreSQL 16 with Row-Level Security (multi-tenancy)
+- ✅ Keycloak OIDC authentication with OAuth 2.0 Token Exchange
+- ✅ BFF (Backend-for-Frontend) API Gateway with YARP reverse proxy
+- ✅ Modular monolith architecture (Host + Competition Module)
+- ✅ Integration testing infrastructure (Testcontainers + Respawn + Builder Pattern)
+- ✅ Event-driven architecture (RabbitMQ + Outbox Pattern)
+- ⏳ Frontend React PWA (planned)
+- ⏳ Complete CRUD operations (in progress)
 
 ---
 
@@ -44,25 +57,58 @@ A comprehensive, multi-tenant SaaS platform for managing BJCP 2021-compliant hom
 ## Architecture Highlights
 
 **Stack**:
-- **Backend**: .NET 10 (BFF + 2 Core Services: Competition, Judging)
-- **Analytics** (Post-MVP): Python (FastAPI, ML capabilities)
-- **Frontend**: React + Tailwind CSS (Progressive Web App)
-- **Authentication**: Keycloak (OAuth2/OIDC)
-- **Database**: PostgreSQL (multi-tenant with Row-Level Security)
-- **Event Bus**: RabbitMQ
-- **Cache**: Redis
-- **Orchestration**: Docker + Docker Compose
-- **Cloud**: Azure (Container Instances, PostgreSQL Flexible Server, Static Web Apps)
-- **Observability**: OpenTelemetry + Azure Monitor
-- **CI/CD**: GitHub Actions
+- **Backend**: .NET 10 (Modular Monolith + BFF API Gateway) ✅
+  - **Host**: Main application hosting all modules
+  - **BFF**: YARP reverse proxy with OAuth 2.0 Token Exchange
+  - **Modules** (Bounded Contexts):
+    - ✅ **Competition Module**: Competitions, entries, organizers, tenants, styles
+    - ⏳ **Judging Module**: Flights, judge assignments, scoresheets, BOS, consensus (planned)
+    - ⏳ **Notification Module**: Email/SMS notifications, alerts (planned)
+  - **Shared Kernel**: Common domain primitives, Result pattern, multi-tenancy abstractions
+- **Frontend**: React 18 + TypeScript + Tailwind CSS (Progressive Web App) ⏳
+- **Authentication**: Keycloak 23+ (OAuth2/OIDC) with service-specific audiences ✅
+- **Database**: PostgreSQL 16 (multi-tenant with Row-Level Security) ✅
+- **Event Bus**: RabbitMQ 3.12 with CloudEvents 1.0 format ✅
+- **Cache**: Redis 7+ (future)
+- **Orchestration**: Docker + Docker Compose ✅
+- **Cloud**: Azure (Container Apps, PostgreSQL Flexible Server, Static Web Apps)
+- **Testing**: xUnit + Testcontainers + Respawn + FluentAssertions ✅
+- **Observability**: Serilog + OpenTelemetry (partial) ⏳
+- **CI/CD**: GitHub Actions ⏳
 
-**Architecture Pattern**: Microservices with event-driven communication; BFF (Backend-for-Frontend) as API gateway.
+**Architecture Pattern**: 
+- **Current**: Modular Monolith with Vertical Slices and DDD patterns
+- **Future**: Microservices with event-driven communication when scale requires
+- **BFF**: Backend-for-Frontend as API gateway with token exchange
 
-**Core Services**:
-1. **BFF/API Gateway** (.NET 10): Authentication, authorization, routing, rate limiting
-2. **Competition Service** (.NET 10): Competitions, entries, styles, payments, bottle check-in
-3. **Judging Service** (.NET 10): Flights, judge assignments, scoresheets, BOS, consensus
-4. **Analytics Service** (Python - Post-MVP): ML-driven insights, advanced reporting, judge assignment suggestions
+**Implemented Services**:
+1. ✅ **BFF/API Gateway** (.NET 10): Token validation, OAuth 2.0 Token Exchange, routing
+2. ✅ **Competition Module** (.NET 10): Tenant/Organizer registration, domain models
+3. ⏳ **Judging Module** (.NET 10): Planned
+4. ⏳ **Analytics Service** (Python - Post-MVP): ML-driven insights
+
+**Project Structure**:
+```
+beer-competition-saas/
+├── src/
+│   ├── backend/
+│   │   ├── BFF/BFF.ApiGateway/         # YARP reverse proxy + Token Exchange
+│   │   ├── Host/BeerCompetition.Host/  # Modular monolith host
+│   │   └── Modules/                    # Bounded contexts (DDD)
+│   │       ├── Competition/            # Competition module (4 projects)
+│   │       └── Shared/                 # Shared Kernel (3 projects)
+│   └── frontend/                       # React PWA (in progress)
+├── tests/
+│   ├── BFF/BFF.ApiGateway.Tests/
+│   └── Modules/Competition/            # Integration tests with Testcontainers
+├── infrastructure/
+│   ├── docker-compose.yml              # PostgreSQL, RabbitMQ, Keycloak
+│   └── keycloak/realm-export.json      # Keycloak configuration
+└── docs/
+    ├── architecture/                   # Architecture Decision Records (ADRs)
+    ├── development/                    # Solution structure
+    └── roadmap/                        # Implementation roadmap
+```
 
 ---
 
@@ -100,79 +146,102 @@ Before starting, ensure you have the following installed:
 - **Docker Desktop** 4.25+ (includes Docker Compose v2)
   - [Download for Windows](https://www.docker.com/products/docker-desktop/)
   - Ensure WSL 2 backend is enabled (Settings → General → Use WSL 2 based engine)
-- **.NET 10 SDK** (for backend services - future)
+- **.NET 10 SDK** ✅ **REQUIRED** (for backend services)
   - [Download .NET 10](https://dotnet.microsoft.com/download/dotnet/10.0)
 - **Node.js 20+** and **npm** (for frontend - future)
   - [Download Node.js](https://nodejs.org/)
 - **Git** for version control
 - **PowerShell 7+** (recommended for Windows)
+- **Visual Studio 2025, VS Code, or Rider** (IDE with .NET support)
 
-### Quick Start (Infrastructure Only - Sprint 0)
+### Quick Start
 
+#### 1. Clone Repository
 ```powershell
-# 1. Clone repository
 git clone https://github.com/jesuscorral/beer-competition-saas.git
 cd beer-competition-saas
+```
 
-# 2. Navigate to infrastructure folder
+#### 2. Start Infrastructure Services
+```powershell
 cd infrastructure
-
-# 3. Copy environment template and configure
-Copy-Item .env.example .env
-# Edit .env with your preferences (default values work for local dev)
-
-# 4. Start all infrastructure services
 docker-compose up -d
 
-# 5. Verify all services are healthy
+# Verify all services are healthy
 docker-compose ps
 
 # Expected output:
-NAME                   STATUS              PORTS
-beercomp_postgres      Up (healthy)        0.0.0.0:5432->5432/tcp
-beercomp_pgadmin       Up                  0.0.0.0:5050->80/tcp
-beercomp_rabbitmq      Up (healthy)        0.0.0.0:5672->5672/tcp, 0.0.0.0:15672->15672/tcp
-beercomp_redis         Up (healthy)        0.0.0.0:6379->6379/tcp
-beercomp_keycloak      Up (healthy)        0.0.0.0:8080->8080/tcp
-
-# 6. Access management interfaces:
-- pgAdmin (PostgreSQL UI): http://localhost:5050
-#   Login: admin@beercomp.dev / <your-password>
-# - RabbitMQ Management: http://localhost:15672
-#   Login: <your-username> / <your-password>
-# - Keycloak Admin Console: http://localhost:8080/admin
-#   Login: admin / <your-password>
+# NAME                   STATUS              PORTS
+# beercomp_postgres      Up (healthy)        0.0.0.0:5432->5432/tcp
+# beercomp_rabbitmq      Up (healthy)        0.0.0.0:5672->5672/tcp, 0.0.0.0:15672->15672/tcp
+# beercomp_keycloak      Up (healthy)        0.0.0.0:8080->8080/tcp
 ```
 
-### Initial Database Configuration (pgAdmin)
+#### 3. Restore NuGet Packages & Build
+```powershell
+cd ..  # Return to root
+dotnet restore BeerCompetition.sln
+dotnet build BeerCompetition.sln
+```
 
-1. Open pgAdmin at http://localhost:5050
-2. **Add Server Connection**:
-   - Right-click "Servers" → Register → Server
-   - **General Tab**:
-     - Name: `Beer Competition Local`
-   - **Connection Tab**:
-     - Host: `postgres` (Docker internal network)
-     - Port: `5432`
-     - Database: `<your-database-name>`
-     - Username: `<your-username>`
-     - Password: `<your-password>`
-   - Click "Save"
+#### 4. Apply Database Migrations
+```powershell
+cd src/backend/Modules/Competition/BeerCompetition.Competition.Infrastructure
+dotnet ef database update --startup-project ../../../Host/BeerCompetition.Host
+```
 
-3. You should now see the `<your-database-name>` database and can browse tables (future: after migrations)
+#### 5. Insert Development Tenant
+```powershell
+cd ../../../..  # Return to src/backend
+.\Insert-DevelopmentTenant.ps1
+```
 
-### Keycloak Initial Setup (Future - Sprint 1)
+#### 6. Run Backend Host
+```powershell
+cd Host/BeerCompetition.Host
+dotnet run
 
-Keycloak admin console will be configured in Sprint 1 (AUTH-001 issue) with:
-- Realm: `beercomp`
-- Clients: `backend-api`, `frontend-web`
-- Roles: `ORGANIZER`, `JUDGE`, `ENTRANT`, `STEWARD`
-- Test users with various roles
+# API available at: https://localhost:5001
+# Swagger UI: https://localhost:5001/swagger
+```
 
+#### 7. Run BFF API Gateway (Optional - for token exchange testing)
+```powershell
+# Open new terminal
+cd src/backend/BFF/BFF.ApiGateway
+dotnet run
+
+# BFF available at: https://localhost:5190
+```
+
+#### 8. Run Integration Tests
+```powershell
+# Requires Docker running for Testcontainers
+cd tests/Modules/Competition/BeerCompetition.Competition.IntegrationTests
+dotnet test
+
+# Expected: All tests passing (RegisterOrganizerIntegrationTests: 4/4 pass)
+```
+
+### Management Interfaces
+
+- **Keycloak Admin Console**: http://localhost:8080/admin
+  - Login: `admin` / `<your-password>`
+  - Realm: `beercomp`
+  - Clients: `frontend-spa`, `bff-api`, `competition-service`, `judging-service`
+
+- **RabbitMQ Management**: http://localhost:15672
+  - Login: `<your-username>` / `<your-password>`
+  - View queues, exchanges, messages
+
+- **PostgreSQL**: `localhost:5432`
+  - Database: `<your-database-name>`
+  - Use `psql` or pgAdmin to connect
 ### Stopping Services
 
 ```powershell
 # Stop all services (preserves data in volumes)
+cd infrastructure
 docker-compose stop
 
 # Stop and remove containers (preserves data)
@@ -187,17 +256,69 @@ docker-compose down -v
 ## Documentation
 
 ### Architecture & Design
-- [Architecture Overview](docs/architecture/ARCHITECTURE.md) - Complete system design: stack, services, patterns, data model, APIs, algorithms, deployment
+- [Architecture Overview](docs/architecture/ARCHITECTURE.md) - Complete system design
+- [Architecture Decision Records](docs/architecture/decisions/) - ADRs documenting key decisions:
+  - ✅ [ADR-001: Tech Stack Selection](docs/architecture/decisions/ADR-001-tech-stack-selection.md)
+  - ✅ [ADR-002: Multi-Tenancy Strategy](docs/architecture/decisions/ADR-002-multi-tenancy-strategy.md)
+  - ✅ [ADR-003: Event-Driven Architecture](docs/architecture/decisions/ADR-003-event-driven-architecture.md)
+  - ✅ [ADR-004: Authentication & Authorization](docs/architecture/decisions/ADR-004-authentication-authorization.md)
+  - ✅ [ADR-005: CQRS Implementation](docs/architecture/decisions/ADR-005-cqrs-implementation.md)
+  - ✅ [ADR-006: Testing Strategy](docs/architecture/decisions/ADR-006-testing-strategy.md) ⭐ **UPDATED**
+  - ✅ [ADR-007: Frontend Architecture](docs/architecture/decisions/ADR-007-frontend-architecture.md)
+  - ✅ [ADR-008: Database Migrations Strategy](docs/architecture/decisions/ADR-008-database-migrations-strategy.md)
+  - ✅ [ADR-009: Modular Monolith with Vertical Slices](docs/architecture/decisions/ADR-009-modular-monolith-vertical-slices.md)
+  - ✅ [ADR-010: Token Exchange Pattern](docs/architecture/decisions/ADR-010-token-exchange-pattern.md) ⭐ **NEW**
+- [Service Audiences & Token Exchange](docs/architecture/SERVICE_AUDIENCES_TOKEN_EXCHANGE.md) - Implementation guide
 
-### AI Agents & Development
-- [AI Agents Guide](docs/agents/README.md) - GitHub Copilot agents, MCP configuration, workflows, examples
-
-### Deployment & Operations
-- [Deployment Guide](docs/deployment/DEPLOYMENT.md) - Docker Compose, Azure Bicep, GitHub Actions CI/CD
+### Development
+- [Solution Structure](docs/development/SOLUTION_STRUCTURE.md) ⭐ **UPDATED** - Project organization, testing infrastructure
+- [Integration Tests README](tests/Modules/Competition/README.md) ⭐ **NEW** - Testcontainers + Respawn + Builder Pattern
 
 ### Product & Planning
-- [MVP Definition](docs/MVP_DEFINITION.md) - MVP features, acceptance criteria, phasing
-- [Backlog](docs/BACKLOG.md) - Prioritized tasks grouped by epic (54 tasks: 47 MVP + 7 Post-MVP)
+- [MVP Definition](docs/roadmap/MVP_DEFINITION.md) - MVP features, acceptance criteria
+- [Implementation Roadmap](docs/roadmap/IMPLEMENTATION_ROADMAP.md) ⭐ **UPDATED** - Sprint plan with progress tracking
+- [MVP Issues Complete](docs/roadmap/MVP_ISSUES_COMPLETE.md) ⭐ **UPDATED** - Issue tracking (13 completed, 34 remaining)
+
+### Operations
+- [Deployment Guide](docs/deployment/DEPLOYMENT.md) - Docker Compose, Azure deployment
+- [Secrets Management](infrastructure/SECRETS_MANAGEMENT.md) - Environment variables, Azure Key Vault
+
+---
+
+## Testing
+
+### Unit Tests
+```powershell
+# Run unit tests only
+dotnet test --filter "Category=Unit"
+```
+
+### Integration Tests ⭐ **IMPLEMENTED**
+```powershell
+# Requires Docker running for Testcontainers
+dotnet test --filter "FullyQualifiedName~IntegrationTests"
+
+# Example: RegisterOrganizerIntegrationTests
+cd tests/Modules/Competition/BeerCompetition.Competition.IntegrationTests
+dotnet test --filter "FullyQualifiedName~RegisterOrganizerIntegrationTests"
+```
+
+**Integration Testing Infrastructure:**
+- ✅ **Testcontainers**: Automatic PostgreSQL 16 container management
+- ✅ **WebApplicationFactory**: In-memory API hosting with test configuration
+- ✅ **Respawn**: Intelligent database cleanup (truncates data, preserves schema)
+- ✅ **Builder Pattern**: Fluent builders for test data (TenantBuilder, CompetitionBuilder)
+- ✅ **TestTenantProvider**: Dynamic tenant context switching during tests
+- ✅ **Mock Services**: NSubstitute mocks for Keycloak and external services
+
+See: [Integration Tests README](tests/Modules/Competition/README.md) for detailed guide
+
+### E2E Tests
+```powershell
+# Cypress E2E tests (future)
+cd frontend
+npm run test:e2e
+```
 
 ---
 

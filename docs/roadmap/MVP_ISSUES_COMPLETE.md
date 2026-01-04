@@ -1,24 +1,35 @@
 # Complete MVP Issues List
 
 **Generated:** 2025-12-19  
-**Total Issues:** 47 (5 created, 42 to create)  
+**Last Updated:** 2026-01-04  
+**Total Issues:** 47 (13 completed, 34 to create)  
 **MVP Timeline:** 12-16 weeks with 3-4 engineers
 
 ---
 
-## ✅ Already Created (5)
+## ✅ Already Completed (13)
 
-| Issue | Title | Priority | Complexity | Sprint | Agents |
-|-------|-------|----------|------------|--------|--------|
-| #6 | [INFRA-001] PostgreSQL Multi-Tenant Database with RLS | P0 | M | Sprint 0 | @backend, @devops |
-| #2 | [INFRA-002] Docker Compose Development Environment | P0 | M | Sprint 0 | @devops, @backend |
-| #3 | [AUTH-001] Keycloak OIDC Authentication Integration | P0 | L | Sprint 1 | @backend, @frontend |
-| #5 | [COMP-001] Competition Domain Models with Multi-Tenancy | P0 | S | Sprint 1 | @backend |
-| #4 | [COMP-002] Competition CRUD REST API with CQRS | P0 | M | Sprint 1 | @backend, @qa |
-| #7 | [INFRA-003] Event Outbox Background Worker | P0 | M | Sprint 0 | @backend |
-| #8 | [INFRA-004] RabbitMQ Event Bus Configuration | P0 | M | Sprint 0 | @backend, @devops |
-| #9 | [AUTH-002] BFF Token Validation Middleware | P0 | S | Sprint 1 | @backend |
-| #10 | [AUTH-003] Role-Based Authorization Policies | P0 | S | Sprint 1 | @backend |
+| Issue | Title | Priority | Complexity | Sprint | Status | Notes |
+|-------|-------|----------|------------|--------|--------|-------|
+| #6 | [INFRA-001] PostgreSQL Multi-Tenant Database with RLS | P0 | M | Sprint 0 | ✅ DONE | PostgreSQL 16, EF Core 10.0, migrations implemented |
+| #2 | [INFRA-002] Docker Compose Development Environment | P0 | M | Sprint 0 | ✅ DONE | PostgreSQL, RabbitMQ, Keycloak running |
+| #7 | [INFRA-003] Event Outbox Worker | P0 | M | Sprint 0 | ✅ DONE | Outbox pattern, CloudEvents 1.0 |
+| #8 | [INFRA-004] RabbitMQ Event Bus Configuration | P0 | M | Sprint 0 | ✅ DONE | Dead Letter Queue, exchanges/queues |
+| #3 | [AUTH-001] Keycloak OIDC Authentication Integration | P0 | L | Sprint 1 | ✅ DONE | OAuth 2.0 Token Exchange (RFC 8693) ⭐ |
+| #9 | [AUTH-002] BFF Token Validation Middleware | P0 | S | Sprint 1 | ✅ DONE | YARP reverse proxy, token exchange |
+| #10 | [AUTH-003] Role-Based Authorization Policies | P0 | S | Sprint 1 | ✅ DONE | 4 roles: Organizer, Judge, Entrant, Steward |
+| #5 | [COMP-001] Competition Domain Models with Multi-Tenancy | P0 | S | Sprint 1 | ✅ DONE | Competition, Tenant, Organizer aggregates |
+| #4 | [COMP-002] Competition CRUD REST API with CQRS | P0 | M | Sprint 1 | ✅ DONE | RegisterOrganizer feature, MediatR handlers |
+| N/A | [ADR-008] Database Migrations Strategy | P0 | S | Sprint 0 | ✅ DONE | EF Core migrations documented |
+| N/A | [ADR-010] Token Exchange Pattern | P0 | M | Sprint 1 | ✅ DONE | Service-specific audiences ⭐ |
+| N/A | [TEST-001] Integration Testing Infrastructure | P0 | L | Sprint 1 | ✅ DONE | Testcontainers, Respawn, Builders ⭐ |
+| N/A | [BFF-001] BFF API Gateway Implementation | P0 | L | Sprint 1 | ✅ DONE | YARP, OAuth 2.0 Token Exchange ⭐ |
+
+**Key Implementations:**
+- ⭐ **NEW**: OAuth 2.0 Token Exchange with service-specific audiences (BFF, Competition Service, Judging Service)
+- ⭐ **NEW**: Integration testing infrastructure with Testcontainers, WebApplicationFactory, Respawn
+- ⭐ **NEW**: Builder Pattern for test data (TenantBuilder, CompetitionBuilder)
+- ⭐ **NEW**: TestTenantProvider for dynamic tenant context in tests
 
 ---
 

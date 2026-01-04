@@ -2,13 +2,13 @@
 
 **Project**: Beer Competition SaaS Platform  
 **Architecture**: Modular Monolith with Vertical Slices and DDD  
-**Last Updated**: 2025-12-22
+**Last Updated**: 2026-01-04
 
 ---
 
 ## Overview
 
-This document describes the structure of the `BeerCompetition.Monolith` solution, which implements a **modular monolith architecture** with **vertical slices** and **Domain-Driven Design (DDD)** tactical patterns.
+This document describes the structure of the Beer Competition SaaS solution, which implements a **modular monolith architecture** with **vertical slices** and **Domain-Driven Design (DDD)** tactical patterns.
 
 The solution is organized as a single deployable application with clear internal module boundaries following bounded contexts from DDD. Each module can potentially be extracted into a microservice in the future.
 
@@ -17,56 +17,109 @@ The solution is organized as a single deployable application with clear internal
 ## Solution Structure
 
 ```
-backend/
-├── BeerCompetition.Monolith.sln          # Solution file
-├── .editorconfig                          # Code style configuration
+beer-competition-saas/
+├── BeerCompetition.sln                    # Solution file
+├── Directory.Build.props                  # Shared build configuration
+├── Directory.Packages.props               # Central Package Management (CPM)
 │
-├── Modules/                               # Bounded Contexts (DDD)
-│   ├── Competition/                       # Competition Module
-│   │   ├── BeerCompetition.Competition.Domain/
-│   │   │   ├── Entities/                  # Domain entities (Competition, Entry, etc.)
-│   │   │   ├── Events/                    # Domain events
-│   │   │   └── Repositories/              # Repository interfaces
+├── src/
+│   ├── backend/
+│   │   ├── BFF/                           # Backend-for-Frontend (API Gateway)
+│   │   │   └── BFF.ApiGateway/
+│   │   │       ├── Program.cs             # YARP reverse proxy + Token Exchange
+│   │   │       ├── appsettings.json       # Service routes, Keycloak config
+│   │   │       └── Services/
+│   │   │           └── TokenExchangeService.cs  # OAuth 2.0 Token Exchange
 │   │   │
-│   │   ├── BeerCompetition.Competition.Application/
-│   │   │   └── Features/                  # Vertical slices
-│   │   │       └── CreateCompetition/     # Example vertical slice
-│   │   │           ├── CreateCompetitionCommand.cs
-│   │   │           ├── CreateCompetitionHandler.cs
-│   │   │           └── CreateCompetitionValidator.cs
+│   │   ├── Host/                          # Application Host (Modular Monolith)
+│   │   │   └── BeerCompetition.Host/
+│   │   │       ├── Program.cs             # Entry point, module registration
+│   │   │       ├── appsettings.json       # Database, RabbitMQ, Keycloak
+│   │   │       └── public partial class Program { }  # WebApplicationFactory support
 │   │   │
-│   │   ├── BeerCompetition.Competition.Infrastructure/
-│   │   │   ├── Persistence/               # EF Core DbContext, configurations
-│   │   │   ├── Repositories/              # Repository implementations
-│   │   │   └── DependencyInjection.cs     # Module registration
-│   │   │
-│   │   └── BeerCompetition.Competition.API/
-│   │       └── Endpoints/                 # Minimal API endpoints
+│   │   └── Modules/                       # Bounded Contexts (DDD)
+│   │       ├── Competition/               # Competition Module
+│   │       │   ├── BeerCompetition.Competition.Domain/
+│   │       │   │   ├── Aggregates/        # Aggregate roots (Competition, Tenant, Entry)
+│   │       │   │   ├── Entities/          # Domain entities
+│   │       │   │   ├── Events/            # Domain events
+│   │       │   │   └── Repositories/      # Repository interfaces
+│   │       │   │
+│   │       │   ├── BeerCompetition.Competition.Application/
+│   │       │   │   └── Features/          # Vertical slices (CQRS)
+│   │       │   │       ├── RegisterOrganizer/
+│   │       │   │       │   ├── RegisterOrganizerCommand.cs
+│   │       │   │       │   ├── RegisterOrganizerHandler.cs
+│   │       │   │       │   └── RegisterOrganizerValidator.cs
+│   │       │   │       ├── CreateCompetition/
+│   │       │   │       └── ...
+│   │       │   │
+│   │       │   ├── BeerCompetition.Competition.Infrastructure/
+│   │       │   │   ├── Persistence/       # EF Core DbContext, configurations
+│   │       │   │   │   ├── ApplicationDbContext.cs
+│   │       │   │   │   ├── Configurations/
+│   │       │   │   │   └── Migrations/
+│   │       │   │   ├── Repositories/      # Repository implementations
+│   │       │   │   └── DependencyInjection.cs  # Module registration
+│   │       │   │
+│   │       │   └── BeerCompetition.Competition.API/
+│   │       │       └── Endpoints/         # Minimal API endpoints
+│   │       │
+│   │       ├── Judging/                   # Judging Module (future)
+│   │       │
+│   │       └── Shared/                    # Shared Kernel
+│   │           ├── BeerCompetition.Shared.Kernel/
+│   │           │   ├── Entity.cs          # Base entity class
+│   │           │   ├── IAggregateRoot.cs  # Marker interface
+│   │           │   ├── IDomainEvent.cs    # Domain event interface
+│   │           │   ├── ITenantEntity.cs   # Multi-tenancy interface
+│   │           │   └── Result.cs          # Result pattern for error handling
+│   │           │
+│   │           ├── BeerCompetition.Shared.Contracts/
+│   │           │   └── IIntegrationEvent.cs  # Integration event interface
+│   │           │
+│   │           └── BeerCompetition.Shared.Infrastructure/
+│   │               └── MultiTenancy/
+│   │                   ├── ITenantProvider.cs  # Tenant context abstraction
+│   │                   └── TenantProvider.cs   # Tenant context provider
 │   │
-│   ├── Judging/                           # Judging Module (future)
+│   └── frontend/                          # React PWA (future)
+│
+├── tests/
+│   ├── BFF/                               # BFF API Gateway Tests
+│   │   └── BFF.ApiGateway.Tests/
+│   │       ├── Authentication/
+│   │       ├── Middleware/
+│   │       └── Services/
 │   │
-│   └── Shared/                            # Shared Kernel
-│       ├── BeerCompetition.Shared.Kernel/
-│       │   ├── Entity.cs                  # Base entity class
-│       │   ├── IAggregateRoot.cs          # Marker interface
-│       │   ├── IDomainEvent.cs            # Domain event interface
-│       │   ├── ITenantEntity.cs           # Multi-tenancy interface
-│       │   └── Result.cs                  # Result pattern for error handling
-│       │
-│       ├── BeerCompetition.Shared.Contracts/
-│       │   └── IIntegrationEvent.cs       # Integration event interface
-│       │
-│       └── BeerCompetition.Shared.Infrastructure/
-│           └── MultiTenancy/
-│               └── TenantProvider.cs      # Tenant context provider
+│   └── Modules/
+│       └── Competition/
+│           └── BeerCompetition.Competition.IntegrationTests/
+│               ├── Infrastructure/         # Test infrastructure
+│               │   ├── IntegrationTestWebApplicationFactory.cs
+│               │   ├── IntegrationTestBase.cs
+│               │   └── TestTenantProvider.cs
+│               ├── Builders/              # Builder Pattern for test data
+│               │   ├── TenantBuilder.cs
+│               │   └── CompetitionBuilder.cs
+│               └── Features/              # Feature integration tests
+│                   └── RegisterOrganizer/
+│                       └── RegisterOrganizerIntegrationTests.cs
 │
-├── Host/
-│   └── BeerCompetition.Host/
-│       ├── Program.cs                     # Application entry point
-│       ├── appsettings.json              # Configuration
-│       └── appsettings.Development.json
+├── infrastructure/
+│   ├── docker-compose.yml                 # PostgreSQL, RabbitMQ, Keycloak
+│   └── keycloak/
+│       └── realm-export.json              # Keycloak realm configuration
 │
-└── Tests/                                 # Test projects (future)
+└── docs/
+    ├── architecture/
+    │   ├── ARCHITECTURE.md
+    │   ├── SERVICE_AUDIENCES_TOKEN_EXCHANGE.md
+    │   └── decisions/                     # Architecture Decision Records
+    ├── development/
+    │   └── SOLUTION_STRUCTURE.md          # This document
+    └── roadmap/
+        └── IMPLEMENTATION_ROADMAP.md
 ```
 
 ---
@@ -273,42 +326,161 @@ builder.Services.AddJudgingModule(builder.Configuration);
 - Test domain entities, value objects, business rules
 - Test command/query handlers in isolation (mock repositories)
 - Test validators
+- Framework: **xUnit + FluentAssertions + NSubstitute**
 
-### Integration Tests
-- Test vertical slices end-to-end (HTTP request → database)
-- Use Testcontainers for real PostgreSQL
+### Integration Tests (Testcontainers + WebApplicationFactory)
+
+**Updated Implementation (2026-01-04)**: The project uses **modern integration testing infrastructure** with:
+
+#### Infrastructure Components
+
+1. **IntegrationTestWebApplicationFactory**:
+   - Manages PostgreSQL containers (Testcontainers)
+   - Provides test infrastructure (mocked services)
+   - Replaces `ITenantProvider` with `TestTenantProvider`
+   - Applies database migrations automatically
+
+2. **IntegrationTestBase**:
+   - Base class for all integration tests
+   - Uses **Respawn** for intelligent database cleanup (preserves schema, truncates data)
+   - Provides `GetFreshDbContext()` helper
+   - Clears tenant context between tests
+
+3. **TestTenantProvider**:
+   - Dynamic tenant context for tests
+   - `SetTenant(Guid)` to switch tenant context
+   - `ClearTenant()` to reset context
+   - Eliminates need for `IgnoreQueryFilters()` in most tests
+
+4. **Builder Pattern**:
+   - `TenantBuilder`: Fluent builder for Tenant entities
+   - `CompetitionBuilder`: Fluent builder for Competition entities
+   - Provides sensible defaults
+   - Validates domain rules at build time
+
+**Example Integration Test:**
+
+```csharp
+public class RegisterOrganizerIntegrationTests : IntegrationTestBase
+{
+    public RegisterOrganizerIntegrationTests(IntegrationTestWebApplicationFactory factory)
+        : base(factory)
+    {
+    }
+
+    [Fact]
+    public async Task Handle_CompleteFlow_CreatesAllEntities()
+    {
+        // Arrange: Mock Keycloak
+        Factory.KeycloakService
+            .Setup(s => s.CreateUserAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(Result<Guid>.Success(Guid.NewGuid()));
+
+        // Build command
+        var command = new RegisterOrganizerCommand(
+            Email: "john@example.com",
+            OrganizationName: "John's Homebrew Club");
+
+        // Act: Execute command
+        var result = await _mediator.Send(command);
+
+        // Assert: Command succeeded
+        result.IsSuccess.Should().BeTrue();
+
+        // Set tenant context for verification
+        Factory.TenantProvider.SetTenant(result.Value.TenantId);
+
+        // Verify: Tenant created
+        var verifyContext = GetFreshDbContext();
+        var tenant = await verifyContext.Tenants.FirstOrDefaultAsync();
+        tenant.Should().NotBeNull();
+        tenant!.Email.Should().Be("john@example.com");
+    }
+}
+```
+
+**Benefits:**
+- ✅ Real PostgreSQL 16 container (no mocks)
+- ✅ Automatic migrations and cleanup (Respawn)
+- ✅ Dynamic tenant context (TestTenantProvider)
+- ✅ Builder pattern for readable test setup
+- ✅ Fast execution (~1-5 seconds per test)
 
 ### E2E Tests (Cypress)
 - Test critical user flows through React frontend
+- Offline PWA testing (service workers + IndexedDB)
+
+### Related Documentation
+- **[ADR-006: Testing Strategy](../architecture/decisions/ADR-006-testing-strategy.md)** - Detailed testing approach
+- **[Integration Tests README](../../tests/Modules/Competition/README.md)** - Test infrastructure guide
 
 ---
 
 ## Build and Run
 
 ### Prerequisites
-- .NET 10 SDK
-- PostgreSQL 16+ (or Docker)
-- IDE: Visual Studio 2025, VS Code, or Rider
+- **.NET 10 SDK**
+- **Docker** (for PostgreSQL, RabbitMQ, Keycloak, Testcontainers)
+- **Node.js 20+** (for frontend)
+- **IDE**: Visual Studio 2025, VS Code, or Rider
 
-### Build
+### Build Backend
 ```bash
-cd backend
-dotnet build BeerCompetition.Monolith.sln
+cd beer-competition-saas
+dotnet build BeerCompetition.sln
 ```
 
-### Run
+### Run Infrastructure Services
 ```bash
-cd backend/Host/BeerCompetition.Host
+cd infrastructure
+docker-compose up -d  # Starts PostgreSQL, RabbitMQ, Keycloak
+```
+
+### Run Backend Host
+```bash
+cd src/backend/Host/BeerCompetition.Host
 dotnet run
 ```
 
 API will be available at `https://localhost:5001` with Swagger UI at root (`/`).
 
-### Database Migrations
+### Run BFF (API Gateway)
 ```bash
-cd backend/Modules/Competition/BeerCompetition.Competition.Infrastructure
-dotnet ef migrations add InitialCreate --startup-project ../../Host/BeerCompetition.Host
-dotnet ef database update --startup-project ../../Host/BeerCompetition.Host
+cd src/backend/BFF/BFF.ApiGateway
+dotnet run
+```
+
+BFF will be available at `https://localhost:5190` (reverse proxy to services).
+
+### Database Migrations
+
+**Create Migration:**
+```bash
+cd src/backend/Modules/Competition/BeerCompetition.Competition.Infrastructure
+dotnet ef migrations add MyMigration --startup-project ../../../Host/BeerCompetition.Host
+```
+
+**Apply Migrations:**
+```bash
+dotnet ef database update --startup-project ../../../Host/BeerCompetition.Host
+```
+
+**Insert Development Tenant:**
+```powershell
+cd src/backend
+.\Insert-DevelopmentTenant.ps1
+```
+
+### Run Tests
+```bash
+# Unit tests only
+dotnet test --filter "Category=Unit"
+
+# Integration tests (requires Docker for Testcontainers)
+dotnet test --filter "FullyQualifiedName~IntegrationTests"
+
+# All tests
+dotnet test
 ```
 
 ---
@@ -320,6 +492,8 @@ See [Architecture Decision Records (ADRs)](../architecture/decisions/) for detai
 - **[ADR-009: Modular Monolith with Vertical Slices and DDD](../architecture/decisions/ADR-009-modular-monolith-vertical-slices.md)** - Why modular monolith vs microservices
 - **[ADR-002: Multi-Tenancy Strategy](../architecture/decisions/ADR-002-multi-tenancy-strategy.md)** - PostgreSQL RLS + EF Global Filters
 - **[ADR-005: CQRS Implementation](../architecture/decisions/ADR-005-cqrs-implementation.md)** - MediatR for command/query separation
+- **[ADR-006: Testing Strategy](../architecture/decisions/ADR-006-testing-strategy.md)** - Testcontainers + Builder Pattern
+- **[ADR-010: Token Exchange Pattern](../architecture/decisions/ADR-010-token-exchange-pattern.md)** - OAuth 2.0 Token Exchange for service security
 
 ---
 
@@ -329,8 +503,56 @@ See [Architecture Decision Records (ADRs)](../architecture/decisions/) for detai
 2. **Add command/query**: `MyFeatureCommand.cs` (implements `IRequest<Result<T>>`)
 3. **Add handler**: `MyFeatureHandler.cs` (implements `IRequestHandler<>`)
 4. **Add validator**: `MyFeatureValidator.cs` (extends `AbstractValidator<>`)
-5. **Map endpoint**: Add to `CompetitionEndpoints.cs` in API layer
-6. **Write tests**: Unit tests for handler, integration tests for endpoint
+5. **Map endpoint**: Add to endpoints in API layer (or BFF routing)
+6. **Write tests**: 
+   - Unit tests for handler
+   - Integration tests using `IntegrationTestBase` + builders
+   - E2E tests for critical flows
+
+**Example (CreateCompetition feature):**
+```bash
+src/backend/Modules/Competition/
+└── BeerCompetition.Competition.Application/
+    └── Features/
+        └── CreateCompetition/
+            ├── CreateCompetitionCommand.cs
+            ├── CreateCompetitionHandler.cs
+            └── CreateCompetitionValidator.cs
+```
+
+---
+
+## Central Package Management (CPM)
+
+The solution uses **Central Package Management** via `Directory.Packages.props`:
+
+**Benefits:**
+- ✅ Single source of truth for package versions
+- ✅ Consistent versions across all projects
+- ✅ Easier dependency upgrades
+- ✅ Reduced `.csproj` file noise
+
+**Example `Directory.Packages.props`:**
+```xml
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
+    <PackageVersion Include="MediatR" Version="13.0.1" />
+    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.10.0" />
+    <PackageVersion Include="Respawn" Version="7.0.0" />
+  </ItemGroup>
+</Project>
+```
+
+**Adding new package:**
+1. Add to `Directory.Packages.props` with version
+2. Reference in `.csproj` WITHOUT version:
+   ```xml
+   <PackageReference Include="MyNewPackage" />
+   ```
 
 ---
 
@@ -338,10 +560,11 @@ See [Architecture Decision Records (ADRs)](../architecture/decisions/) for detai
 
 - **Judging Module**: Complete implementation (Domain, Application, Infrastructure, API)
 - **Event Sourcing**: Store domain events for audit trail
-- **Outbox Pattern**: Reliable event publishing to RabbitMQ
-- **Authentication**: Keycloak integration with JWT validation
-- **Authorization**: Role-based access control (Organizer, Judge, Entrant)
+- **Outbox Pattern**: Reliable event publishing to RabbitMQ (already partially implemented)
+- **Frontend**: React PWA with offline support (in progress)
 - **Migrations**: Microservices extraction when scale requires it
+- **Notifications Module**: Email/SMS notifications for competition updates
+- **Payment Service**: Stripe integration for entry fees
 
 ---
 
@@ -355,4 +578,4 @@ See [Architecture Decision Records (ADRs)](../architecture/decisions/) for detai
 ---
 
 **Maintainer**: Backend Development Team  
-**Last Updated**: 2025-12-22
+**Last Updated**: 2026-01-04
