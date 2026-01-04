@@ -190,11 +190,7 @@ cd src/backend/Modules/Competition/BeerCompetition.Competition.Infrastructure
 dotnet ef database update --startup-project ../../../Host/BeerCompetition.Host
 ```
 
-#### 5. Insert Development Tenant
-```powershell
-cd ../../../..  # Return to src/backend
-.\Insert-DevelopmentTenant.ps1
-```
+**Note**: The development tenant (`11111111-1111-1111-1111-111111111111`) is automatically configured in `TenantProvider.cs` for development environment.
 
 #### 6. Run Backend Host
 ```powershell

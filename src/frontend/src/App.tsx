@@ -5,6 +5,7 @@ import { Navbar } from './components/Navbar';
 import { CompetitionCreate } from './pages/CompetitionCreate';
 import { CompetitionList } from './pages/CompetitionList';
 import { Home } from './pages/Home';
+import { OrganizerRegister } from './pages/OrganizerRegister';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,6 +25,7 @@ function App() {
           <main className="container mx-auto px-4 py-8">
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/register" element={<OrganizerRegister />} />
               <Route path="/competitions" element={<CompetitionList />} />
               <Route path="/competitions/create" element={<CompetitionCreate />} />
             </Routes>

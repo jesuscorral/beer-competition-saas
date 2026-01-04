@@ -1,5 +1,6 @@
 using BeerCompetition.Competition.Application.Features.CreateCompetition;
 using BeerCompetition.Competition.Application.Features.GetCompetitions;
+using BeerCompetition.Competition.Application.Features.SelectPlan;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -59,6 +60,31 @@ public static class CompetitionEndpoints
         .ProducesProblem(StatusCodes.Status403Forbidden)
         .RequireAuthorization("OrganizerOnly"); // Policy: Organizer role + tenant_id claim
 
+        // POST /api/competitions/{id}/select-plan - Select subscription plan
+        group.MapPost("/{id:guid}/select-plan", async (
+            Guid id,
+            SelectPlanRequest request,
+            IMediator mediator,
+            CancellationToken ct) =>
+        {
+            var command = new SelectPlanCommand(id, request.PlanName);
+            var result = await mediator.Send(command, ct);
+
+            return result.IsSuccess
+                ? Results.Ok(result.Value)
+                : Results.BadRequest(new { error = result.Error });
+        })
+        .WithName("SelectSubscriptionPlan")
+        .WithSummary("Select subscription plan for competition")
+        .WithDescription("Selects a subscription plan (TRIAL, BASIC, STANDARD, PRO) for the competition. " +
+                        "MVP: MOCK payment with immediate activation. **Organizer role required**.")
+        .Produces<SelectPlanResponse>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .RequireAuthorization("OrganizerOnly");
+
         // Additional endpoints will be added here:
         // - GET /api/competitions/{id} (get by id) - AuthenticatedUser
         // - PATCH /api/competitions/{id}/open (open for registration) - OrganizerOnly
@@ -66,3 +92,8 @@ public static class CompetitionEndpoints
         // - PATCH /api/competitions/{id}/publish-results - OrganizerOnly
     }
 }
+
+/// <summary>
+/// Request DTO for selecting a subscription plan.
+/// </summary>
+public record SelectPlanRequest(string PlanName);

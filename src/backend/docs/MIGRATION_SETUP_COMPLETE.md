@@ -255,9 +255,8 @@ dotnet ef database update PreviousMigrationName
 2. **Development Tenant SQL**: `backend/docs/database/development-tenant-setup.sql`
 3. **Manual Migration Guide**: `backend/docs/database/manual-migration-tenant-schema.sql`
 4. **Database Schema Visualization**: `backend/docs/architecture/database-schema-visualization.md`
-5. **Tenant Insertion Scripts**:
-   - PowerShell: `backend/Insert-DevelopmentTenant.ps1`
-   - SQL: `backend/INSERT-DEVELOPMENT-TENANT.sql`
+
+**Note**: Development tenant is automatically configured in `TenantProvider.cs` (ID: `11111111-1111-1111-1111-111111111111`).
 
 ---
 

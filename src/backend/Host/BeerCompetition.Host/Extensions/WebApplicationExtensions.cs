@@ -79,6 +79,7 @@ public static class WebApplicationExtensions
     {
         // Map module endpoints
         app.MapCompetitionEndpoints();
+        app.MapSubscriptionPlanEndpoints();
         app.MapAuthenticationEndpoints();
         // Future: app.MapJudgingEndpoints();
 

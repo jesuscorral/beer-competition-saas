@@ -11,7 +11,6 @@ namespace BeerCompetition.Competition.UnitTests.Features.RegisterOrganizer;
 public class RegisterOrganizerHandlerTests
 {
     private readonly ITenantRepository _tenantRepository;
-    private readonly ICompetitionRepository _competitionRepository;
     private readonly IKeycloakService _keycloakService;
     private readonly ILogger<RegisterOrganizerHandler> _logger;
     private readonly RegisterOrganizerHandler _handler;
@@ -19,27 +18,24 @@ public class RegisterOrganizerHandlerTests
     public RegisterOrganizerHandlerTests()
     {
         _tenantRepository = Substitute.For<ITenantRepository>();
-        _competitionRepository = Substitute.For<ICompetitionRepository>();
         _keycloakService = Substitute.For<IKeycloakService>();
         _logger = Substitute.For<ILogger<RegisterOrganizerHandler>>();
 
         _handler = new RegisterOrganizerHandler(
             _tenantRepository,
-            _competitionRepository,
             _keycloakService,
             _logger
         );
     }
 
     [Fact]
-    public async Task Handle_NewOrganizer_CreatesUserTenantAndCompetition()
+    public async Task Handle_NewOrganizer_CreatesUserAndTenant()
     {
         // Arrange
         var command = new RegisterOrganizerCommand(
             Email: "organizer@example.com",
             Password: "SecurePass123",
             OrganizationName: "Test Organization",
-            CompetitionName: "Spring Classic 2026",
             PlanName: "TRIAL"
         );
 
@@ -60,12 +56,6 @@ public class RegisterOrganizerHandlerTests
         _keycloakService.SetUserAttributeAsync(keycloakUserId, "tenant_id", Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(Result.Success());
 
-        _competitionRepository.AddAsync(Arg.Any<Domain.Entities.Competition>(), Arg.Any<CancellationToken>())
-            .Returns(Task.CompletedTask);
-
-        _keycloakService.SetUserAttributeAsync(keycloakUserId, "competition_id", Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(Result.Success());
-
         _tenantRepository.SaveChangesAsync(Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(1));
 
@@ -82,13 +72,8 @@ public class RegisterOrganizerHandlerTests
             t.Email == command.Email
         ), Arg.Any<CancellationToken>());
 
-        await _competitionRepository.Received(1).AddAsync(Arg.Is<Domain.Entities.Competition>(c =>
-            c.Name == command.CompetitionName
-        ), Arg.Any<CancellationToken>());
-
         await _keycloakService.Received(1).AssignRoleAsync(keycloakUserId, "organizer", Arg.Any<CancellationToken>());
         await _keycloakService.Received(1).SetUserAttributeAsync(keycloakUserId, "tenant_id", Arg.Any<string>(), Arg.Any<CancellationToken>());
-        await _keycloakService.Received(1).SetUserAttributeAsync(keycloakUserId, "competition_id", Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -99,7 +84,6 @@ public class RegisterOrganizerHandlerTests
             Email: "existing@example.com",
             Password: "SecurePass123",
             OrganizationName: "Test Organization",
-            CompetitionName: "Spring Classic 2026",
             PlanName: "TRIAL"
         );
 
@@ -130,7 +114,6 @@ public class RegisterOrganizerHandlerTests
             Email: "organizer@example.com",
             Password: "SecurePass123",
             OrganizationName: "Test Organization",
-            CompetitionName: "Spring Classic 2026",
             PlanName: "TRIAL"
         );
 
@@ -158,7 +141,6 @@ public class RegisterOrganizerHandlerTests
             Email: "organizer@example.com",
             Password: "SecurePass123",
             OrganizationName: "Test Organization",
-            CompetitionName: "Spring Classic 2026",
             PlanName: "TRIAL"
         );
 
@@ -195,7 +177,6 @@ public class RegisterOrganizerHandlerTests
             Email: "organizer@example.com",
             Password: "SecurePass123",
             OrganizationName: "Test Organization",
-            CompetitionName: "Spring Classic 2026",
             PlanName: "TRIAL"
         );
 
@@ -214,12 +195,6 @@ public class RegisterOrganizerHandlerTests
             .Returns(Task.CompletedTask);
 
         _keycloakService.SetUserAttributeAsync(keycloakUserId, "tenant_id", Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(Result.Success());
-
-        _competitionRepository.AddAsync(Arg.Any<Domain.Entities.Competition>(), Arg.Any<CancellationToken>())
-            .Returns(Task.CompletedTask);
-
-        _keycloakService.SetUserAttributeAsync(keycloakUserId, "competition_id", Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(Result.Success());
 
         _tenantRepository.SaveChangesAsync(Arg.Any<CancellationToken>())
@@ -246,7 +221,6 @@ public class RegisterOrganizerHandlerTests
             Email: "organizer@example.com",
             Password: "SecurePass123",
             OrganizationName: "Test Organization",
-            CompetitionName: "Spring Classic 2026",
             PlanName: "TRIAL"
         );
 

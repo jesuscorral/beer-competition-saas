@@ -61,6 +61,20 @@ internal class CompetitionConfiguration : IEntityTypeConfiguration<Domain.Entiti
             .HasDefaultValue(10)
             .IsRequired();
 
+        // Subscription Plan (MVP: MOCK payment)
+        builder.Property(c => c.SubscriptionPlanId)
+            .HasColumnName("subscription_plan_id");
+
+        builder.Property(c => c.MaxEntries)
+            .HasColumnName("max_entries")
+            .HasDefaultValue(10)
+            .IsRequired();
+
+        builder.Property(c => c.IsPublic)
+            .HasColumnName("is_public")
+            .HasDefaultValue(false)
+            .IsRequired();
+
         // Audit fields
         builder.Property(c => c.CreatedAt)
             .HasColumnName("created_at")
@@ -76,12 +90,26 @@ internal class CompetitionConfiguration : IEntityTypeConfiguration<Domain.Entiti
         builder.HasIndex(c => c.RegistrationDeadline)
             .HasDatabaseName("ix_competitions_registration_deadline");
 
+        // Unique index on SubscriptionPlanId to enforce one-to-one relationship
+        // Each SubscriptionPlan can only be assigned to one Competition
+        builder.HasIndex(c => c.SubscriptionPlanId)
+            .IsUnique()
+            .HasFilter("[subscription_plan_id] IS NOT NULL")  // Allow multiple nulls (competitions without plans)
+            .HasDatabaseName("ix_competitions_subscription_plan_id_unique");
+
         // Relationships
         // Many Competitions -> One Tenant
         builder.HasOne(c => c.Tenant)
             .WithMany(t => t.Competitions)
             .HasForeignKey(c => c.TenantId)
             .OnDelete(DeleteBehavior.Restrict);  // Prevent cascade delete
+
+        // One Competition -> One SubscriptionPlan (one-to-one relationship)
+        builder.HasOne<SubscriptionPlan>()
+            .WithOne()  // One-to-one: each SubscriptionPlan can only belong to one Competition
+            .HasForeignKey<Domain.Entities.Competition>(c => c.SubscriptionPlanId)
+            .IsRequired(false)  // Nullable FK (competition can exist without plan initially)
+            .OnDelete(DeleteBehavior.SetNull);  // Set null if plan deleted
 
         // Ignore domain events (not persisted to database)
         builder.Ignore(c => c.DomainEvents);

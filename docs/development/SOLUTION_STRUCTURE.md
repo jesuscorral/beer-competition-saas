@@ -465,11 +465,7 @@ dotnet ef migrations add MyMigration --startup-project ../../../Host/BeerCompeti
 dotnet ef database update --startup-project ../../../Host/BeerCompetition.Host
 ```
 
-**Insert Development Tenant:**
-```powershell
-cd src/backend
-.\Insert-DevelopmentTenant.ps1
-```
+**Development Tenant**: Automatically configured (`11111111-1111-1111-1111-111111111111`) in `TenantProvider.cs`.
 
 ### Run Tests
 ```bash

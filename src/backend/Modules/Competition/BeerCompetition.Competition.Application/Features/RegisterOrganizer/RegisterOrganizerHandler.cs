@@ -9,24 +9,22 @@ namespace BeerCompetition.Competition.Application.Features.RegisterOrganizer;
 
 /// <summary>
 /// Handler for RegisterOrganizerCommand.
-/// Creates a new organizer account with tenant, competition, and Keycloak user.
+/// Creates a new organizer account with tenant and Keycloak user.
+/// Competition creation happens in a separate workflow.
 /// Implements atomic transaction - all or nothing.
 /// </summary>
 public class RegisterOrganizerHandler : IRequestHandler<RegisterOrganizerCommand, Result<OrganizerRegistrationResponse>>
 {
     private readonly ITenantRepository _tenantRepository;
-    private readonly ICompetitionRepository _competitionRepository;
     private readonly IKeycloakService _keycloakService;
     private readonly ILogger<RegisterOrganizerHandler> _logger;
 
     public RegisterOrganizerHandler(
         ITenantRepository tenantRepository,
-        ICompetitionRepository competitionRepository,
         IKeycloakService keycloakService,
         ILogger<RegisterOrganizerHandler> logger)
     {
         _tenantRepository = tenantRepository;
-        _competitionRepository = competitionRepository;
         _keycloakService = keycloakService;
         _logger = logger;
     }
@@ -36,10 +34,9 @@ public class RegisterOrganizerHandler : IRequestHandler<RegisterOrganizerCommand
         CancellationToken cancellationToken)
     {
         _logger.LogInformation(
-            "Registering organizer: {Email}, Organization: {OrganizationName}, Competition: {CompetitionName}",
+            "Registering organizer: {Email}, Organization: {OrganizationName}",
             request.Email,
-            request.OrganizationName,
-            request.CompetitionName);
+            request.OrganizationName);
 
         // Step 1: Check if email already exists
         var existingTenant = await _tenantRepository.GetByEmailAsync(request.Email, cancellationToken);
@@ -110,44 +107,17 @@ public class RegisterOrganizerHandler : IRequestHandler<RegisterOrganizerCommand
                 return Result<OrganizerRegistrationResponse>.Failure($"Failed to configure user: {setAttributeResult.Error}");
             }
 
-            // Step 6: Create competition entity
-            var competitionResult = Domain.Entities.Competition.Create(
-                tenant.Id,
-                request.CompetitionName,
-                DateTime.UtcNow.AddMonths(2), // Default registration deadline: 2 months
-                DateTime.UtcNow.AddMonths(3)  // Default judging start: 3 months
-            );
-
-            if (competitionResult.IsFailure)
-            {
-                _logger.LogError("Failed to create competition entity: {Error}", competitionResult.Error);
-                await CleanupKeycloakUser(keycloakUserId, cancellationToken);
-                return Result<OrganizerRegistrationResponse>.Failure(competitionResult.Error);
-            }
-
-            var competition = competitionResult.Value!;
-            await _competitionRepository.AddAsync(competition, cancellationToken);
-
-            // Step 7: Set competition_id attribute in Keycloak (optional for future use)
-            await _keycloakService.SetUserAttributeAsync(
-                keycloakUserId,
-                "competition_id",
-                competition.Id.ToString(),
-                cancellationToken);
-
-            // Step 8: Save all changes to database (atomic transaction)
+            // Step 6: Save all changes to database (atomic transaction)
             await _tenantRepository.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation(
-                "Organizer registered successfully: TenantId={TenantId}, CompetitionId={CompetitionId}, UserId={UserId}",
+                "Organizer registered successfully: TenantId={TenantId}, UserId={UserId}",
                 tenant.Id,
-                competition.Id,
                 keycloakUserId);
 
             return Result<OrganizerRegistrationResponse>.Success(
                 new OrganizerRegistrationResponse(
                     tenant.Id,
-                    competition.Id,
                     keycloakUserId));
         }
         catch (Exception ex)

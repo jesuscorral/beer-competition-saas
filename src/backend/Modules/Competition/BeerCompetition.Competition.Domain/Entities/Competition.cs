@@ -51,6 +51,23 @@ public class Competition : Entity, IAggregateRoot
     public int MaxEntriesPerEntrant { get; private set; } = 10;
 
     /// <summary>
+    /// Subscription plan ID for this competition (MVP: MOCK payment).
+    /// </summary>
+    public Guid? SubscriptionPlanId { get; private set; }
+
+    /// <summary>
+    /// Maximum entries allowed for this competition (based on subscription plan).
+    /// Default: 10 (TRIAL plan).
+    /// </summary>
+    public int MaxEntries { get; private set; } = 10;
+
+    /// <summary>
+    /// Whether this competition is public and visible in discovery.
+    /// Set to true after plan selection (MVP: immediate with MOCK payment).
+    /// </summary>
+    public bool IsPublic { get; private set; } = false;
+
+    /// <summary>
     /// Navigation property: Tenant (organization) that owns this competition.
     /// Required for EF Core relationship mapping.
     /// </summary>
@@ -75,8 +92,10 @@ public class Competition : Entity, IAggregateRoot
     public static Result<Competition> Create(
         Guid tenantId,
         string name,
+        string description,
         DateTime registrationDeadline,
-        DateTime judgingStartDate)
+        DateTime judgingStartDate,
+        DateTime? judgingEndDate)
     {
         // Validate name
         if (string.IsNullOrWhiteSpace(name))
@@ -129,6 +148,32 @@ public class Competition : Entity, IAggregateRoot
         MarkAsUpdated();
 
         AddDomainEvent(new CompetitionOpenedEvent(Id, TenantId));
+
+        return Result.Success();
+    }
+
+    /// <summary>
+    /// Sets the subscription plan for this competition and makes it public.
+    /// MVP: MOCK payment, immediate activation.
+    /// </summary>
+    public Result SetSubscriptionPlan(SubscriptionPlan plan)
+    {
+        if (plan == null)
+            return Result.Failure("Subscription plan cannot be null");
+
+        if (SubscriptionPlanId.HasValue)
+            return Result.Failure("Competition already has a subscription plan selected");
+
+        if (plan.TenantId != TenantId)
+            return Result.Failure("Subscription plan must belong to the same tenant as the competition");
+
+        SubscriptionPlanId = plan.Id;
+        MaxEntries = plan.MaxEntries;
+        IsPublic = true; // MVP: Immediate public visibility with MOCK payment
+
+        MarkAsUpdated();
+
+        AddDomainEvent(new SubscriptionPlanSelectedEvent(Id, TenantId, plan.Id, plan.MaxEntries));
 
         return Result.Success();
     }

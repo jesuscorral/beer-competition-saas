@@ -4,11 +4,13 @@
     "error": "Error",
     "success": "Success",
     "comingSoon": "Coming Soon",
-    "required": "Required"
+    "required": "Required",
+    "cancel": "Cancel"
   },
   "navbar": {
     "title": "Beer Competition Platform",
-    "createCompetition": "Create Competition"
+    "createCompetition": "Create Competition",
+    "register": "Register"
   },
   "home": {
     "welcome": "Welcome to Beer Competition Platform",
@@ -27,6 +29,60 @@
     "mvpPhase": {
       "title": "🚀 MVP Phase - Issue #80",
       "description": "This is the initial frontend implementation. Authentication and advanced features coming soon."
+    }
+  },
+  "auth": {
+    "register": {
+      "title": "Register as Organizer",
+      "subtitle": "Create your account to start managing beer competitions",
+      "twoStepProcess": "Two-step registration process:",
+      "step1": "Register your organization and create your account",
+      "step2": "Create your first competition",
+      "organizationInfo": "Organization Information",
+      "organizationName": "Organization Name",
+      "accountSecurity": "Account Security",
+      "email": "Email Address",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "subscriptionPlan": "Subscription Plan",
+      "selectPlan": "Select your plan",
+      "submit": "Register & Continue",
+      "submitting": "Registering...",
+      "success": "Registration successful! Creating your first competition...",
+      "error": "Registration failed"
+    },
+    "plans": {
+      "TRIAL": {
+        "name": "Trial",
+        "description": "30-day trial - Up to 50 entries"
+      },
+      "BASIC": {
+        "name": "Basic",
+        "description": "$29/month - Up to 100 entries"
+      },
+      "STANDARD": {
+        "name": "Standard",
+        "description": "$79/month - Up to 300 entries"
+      },
+      "PRO": {
+        "name": "Professional",
+        "description": "$199/month - Up to 1000 entries"
+      }
+    },
+    "validation": {
+      "emailRequired": "Email address is required",
+      "emailInvalid": "Please enter a valid email address",
+      "emailMaxLength": "Email must be less than 255 characters",
+      "passwordRequired": "Password is required",
+      "passwordMinLength": "Password must be at least 8 characters",
+      "passwordUppercase": "Password must contain at least one uppercase letter",
+      "passwordLowercase": "Password must contain at least one lowercase letter",
+      "passwordDigit": "Password must contain at least one digit",
+      "confirmPasswordRequired": "Please confirm your password",
+      "passwordMismatch": "Passwords do not match",
+      "organizationRequired": "Organization name is required",
+      "organizationMaxLength": "Organization name must be less than 255 characters",
+      "planRequired": "Please select a subscription plan"
     }
   },
   "competition": {

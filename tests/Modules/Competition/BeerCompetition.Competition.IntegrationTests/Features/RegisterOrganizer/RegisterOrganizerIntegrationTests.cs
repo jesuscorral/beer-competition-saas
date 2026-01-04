@@ -35,7 +35,6 @@ public class RegisterOrganizerIntegrationTests : IntegrationTestBase
             Email: "integration@test.com",
             Password: "SecurePass123",
             OrganizationName: "Integration Test Org",
-            CompetitionName: "Integration Test Competition",
             PlanName: "TRIAL"
         );
 
@@ -63,13 +62,6 @@ public class RegisterOrganizerIntegrationTests : IntegrationTestBase
                 Arg.Any<CancellationToken>())
             .Returns(Result.Success());
 
-        Factory.KeycloakService.SetUserAttributeAsync(
-                keycloakUserId, 
-                "competition_id", 
-                Arg.Any<string>(), 
-                Arg.Any<CancellationToken>())
-            .Returns(Result.Success());
-
         // Act
         var result = await _mediator.Send(command, CancellationToken.None);
 
@@ -78,7 +70,6 @@ public class RegisterOrganizerIntegrationTests : IntegrationTestBase
         result.Value.Should().NotBeNull();
         result.Value!.UserId.Should().Be(keycloakUserId);
         result.Value.TenantId.Should().NotBeEmpty();
-        result.Value.CompetitionId.Should().NotBeEmpty();
 
         // Set tenant context for verification queries
         Factory.TenantProvider.SetTenant(result.Value.TenantId);
@@ -90,13 +81,6 @@ public class RegisterOrganizerIntegrationTests : IntegrationTestBase
         tenant.Should().NotBeNull();
         tenant!.OrganizationName.Should().Be(command.OrganizationName);
         tenant.Email.Should().Be(command.Email);
-
-        // Verify competition was created in database
-        var competition = await verifyContext.Set<Domain.Entities.Competition>()
-            .FirstOrDefaultAsync(c => c.Id == result.Value.CompetitionId, CancellationToken.None);
-        competition.Should().NotBeNull();
-        competition!.Name.Should().Be(command.CompetitionName);
-        competition.TenantId.Should().Be(result.Value.TenantId);
 
         // Verify Keycloak interactions
         await Factory.KeycloakService.Received(1).CreateUserAsync(
@@ -116,12 +100,6 @@ public class RegisterOrganizerIntegrationTests : IntegrationTestBase
             "tenant_id",
             result.Value.TenantId.ToString(),
             Arg.Any<CancellationToken>());
-        
-        await Factory.KeycloakService.Received(1).SetUserAttributeAsync(
-            keycloakUserId,
-            "competition_id",
-            result.Value.CompetitionId.ToString(),
-            Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -132,7 +110,6 @@ public class RegisterOrganizerIntegrationTests : IntegrationTestBase
             Email: "duplicate@test.com",
             Password: "SecurePass123",
             OrganizationName: "First Org",
-            CompetitionName: "First Competition",
             PlanName: "TRIAL"
         );
 
@@ -172,7 +149,6 @@ public class RegisterOrganizerIntegrationTests : IntegrationTestBase
             Email: "duplicate@test.com",
             Password: "AnotherPass456",
             OrganizationName: "Second Org",
-            CompetitionName: "Second Competition",
             PlanName: "BASIC"
         );
 
@@ -207,7 +183,6 @@ public class RegisterOrganizerIntegrationTests : IntegrationTestBase
             Email: "rollback@test.com",
             Password: "SecurePass123",
             OrganizationName: "Rollback Test Org",
-            CompetitionName: "Rollback Test Competition",
             PlanName: "STANDARD"
         );
 
@@ -269,7 +244,6 @@ public class RegisterOrganizerIntegrationTests : IntegrationTestBase
             Email: "organizer1@test.com",
             Password: "SecurePass123",
             OrganizationName: "Org 1",
-            CompetitionName: "Competition 1",
             PlanName: "TRIAL"
         );
 
@@ -277,7 +251,6 @@ public class RegisterOrganizerIntegrationTests : IntegrationTestBase
             Email: "organizer2@test.com",
             Password: "SecurePass456",
             OrganizationName: "Org 2",
-            CompetitionName: "Competition 2",
             PlanName: "PRO"
         );
 
@@ -323,7 +296,6 @@ public class RegisterOrganizerIntegrationTests : IntegrationTestBase
         result2.IsSuccess.Should().BeTrue();
 
         result1.Value!.TenantId.Should().NotBe(result2.Value!.TenantId);
-        result1.Value.CompetitionId.Should().NotBe(result2.Value.CompetitionId);
 
         // Verify first tenant
         Factory.TenantProvider.SetTenant(result1.Value.TenantId);

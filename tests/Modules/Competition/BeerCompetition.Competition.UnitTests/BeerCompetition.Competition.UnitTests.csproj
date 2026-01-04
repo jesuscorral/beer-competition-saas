@@ -30,4 +30,8 @@
 		<ProjectReference Include="..\..\..\..\src\backend\Modules\Shared\BeerCompetition.Shared.Infrastructure\BeerCompetition.Shared.Infrastructure.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Application\Features\" />
+	</ItemGroup>
+
 </Project>
