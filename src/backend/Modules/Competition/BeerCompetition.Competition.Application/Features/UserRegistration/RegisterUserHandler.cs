@@ -288,9 +288,9 @@ public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, Result<U
                         userId);
                 }
 
-                // Return failure with preserved error context for debugging
+                // Return user-friendly error message (details are in logs for debugging)
                 return Result<UserRegistration.UserRegistrationResponse>.Failure(
-                    $"Registration failed: {ex.Message}");
+                    "An error occurred during registration. Please try again.");
             }
         }
         catch (Exception ex)
@@ -300,7 +300,7 @@ public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, Result<U
                 command.Email, command.Role);
             
             return Result<UserRegistration.UserRegistrationResponse>.Failure(
-                $"Registration validation failed: {ex.Message}");
+                "Registration request validation failed. Please check your input and try again.");
         }
     }
 }
