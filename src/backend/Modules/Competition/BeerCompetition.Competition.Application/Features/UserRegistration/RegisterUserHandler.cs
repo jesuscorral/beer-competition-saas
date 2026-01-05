@@ -268,7 +268,8 @@ public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, Result<U
                     new UserRegistration.UserRegistrationResponse(
                         userId,
                         status.ToString(),
-                        message));
+                        message,
+                        command.Role == CompetitionUserRole.ORGANIZER ? finalTenantId : null));
             }
             catch (Exception ex)
             {
