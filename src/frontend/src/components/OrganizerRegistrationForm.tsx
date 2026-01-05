@@ -117,7 +117,7 @@ export function OrganizerRegistrationForm() {
               <p className="text-red-600 text-sm mt-1">{errors.password.message}</p>
             )}
             <p className="text-sm text-gray-500 mt-1">
-              Minimum 8 characters with uppercase, lowercase, and digit
+              {t('auth.validation.passwordHint')}
             </p>
           </div>
 

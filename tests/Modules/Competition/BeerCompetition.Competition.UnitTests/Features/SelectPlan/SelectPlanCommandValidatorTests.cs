@@ -74,7 +74,6 @@ public class SelectPlanCommandValidatorTests
 
     [Theory]
     [InlineData("INVALID")]
-    [InlineData("trial")] // Case insensitive now
     [InlineData("FREE")]
     [InlineData("PREMIUM")]
     public void Validate_InvalidPlanNames_ReturnsFailure(string planName)
@@ -85,14 +84,26 @@ public class SelectPlanCommandValidatorTests
         // Act
         var result = _validator.TestValidate(command);
 
-        // Assert: validator converts to uppercase, so trial becomes TRIAL and passes
-        // Only truly invalid names should fail
-        if (planName.ToUpperInvariant() != "TRIAL" && 
-            planName.ToUpperInvariant() != "BASIC" && 
-            planName.ToUpperInvariant() != "STANDARD" && 
-            planName.ToUpperInvariant() != "PRO")
-        {
-            result.ShouldHaveValidationErrorFor(x => x.PlanName);
-        }
+        // Assert
+        result.ShouldHaveValidationErrorFor(x => x.PlanName);
+    }
+
+    [Theory]
+    [InlineData("trial")]
+    [InlineData("basic")]
+    [InlineData("standard")]
+    [InlineData("pro")]
+    [InlineData("Trial")]
+    [InlineData("Basic")]
+    public void Validate_CaseInsensitivePlanNames_ReturnsSuccess(string planName)
+    {
+        // Arrange
+        var command = new SelectPlanCommand(Guid.NewGuid(), planName);
+
+        // Act
+        var result = _validator.TestValidate(command);
+
+        // Assert
+        result.ShouldNotHaveAnyValidationErrors();
     }
 }

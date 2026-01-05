@@ -94,7 +94,7 @@ internal class CompetitionConfiguration : IEntityTypeConfiguration<Domain.Entiti
         // Each SubscriptionPlan can only be assigned to one Competition
         builder.HasIndex(c => c.SubscriptionPlanId)
             .IsUnique()
-            .HasFilter("[subscription_plan_id] IS NOT NULL")  // Allow multiple nulls (competitions without plans)
+            .HasFilter("subscription_plan_id IS NOT NULL")  // Allow multiple nulls (competitions without plans)
             .HasDatabaseName("ix_competitions_subscription_plan_id_unique");
 
         // Relationships

@@ -78,6 +78,7 @@
       "passwordUppercase": "Password must contain at least one uppercase letter",
       "passwordLowercase": "Password must contain at least one lowercase letter",
       "passwordDigit": "Password must contain at least one digit",
+      "passwordHint": "Minimum 8 characters with uppercase, lowercase, and digit",
       "confirmPasswordRequired": "Please confirm your password",
       "passwordMismatch": "Passwords do not match",
       "organizationRequired": "Organization name is required",
