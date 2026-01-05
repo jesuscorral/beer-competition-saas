@@ -26,6 +26,7 @@ public class CompetitionDbContext : DbContext
     public DbSet<Domain.Entities.Competition> Competitions => Set<Domain.Entities.Competition>();
     public DbSet<Domain.Entities.Tenant> Tenants => Set<Domain.Entities.Tenant>();
     public DbSet<Domain.Entities.SubscriptionPlan> SubscriptionPlans => Set<Domain.Entities.SubscriptionPlan>();
+    public DbSet<Domain.Entities.CompetitionUser> CompetitionUsers => Set<Domain.Entities.CompetitionUser>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -50,6 +51,10 @@ public class CompetitionDbContext : DbContext
         // Global query filter for multi-tenancy on SubscriptionPlan
         modelBuilder.Entity<Domain.Entities.SubscriptionPlan>()
             .HasQueryFilter(p => p.TenantId == _tenantProvider.CurrentTenantId);
+
+        // Global query filter for multi-tenancy on CompetitionUser
+        modelBuilder.Entity<Domain.Entities.CompetitionUser>()
+            .HasQueryFilter(cu => cu.TenantId == _tenantProvider.CurrentTenantId);
 
         _logger.LogDebug("CompetitionDbContext model created with multi-tenancy filter and Competition schema");
     }
@@ -93,6 +98,18 @@ public class CompetitionDbContext : DbContext
             {
                 entity.TenantId = tenantId;
                 _logger.LogDebug("Auto-set TenantId={TenantId} for new SubscriptionPlan entity", tenantId);
+            }
+
+            // Handle CompetitionUser entities
+            var newCompetitionUsers = ChangeTracker.Entries<Domain.Entities.CompetitionUser>()
+                .Where(e => e.State == EntityState.Added && e.Entity.TenantId == Guid.Empty)
+                .Select(e => e.Entity)
+                .ToList();
+
+            foreach (var entity in newCompetitionUsers)
+            {
+                entity.TenantId = tenantId;
+                _logger.LogDebug("Auto-set TenantId={TenantId} for new CompetitionUser entity", tenantId);
             }
         }
 
