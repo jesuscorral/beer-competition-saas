@@ -106,30 +106,7 @@ public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, Result<U
 
             try
             {
-                // 4. Check for duplicate registration
-                if (command.CompetitionId.HasValue)
-                {
-                    var existingRegistration = await _competitionUserRepository.ExistsAsync(
-                        command.CompetitionId.Value,
-                        userId,
-                        command.Role,
-                        cancellationToken);
-
-                    if (existingRegistration)
-                    {
-                        _logger.LogWarning(
-                            "User {UserId} already registered for competition {CompetitionId} with role {Role}",
-                            userId, command.CompetitionId, command.Role);
-                        
-                        // Cleanup: Delete Keycloak user
-                        await _keycloakService.DeleteUserAsync(userId, cancellationToken);
-                        
-                        return Result<UserRegistration.UserRegistrationResponse>.Failure(
-                            "You are already registered for this competition with this role");
-                    }
-                }
-
-                // 5. Assign role
+                // 4. Assign role
                 var roleString = command.Role.ToString().ToLowerInvariant();
                 var assignRoleResult = await _keycloakService.AssignRoleAsync(
                     userId,
