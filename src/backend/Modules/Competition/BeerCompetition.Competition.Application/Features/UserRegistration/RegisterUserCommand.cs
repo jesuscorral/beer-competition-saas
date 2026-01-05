@@ -23,4 +23,4 @@ public record RegisterUserCommand(
     Guid? CompetitionId = null,
     string? BjcpRank = null,
     string? OrganizationName = null
-) : IRequest<Result<UserRegistration.UserRegistrationResponse>>;
+) : IRequest<Result<UserRegistrationResponse>>;

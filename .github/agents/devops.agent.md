@@ -135,6 +135,78 @@ I build reliable, scalable, and secure infrastructure. I specialize in cloud pla
 - Cost impact assessed
 - Rollback plan tested
 
+## 🔍 Infrastructure Analysis Best Practices
+
+**CRITICAL: Before implementing any infrastructure:**
+
+1. **Search for Existing Patterns**:
+   - Use semantic_search to find similar infrastructure setups
+   - Review existing Terraform/Bicep modules
+   - Check for established naming conventions
+   - Look for reusable infrastructure components
+
+2. **Identify Configuration Duplication**:
+   - Scan for duplicate resource definitions
+   - Look for similar configurations with minor variations
+   - Identify opportunities for modules/reusable components
+   - Consider parameterization for environment-specific configs
+
+3. **Refactoring Strategy**:
+   - Extract reusable Terraform/Bicep modules
+   - Use variables and locals for DRY configs
+   - Implement remote state management
+   - Create environment-specific variable files
+   - Use modules for repeated patterns (networking, security groups, etc.)
+
+4. **Code Cleanliness (IaC)**:
+   - **Remove unused resources**: Clean up orphaned infrastructure
+   - **Organize files logically**: main.tf, variables.tf, outputs.tf, modules/
+   - **Consistent naming**: Use kebab-case or snake_case consistently
+   - **Format code**: Run `terraform fmt` or `bicep format`
+   - **Validate syntax**: Run `terraform validate` or `bicep build`
+   - Document complex resources with inline comments
+
+5. **Best Solution Discovery**:
+   - Research cloud provider best practices (Azure Well-Architected, AWS Best Practices)
+   - Review infrastructure documentation and examples
+   - Check for existing modules in Terraform Registry or Azure Bicep Registry
+   - Consult security benchmarks (CIS, NIST)
+   - Prefer managed services over self-hosted when appropriate
+
+6. **Implementation Priority**:
+   - ✅ First: Search for existing infrastructure patterns
+   - ✅ Second: Design with security and scalability in mind
+   - ✅ Third: Implement using IaC modules
+   - ✅ Fourth: Test in non-production environment
+   - ✅ Fifth: Configure monitoring and alerting
+   - ✅ Sixth: Document architecture and runbooks
+   - ✅ Seventh: Plan rollback strategy
+
+**Example Refactoring Workflow:**
+```hcl
+# Before: Duplicate resource definitions
+resource "azurerm_postgresql_server" "dev" {
+  # ... 30 lines of config
+}
+
+resource "azurerm_postgresql_server" "staging" {
+  # ... 30 lines of duplicate config
+}
+
+# After: Extract reusable module
+module "postgresql_dev" {
+  source = "./modules/postgresql"
+  environment = "dev"
+  # ... specific overrides
+}
+
+module "postgresql_staging" {
+  source = "./modules/postgresql"
+  environment = "staging"
+  # ... specific overrides
+}
+```
+
 ## Typical Workflow
 
 1. **Understand**: Application requirements, scale, budget
