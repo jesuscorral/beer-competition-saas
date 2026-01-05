@@ -277,19 +277,30 @@ public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, Result<U
                     command.Email);
 
                 // Cleanup: Delete Keycloak user
-                await _keycloakService.DeleteUserAsync(userId, cancellationToken);
+                try
+                {
+                    await _keycloakService.DeleteUserAsync(userId, cancellationToken);
+                }
+                catch (Exception cleanupEx)
+                {
+                    _logger.LogError(cleanupEx,
+                        "Failed to cleanup Keycloak user {UserId} after registration error",
+                        userId);
+                }
 
-                throw;
+                // Return user-friendly error message (details are in logs for debugging)
+                return Result<UserRegistration.UserRegistrationResponse>.Failure(
+                    "An error occurred during registration. Please try again.");
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex,
-                "Unexpected error registering user {Email} with role {Role}",
+                "Failed to validate registration request for {Email} with role {Role}",
                 command.Email, command.Role);
             
             return Result<UserRegistration.UserRegistrationResponse>.Failure(
-                "An error occurred during registration. Please try again.");
+                "Registration request validation failed. Please check your input and try again.");
         }
     }
 }

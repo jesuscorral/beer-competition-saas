@@ -46,7 +46,6 @@ public class OrganizerRegistrationStrategyTests
     {
         // Arrange
         var userId = "user-123";
-        var tenantId = Guid.NewGuid();
         var organizationName = "My Brew Club";
         var email = "admin@mybrewclub.com";
         var additionalData = new Dictionary<string, string>

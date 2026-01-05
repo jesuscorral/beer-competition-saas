@@ -182,7 +182,6 @@ public class RegisterUserIntegrationTests : IntegrationTestBase
     {
         // Arrange
         var userId = Guid.NewGuid().ToString();
-        var tenantRepository = Scope.ServiceProvider.GetRequiredService<ITenantRepository>();
         
         _keycloakService.CreateUserAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
             .Returns(Shared.Kernel.Result<string>.Success(userId));
@@ -364,14 +363,9 @@ public class RegisterUserIntegrationTests : IntegrationTestBase
     private async Task<Domain.Entities.Competition> CreateTestCompetitionAsync(bool isPublic = true)
     {
         // First, create the tenant (required for FK constraint)
-        var tenant = Tenant.Create("Test Organization", "test@example.com");
+        var tenant = Tenant.CreateForTesting(_testTenantId, "Test Organization", "test@example.com");
         if (tenant.IsFailure)
             throw new InvalidOperationException($"Failed to create tenant: {tenant.Error}");
-        
-        // Set tenant ID to match _testTenantId
-        tenant.Value.TenantId = _testTenantId;
-        var tenantIdProperty = typeof(Tenant).GetProperty("Id");
-        tenantIdProperty?.SetValue(tenant.Value, _testTenantId);
         
         await _tenantRepository.AddAsync(tenant.Value, CancellationToken.None);
         await _tenantRepository.SaveChangesAsync(CancellationToken.None);
