@@ -13,12 +13,19 @@ namespace BeerCompetition.ArchitectureTests;
 /// </summary>
 public class MultiTenancyTests
 {
+    // Define assemblies to test explicitly
+    private static readonly Assembly CompetitionInfrastructureAssembly = 
+        typeof(Competition.Infrastructure.DependencyInjection).Assembly;
+    
+    private static readonly Assembly CompetitionDomainAssembly = 
+        typeof(Competition.Domain.Entities.Competition).Assembly;
+
     [Fact]
     public void Entities_ShouldHaveTenantIdProperty()
     {
         // Arrange: Get all entities that inherit from Entity base class
-        var entityTypes = Types.InCurrentDomain()
-            .That().ResideInNamespace("BeerCompetition.*.Domain.Entities")
+        var entityTypes = Types.InAssembly(CompetitionDomainAssembly)
+            .That().ResideInNamespace("BeerCompetition.Competition.Domain.Entities")
             .And().Inherit(typeof(Entity))
             .GetTypes()
             .Where(t => !t.IsAbstract && t.Name != "Entity")
@@ -38,16 +45,15 @@ public class MultiTenancyTests
     [Fact]
     public void DbContextClasses_ShouldInjectTenantProvider()
     {
-        // Arrange & Act
-        var dbContextTypes = Types.InCurrentDomain()
-            .That().ResideInNamespace("BeerCompetition.*.Infrastructure.Persistence")
-            .And().Inherit(typeof(DbContext))
+        // Arrange & Act: Scan Infrastructure assembly explicitly for DbContext classes
+        var dbContextTypes = Types.InAssembly(CompetitionInfrastructureAssembly)
+            .That().Inherit(typeof(DbContext))
             .GetTypes()
             .ToList();
 
         // Assert
         dbContextTypes.Should().NotBeEmpty(
-            "There should be DbContext classes in Infrastructure.Persistence namespace");
+            "There should be DbContext classes in Infrastructure assembly");
 
         foreach (var dbContextType in dbContextTypes)
         {
@@ -67,8 +73,8 @@ public class MultiTenancyTests
     public void DomainEntities_ShouldNotBypassTenantIsolation()
     {
         // Arrange: Get all entity types
-        var entityTypes = Types.InCurrentDomain()
-            .That().ResideInNamespace("BeerCompetition.*.Domain.Entities")
+        var entityTypes = Types.InAssembly(CompetitionDomainAssembly)
+            .That().ResideInNamespace("BeerCompetition.Competition.Domain.Entities")
             .And().Inherit(typeof(Entity))
             .GetTypes()
             .ToList();

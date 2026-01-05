@@ -89,15 +89,21 @@ public class DependencyRuleTests
     [Fact]
     public void InfrastructureProjects_CanReferenceEntityFrameworkCore()
     {
-        // Arrange & Act
-        var infrastructureTypes = Types.InCurrentDomain()
-            .That().ResideInNamespace("BeerCompetition.*.Infrastructure")
+        // Arrange: Ensure Infrastructure assembly is loaded
+        var infrastructureAssembly = typeof(Competition.Infrastructure.Persistence.CompetitionDbContext).Assembly;
+        
+        // Act
+        var infrastructureTypes = Types.InAssembly(infrastructureAssembly)
             .GetTypes()
             .ToList();
 
         // Assert
         infrastructureTypes.Should().NotBeEmpty(
             "Infrastructure layer should exist and can reference EF Core");
+
+        // Verify at least one type is from Infrastructure namespace
+        infrastructureTypes.Should().Contain(t => t.Namespace != null && t.Namespace.Contains("Infrastructure"),
+            "Should find types in Infrastructure namespace");
 
         // This is a documentation test - Infrastructure is allowed to use EF Core
         true.Should().BeTrue("Infrastructure layer is allowed to reference EF Core for persistence");

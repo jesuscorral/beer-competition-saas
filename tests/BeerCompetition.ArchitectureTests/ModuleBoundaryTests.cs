@@ -88,8 +88,9 @@ public class ModuleBoundaryTests
     public void InfrastructureLayer_ShouldDependOnDomainLayer()
     {
         // Arrange & Act
-        var infrastructureTypes = Types.InCurrentDomain()
-            .That().ResideInNamespace("BeerCompetition.*.Infrastructure")
+        var infrastructureAssembly = typeof(Competition.Infrastructure.Persistence.CompetitionDbContext).Assembly;
+
+        var infrastructureTypes = Types.InAssembly(infrastructureAssembly)
             .GetTypes()
             .ToList();
 
