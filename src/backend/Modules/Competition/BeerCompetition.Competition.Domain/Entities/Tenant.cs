@@ -102,6 +102,48 @@ public class Tenant : Entity, IAggregateRoot
     }
 
     /// <summary>
+    /// Factory method for creating a tenant with a specific Id for testing purposes only.
+    /// This method should NEVER be used in production code.
+    /// </summary>
+    /// <param name="id">The specific Id to assign to the tenant.</param>
+    /// <param name="organizationName">Name of the organization.</param>
+    /// <param name="email">Contact email.</param>
+    /// <returns>Result with Tenant instance or error message.</returns>
+    internal static Result<Tenant> CreateForTesting(Guid id, string organizationName, string email)
+    {
+        // Validate organization name
+        if (string.IsNullOrWhiteSpace(organizationName))
+            return Result<Tenant>.Failure("Organization name is required");
+
+        if (organizationName.Length > 255)
+            return Result<Tenant>.Failure("Organization name must not exceed 255 characters");
+
+        // Validate email
+        if (string.IsNullOrWhiteSpace(email))
+            return Result<Tenant>.Failure("Email is required");
+
+        if (email.Length > 255)
+            return Result<Tenant>.Failure("Email must not exceed 255 characters");
+
+        if (!IsValidEmail(email))
+            return Result<Tenant>.Failure("Invalid email format");
+
+        var tenant = new Tenant
+        {
+            Id = id,
+            OrganizationName = organizationName,
+            Email = email,
+            Status = TenantStatus.Active,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        // Note: TenantId for Tenant entity is same as Id (self-reference)
+        tenant.TenantId = id;
+
+        return Result<Tenant>.Success(tenant);
+    }
+
+    /// <summary>
     /// Activates the tenant account.
     /// </summary>
     public Result Activate()
