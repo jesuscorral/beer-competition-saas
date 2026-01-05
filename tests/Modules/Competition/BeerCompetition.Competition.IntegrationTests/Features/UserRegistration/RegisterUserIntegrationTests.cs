@@ -15,8 +15,10 @@ public class RegisterUserIntegrationTests : IntegrationTestBase
 {
     private readonly IMediator _mediator;
     private readonly ICompetitionRepository _competitionRepository;
+    private readonly ISubscriptionPlanRepository _subscriptionPlanRepository;
     private readonly ICompetitionUserRepository _competitionUserRepository;
     private readonly IKeycloakService _keycloakService;
+    private readonly ITenantRepository _tenantRepository;
     private readonly Guid _testTenantId;
 
     public RegisterUserIntegrationTests(IntegrationTestWebApplicationFactory factory) 
@@ -24,12 +26,32 @@ public class RegisterUserIntegrationTests : IntegrationTestBase
     {
         _mediator = Scope.ServiceProvider.GetRequiredService<IMediator>();
         _competitionRepository = Scope.ServiceProvider.GetRequiredService<ICompetitionRepository>();
+        _subscriptionPlanRepository = Scope.ServiceProvider.GetRequiredService<ISubscriptionPlanRepository>();
         _competitionUserRepository = Scope.ServiceProvider.GetRequiredService<ICompetitionUserRepository>();
         _keycloakService = Scope.ServiceProvider.GetRequiredService<IKeycloakService>();
+        _tenantRepository = Scope.ServiceProvider.GetRequiredService<ITenantRepository>();
         
         // Setup test tenant
         _testTenantId = Guid.NewGuid();
         Factory.TenantProvider.SetTenant(_testTenantId);
+        
+        // Configure Keycloak mock defaults for all tests
+        ConfigureKeycloakMockDefaults();
+    }
+    
+    private void ConfigureKeycloakMockDefaults()
+    {
+        // Default: SetUserAttributeAsync succeeds
+        _keycloakService.SetUserAttributeAsync(
+            Arg.Any<string>(), 
+            Arg.Any<string>(), 
+            Arg.Any<string>(), 
+            Arg.Any<CancellationToken>())
+            .Returns(Shared.Kernel.Result.Success());
+        
+        // Default: DeleteUserAsync succeeds (for rollback scenarios)
+        _keycloakService.DeleteUserAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(Shared.Kernel.Result.Success());
     }
 
     [Fact]
@@ -61,7 +83,7 @@ public class RegisterUserIntegrationTests : IntegrationTestBase
         result.IsSuccess.Should().BeTrue();
         result.Value.UserId.Should().Be(userId);
         result.Value.Status.Should().Be("ACTIVE");
-        result.Value.Message.Should().Contain("successfully registered");
+        result.Value.Message.Should().Contain("Registration successful");
 
         // Verify database persistence
         var freshContext = GetFreshDbContext();
@@ -103,7 +125,7 @@ public class RegisterUserIntegrationTests : IntegrationTestBase
         // Assert
         result.IsSuccess.Should().BeTrue();
         result.Value.Status.Should().Be("PENDING_APPROVAL");
-        result.Value.Message.Should().Contain("requires approval");
+        result.Value.Message.Should().Contain("Waiting for organizer approval");
 
         // Verify database persistence
         var freshContext = GetFreshDbContext();
@@ -185,9 +207,12 @@ public class RegisterUserIntegrationTests : IntegrationTestBase
         result.Value.Status.Should().Be("ACTIVE");
 
         // Verify tenant was created
+        // Note: We need to ignore query filters because the organizer creates their own tenant
+        // with a different tenant_id than our test context
         var freshContext = GetFreshDbContext();
         var tenant = await freshContext.Tenants
-            .FirstOrDefaultAsync(t => t.OrganizationName == "My Homebrew Club");
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(t => t.Email == "organizer@brewclub.com");
         
         tenant.Should().NotBeNull();
         tenant!.Email.Should().Be("organizer@brewclub.com");
@@ -338,6 +363,20 @@ public class RegisterUserIntegrationTests : IntegrationTestBase
 
     private async Task<Domain.Entities.Competition> CreateTestCompetitionAsync(bool isPublic = true)
     {
+        // First, create the tenant (required for FK constraint)
+        var tenant = Tenant.Create("Test Organization", "test@example.com");
+        if (tenant.IsFailure)
+            throw new InvalidOperationException($"Failed to create tenant: {tenant.Error}");
+        
+        // Set tenant ID to match _testTenantId
+        tenant.Value.TenantId = _testTenantId;
+        var tenantIdProperty = typeof(Tenant).GetProperty("Id");
+        tenantIdProperty?.SetValue(tenant.Value, _testTenantId);
+        
+        await _tenantRepository.AddAsync(tenant.Value, CancellationToken.None);
+        await _tenantRepository.SaveChangesAsync(CancellationToken.None);
+        
+        // Now create the competition
         var competition = Domain.Entities.Competition.Create(
             tenantId: _testTenantId,
             name: "Test Competition 2026",
@@ -361,6 +400,10 @@ public class RegisterUserIntegrationTests : IntegrationTestBase
             
             if (plan.IsFailure)
                 throw new InvalidOperationException($"Failed to create plan: {plan.Error}");
+            
+            // Save the plan to database first (required for foreign key constraint)
+            await _subscriptionPlanRepository.AddAsync(plan.Value, CancellationToken.None);
+            await _competitionRepository.SaveChangesAsync(CancellationToken.None);
             
             var setPlanResult = competition.Value.SetSubscriptionPlan(plan.Value);
             if (setPlanResult.IsFailure)

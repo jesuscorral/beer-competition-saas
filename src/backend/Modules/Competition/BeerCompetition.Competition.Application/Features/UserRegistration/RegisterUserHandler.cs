@@ -147,7 +147,10 @@ public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, Result<U
                 }
 
                 // 6. Execute role-specific logic (e.g., tenant creation for organizers)
-                var additionalData = new Dictionary<string, string>();
+                var additionalData = new Dictionary<string, string>
+                {
+                    ["email"] = command.Email  // Pass email for tenant creation
+                };
                 if (!string.IsNullOrEmpty(command.BjcpRank))
                 {
                     additionalData["bjcp_rank"] = command.BjcpRank.ToUpperInvariant();

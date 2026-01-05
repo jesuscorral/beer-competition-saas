@@ -111,6 +111,82 @@ namespace BeerCompetition.Competition.Infrastructure.Persistence.Migrations
                     b.ToTable("competitions", "Competition");
                 });
 
+            modelBuilder.Entity("BeerCompetition.Competition.Domain.Entities.CompetitionUser", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ApprovalNote")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("approval_note");
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("approved_at");
+
+                    b.Property<string>("ApprovedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("approved_by");
+
+                    b.Property<Guid>("CompetitionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("competition_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime>("RegisteredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("registered_at");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("role");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_competition_users_tenant_id");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_competition_users_user_id");
+
+                    b.HasIndex("CompetitionId", "Status")
+                        .HasDatabaseName("ix_competition_users_competition_status");
+
+                    b.HasIndex("CompetitionId", "UserId", "Role")
+                        .IsUnique()
+                        .HasDatabaseName("ix_competition_users_competition_user_role_unique");
+
+                    b.ToTable("competition_users", "Competition");
+                });
+
             modelBuilder.Entity("BeerCompetition.Competition.Domain.Entities.SubscriptionPlan", b =>
                 {
                     b.Property<Guid>("Id")
@@ -227,6 +303,18 @@ namespace BeerCompetition.Competition.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("BeerCompetition.Competition.Domain.Entities.CompetitionUser", b =>
+                {
+                    b.HasOne("BeerCompetition.Competition.Domain.Entities.Competition", "Competition")
+                        .WithMany()
+                        .HasForeignKey("CompetitionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_competition_users_competition_id");
+
+                    b.Navigation("Competition");
                 });
 
             modelBuilder.Entity("BeerCompetition.Competition.Domain.Entities.Tenant", b =>

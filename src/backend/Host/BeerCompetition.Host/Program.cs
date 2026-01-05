@@ -25,7 +25,7 @@ builder.Services.AddAuthorizationPolicies();
 
 var app = builder.Build();
 
-// Apply database migrations (Development only)
+// Apply database migrations
 app.ApplyDatabaseMigrations();
 
 // Configure the HTTP request pipeline (Swagger)
