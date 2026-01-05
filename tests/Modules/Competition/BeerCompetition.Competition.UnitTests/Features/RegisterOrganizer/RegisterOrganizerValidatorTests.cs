@@ -15,7 +15,6 @@ public class RegisterOrganizerValidatorTests
             Email: "organizer@example.com",
             Password: "SecurePass123",
             OrganizationName: "Awesome Homebrew Club",
-            CompetitionName: "Spring Classic 2026",
             PlanName: "TRIAL"
         );
 
@@ -37,7 +36,6 @@ public class RegisterOrganizerValidatorTests
             Email: email!,
             Password: "SecurePass123",
             OrganizationName: "Test Org",
-            CompetitionName: "Test Comp",
             PlanName: "TRIAL"
         );
 
@@ -60,7 +58,6 @@ public class RegisterOrganizerValidatorTests
             Email: email,
             Password: "SecurePass123",
             OrganizationName: "Test Org",
-            CompetitionName: "Test Comp",
             PlanName: "TRIAL"
         );
 
@@ -82,7 +79,6 @@ public class RegisterOrganizerValidatorTests
             Email: "organizer@example.com",
             Password: password!,
             OrganizationName: "Test Org",
-            CompetitionName: "Test Comp",
             PlanName: "TRIAL"
         );
 
@@ -103,7 +99,6 @@ public class RegisterOrganizerValidatorTests
             Email: "organizer@example.com",
             Password: password,
             OrganizationName: "Test Org",
-            CompetitionName: "Test Comp",
             PlanName: "TRIAL"
         );
 
@@ -125,7 +120,6 @@ public class RegisterOrganizerValidatorTests
             Email: "organizer@example.com",
             Password: password,
             OrganizationName: "Test Org",
-            CompetitionName: "Test Comp",
             PlanName: "TRIAL"
         );
 
@@ -147,7 +141,6 @@ public class RegisterOrganizerValidatorTests
             Email: "organizer@example.com",
             Password: password,
             OrganizationName: "Test Org",
-            CompetitionName: "Test Comp",
             PlanName: "TRIAL"
         );
 
@@ -169,7 +162,6 @@ public class RegisterOrganizerValidatorTests
             Email: "organizer@example.com",
             Password: password,
             OrganizationName: "Test Org",
-            CompetitionName: "Test Comp",
             PlanName: "TRIAL"
         );
 
@@ -192,7 +184,6 @@ public class RegisterOrganizerValidatorTests
             Email: "organizer@example.com",
             Password: "SecurePass123",
             OrganizationName: organizationName!,
-            CompetitionName: "Test Comp",
             PlanName: "TRIAL"
         );
 
@@ -201,28 +192,6 @@ public class RegisterOrganizerValidatorTests
 
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.OrganizationName);
-    }
-
-    [Theory]
-    [InlineData("")]
-    [InlineData(" ")]
-    [InlineData(null)]
-    public void Validate_EmptyCompetitionName_ShouldHaveValidationError(string? competitionName)
-    {
-        // Arrange
-        var command = new RegisterOrganizerCommand(
-            Email: "organizer@example.com",
-            Password: "SecurePass123",
-            OrganizationName: "Test Org",
-            CompetitionName: competitionName!,
-            PlanName: "TRIAL"
-        );
-
-        // Act
-        var result = _validator.TestValidate(command);
-
-        // Assert
-        result.ShouldHaveValidationErrorFor(x => x.CompetitionName);
     }
 
     [Theory]
@@ -237,7 +206,6 @@ public class RegisterOrganizerValidatorTests
             Email: "organizer@example.com",
             Password: "SecurePass123",
             OrganizationName: "Test Org",
-            CompetitionName: "Test Comp",
             PlanName: planName
         );
 
@@ -261,7 +229,6 @@ public class RegisterOrganizerValidatorTests
             Email: "organizer@example.com",
             Password: "SecurePass123",
             OrganizationName: "Test Org",
-            CompetitionName: "Test Comp",
             PlanName: planName
         );
 

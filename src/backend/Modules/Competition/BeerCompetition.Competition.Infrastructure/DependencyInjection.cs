@@ -77,6 +77,7 @@ public static class DependencyInjection
     {
         services.AddScoped<ICompetitionRepository, CompetitionRepository>();
         services.AddScoped<ITenantRepository, TenantRepository>();
+        services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
         return services;
     }
 

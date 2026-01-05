@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BeerCompetition.Competition.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(CompetitionDbContext))]
-    [Migration("20251222202633_AddTenantEntityAndCompetitionSchema")]
-    partial class AddTenantEntityAndCompetitionSchema
+    [Migration("20260104230247_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -41,6 +41,12 @@ namespace BeerCompetition.Competition.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(2000)")
                         .HasColumnName("description");
 
+                    b.Property<bool>("IsPublic")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_public");
+
                     b.Property<DateTime?>("JudgingEndDate")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("judging_end_date");
@@ -48,6 +54,12 @@ namespace BeerCompetition.Competition.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("JudgingStartDate")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("judging_start_date");
+
+                    b.Property<int>("MaxEntries")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(10)
+                        .HasColumnName("max_entries");
 
                     b.Property<int>("MaxEntriesPerEntrant")
                         .ValueGeneratedOnAdd()
@@ -71,6 +83,10 @@ namespace BeerCompetition.Competition.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(50)")
                         .HasColumnName("status");
 
+                    b.Property<Guid?>("SubscriptionPlanId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("subscription_plan_id");
+
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
                         .HasColumnName("tenant_id");
@@ -84,6 +100,11 @@ namespace BeerCompetition.Competition.Infrastructure.Persistence.Migrations
                     b.HasIndex("RegistrationDeadline")
                         .HasDatabaseName("ix_competitions_registration_deadline");
 
+                    b.HasIndex("SubscriptionPlanId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_competitions_subscription_plan_id_unique")
+                        .HasFilter("[subscription_plan_id] IS NOT NULL");
+
                     b.HasIndex("TenantId")
                         .HasDatabaseName("ix_competitions_tenant_id");
 
@@ -91,6 +112,60 @@ namespace BeerCompetition.Competition.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_competitions_tenant_status");
 
                     b.ToTable("competitions", "Competition");
+                });
+
+            modelBuilder.Entity("BeerCompetition.Competition.Domain.Entities.SubscriptionPlan", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<int>("MaxEntries")
+                        .HasColumnType("integer")
+                        .HasColumnName("max_entries");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("name");
+
+                    b.Property<decimal>("PriceAmount")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("price_amount");
+
+                    b.Property<string>("PriceCurrency")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasDefaultValue("EUR")
+                        .HasColumnName("price_currency");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("idx_subscription_plans_tenant");
+
+                    b.HasIndex("TenantId", "Name")
+                        .IsUnique()
+                        .HasDatabaseName("idx_subscription_plans_tenant_name");
+
+                    b.ToTable("subscription_plans", "Competition");
                 });
 
             modelBuilder.Entity("BeerCompetition.Competition.Domain.Entities.Tenant", b =>
@@ -143,6 +218,11 @@ namespace BeerCompetition.Competition.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("BeerCompetition.Competition.Domain.Entities.Competition", b =>
                 {
+                    b.HasOne("BeerCompetition.Competition.Domain.Entities.SubscriptionPlan", null)
+                        .WithOne()
+                        .HasForeignKey("BeerCompetition.Competition.Domain.Entities.Competition", "SubscriptionPlanId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("BeerCompetition.Competition.Domain.Entities.Tenant", "Tenant")
                         .WithMany("Competitions")
                         .HasForeignKey("TenantId")

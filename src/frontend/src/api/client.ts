@@ -34,10 +34,13 @@ apiClient.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
   
-  // Add tenant ID header (from environment variable - will come from auth JWT later)
-  // This matches the development tenant inserted via Insert-DevelopmentTenant.ps1
-  if (TENANT_ID) {
-    config.headers['X-Tenant-ID'] = TENANT_ID;
+  // Add tenant ID header
+  // Priority: 1) localStorage (after registration), 2) environment variable (dev)
+  const storedTenantId = localStorage.getItem('tenant_id');
+  const tenantId = storedTenantId || TENANT_ID;
+  
+  if (tenantId) {
+    config.headers['X-Tenant-ID'] = tenantId;
   }
   
   return config;

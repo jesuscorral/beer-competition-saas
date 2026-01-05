@@ -103,7 +103,7 @@ VITE_TENANT_ID=<your-tenant-id>
 
 **Important**: 
 - `VITE_TENANT_ID` must be set to a valid tenant ID for your environment
-- The default development tenant ID (`11111111-1111-1111-1111-111111111111`) matches the tenant inserted by `Insert-DevelopmentTenant.ps1`
+- The default development tenant ID (`11111111-1111-1111-1111-111111111111`) is automatically configured in the backend `TenantProvider`
 - Using the development tenant ID in production will trigger a console warning
 - In the future, tenant ID will be extracted from the JWT token after authentication
 

@@ -17,7 +17,7 @@ public static class AuthenticationEndpoints
         var group = app.MapGroup("/api/auth")
             .WithTags("Authentication");
 
-        // POST /api/auth/register-organizer - Register new organizer with tenant and competition
+        // POST /api/auth/register-organizer - Register new organizer with tenant
         group.MapPost("/register-organizer", async (
             RegisterOrganizerCommand command,
             IMediator mediator,
@@ -35,10 +35,10 @@ public static class AuthenticationEndpoints
 Creates a new organizer account with:
 - Keycloak user with 'organizer' role
 - New tenant (organization) 
-- First competition for the tenant
-- User attributes: tenant_id, competition_id
+- User attributes: tenant_id
 
 This is the entry point for competition organizers to onboard onto the platform.
+Competition creation happens in a separate workflow after registration.
 
 **No authentication required** - this is a public registration endpoint.")
         .Produces<OrganizerRegistrationResponse>(StatusCodes.Status200OK)

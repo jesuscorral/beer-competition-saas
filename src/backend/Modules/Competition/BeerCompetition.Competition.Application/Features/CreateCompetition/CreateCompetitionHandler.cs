@@ -38,8 +38,10 @@ public class CreateCompetitionHandler : IRequestHandler<CreateCompetitionCommand
         var competitionResult = Domain.Entities.Competition.Create(
             tenantId,
             request.Name,
+            request.Description ?? string.Empty,
             request.RegistrationDeadline,
-            request.JudgingStartDate
+            request.JudgingStartDate,
+            request.JudgingEndDate
         );
 
         if (competitionResult.IsFailure)

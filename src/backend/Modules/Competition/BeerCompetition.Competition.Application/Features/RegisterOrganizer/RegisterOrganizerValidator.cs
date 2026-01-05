@@ -28,10 +28,6 @@ public class RegisterOrganizerValidator : AbstractValidator<RegisterOrganizerCom
             .NotEmpty().WithMessage("Organization name is required")
             .MaximumLength(255).WithMessage("Organization name must not exceed 255 characters");
 
-        RuleFor(x => x.CompetitionName)
-            .NotEmpty().WithMessage("Competition name is required")
-            .MaximumLength(255).WithMessage("Competition name must not exceed 255 characters");
-
         RuleFor(x => x.PlanName)
             .NotEmpty().WithMessage("Plan name is required")
             .Must(BeValidPlanName).WithMessage("Plan name must be one of: TRIAL, BASIC, STANDARD, PRO");

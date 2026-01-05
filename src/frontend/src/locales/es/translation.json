@@ -4,11 +4,13 @@
     "error": "Error",
     "success": "Éxito",
     "comingSoon": "Próximamente",
-    "required": "Requerido"
+    "required": "Requerido",
+    "cancel": "Cancelar"
   },
   "navbar": {
     "title": "Plataforma de Competición de Cerveza",
-    "createCompetition": "Crear Competición"
+    "createCompetition": "Crear Competición",
+    "register": "Registrarse"
   },
   "home": {
     "welcome": "Bienvenido a la Plataforma de Competición de Cerveza",
@@ -27,6 +29,61 @@
     "mvpPhase": {
       "title": "🚀 Fase MVP - Issue #80",
       "description": "Esta es la implementación inicial del frontend. Autenticación y características avanzadas próximamente."
+    }
+  },
+  "auth": {
+    "register": {
+      "title": "Registrarse como Organizador",
+      "subtitle": "Crea tu cuenta para comenzar a gestionar competiciones de cerveza",
+      "twoStepProcess": "Proceso de registro en dos pasos:",
+      "step1": "Registra tu organización y crea tu cuenta",
+      "step2": "Crea tu primera competición",
+      "organizationInfo": "Información de la Organización",
+      "organizationName": "Nombre de la Organización",
+      "accountSecurity": "Seguridad de la Cuenta",
+      "email": "Correo Electrónico",
+      "password": "Contraseña",
+      "confirmPassword": "Confirmar Contraseña",
+      "subscriptionPlan": "Plan de Suscripción",
+      "selectPlan": "Selecciona tu plan",
+      "submit": "Registrar y Continuar",
+      "submitting": "Registrando...",
+      "success": "¡Registro exitoso! Creando tu primera competición...",
+      "error": "Error en el registro"
+    },
+    "plans": {
+      "TRIAL": {
+        "name": "Prueba",
+        "description": "Prueba de 30 días - Hasta 50 entradas"
+      },
+      "BASIC": {
+        "name": "Básico",
+        "description": "$29/mes - Hasta 100 entradas"
+      },
+      "STANDARD": {
+        "name": "Estándar",
+        "description": "$79/mes - Hasta 300 entradas"
+      },
+      "PRO": {
+        "name": "Profesional",
+        "description": "$199/mes - Hasta 1000 entradas"
+      }
+    },
+    "validation": {
+      "emailRequired": "El correo electrónico es obligatorio",
+      "emailInvalid": "Por favor ingresa un correo electrónico válido",
+      "emailMaxLength": "El correo electrónico debe tener menos de 255 caracteres",
+      "passwordRequired": "La contraseña es obligatoria",
+      "passwordMinLength": "La contraseña debe tener al menos 8 caracteres",
+      "passwordUppercase": "La contraseña debe contener al menos una letra mayúscula",
+      "passwordLowercase": "La contraseña debe contener al menos una letra minúscula",
+      "passwordDigit": "La contraseña debe contener al menos un dígito",
+      "passwordHint": "Mínimo 8 caracteres con mayúsculas, minúsculas y dígitos",
+      "confirmPasswordRequired": "Por favor confirma tu contraseña",
+      "passwordMismatch": "Las contraseñas no coinciden",
+      "organizationRequired": "El nombre de la organización es obligatorio",
+      "organizationMaxLength": "El nombre de la organización debe tener menos de 255 caracteres",
+      "planRequired": "Por favor selecciona un plan de suscripción"
     }
   },
   "competition": {
