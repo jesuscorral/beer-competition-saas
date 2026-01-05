@@ -90,6 +90,61 @@ namespace BeerCompetition.Competition.Infrastructure.Persistence.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "competition_users",
+                schema: "Competition",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    competition_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    user_id = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    role = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    status = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    approval_note = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    registered_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    approved_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    approved_by = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    tenant_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_competition_users", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_competition_users_competition_id",
+                        column: x => x.competition_id,
+                        principalSchema: "Competition",
+                        principalTable: "competitions",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "ix_competition_users_competition_status",
+                schema: "Competition",
+                table: "competition_users",
+                columns: new[] { "competition_id", "status" });
+
+            migrationBuilder.CreateIndex(
+                name: "ix_competition_users_competition_user_role_unique",
+                schema: "Competition",
+                table: "competition_users",
+                columns: new[] { "competition_id", "user_id", "role" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_competition_users_tenant_id",
+                schema: "Competition",
+                table: "competition_users",
+                column: "tenant_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_competition_users_user_id",
+                schema: "Competition",
+                table: "competition_users",
+                column: "user_id");
+
             migrationBuilder.CreateIndex(
                 name: "ix_competitions_registration_deadline",
                 schema: "Competition",
@@ -146,6 +201,10 @@ namespace BeerCompetition.Competition.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "competition_users",
+                schema: "Competition");
+
             migrationBuilder.DropTable(
                 name: "competitions",
                 schema: "Competition");

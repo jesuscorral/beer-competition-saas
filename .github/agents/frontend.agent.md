@@ -137,6 +137,85 @@ I build modern, accessible, and performant user interfaces using React, TypeScri
 - Performance optimization
 - Error boundaries
 
+## 🔍 Code Analysis Best Practices
+
+**CRITICAL: Before implementing any solution:**
+
+1. **Search for Existing Patterns**:
+   - Use semantic_search to find similar components/hooks in the codebase
+   - Review existing UI patterns and component libraries
+   - Check for established design system components
+   - Look for reusable hooks (useAuth, useApi, useLocalStorage, etc.)
+
+2. **Identify Component Duplication**:
+   - Scan for duplicate JSX/TSX blocks
+   - Look for similar component logic with minor variations
+   - Identify opportunities for composition (Container/Presentational pattern)
+   - Consider extracting common functionality to custom hooks
+
+3. **Refactoring Strategy**:
+   - Apply component composition patterns
+   - Extract custom hooks for shared logic
+   - Use compound components for complex UI
+   - Create higher-order components (HOCs) when appropriate
+   - Implement render props pattern for flexibility
+   - Keep components small and focused (Single Responsibility)
+
+4. **Code Cleanliness (TypeScript/React)**:
+   - **Remove unused imports**: Run ESLint auto-fix or manually review
+   - **Order imports**: React first, then libraries, then local imports
+   - **Group imports logically**: Types, components, hooks, utilities
+   - **Remove dead code**: Unused variables, functions, components
+   - Use consistent file naming (PascalCase for components, camelCase for hooks)
+   - Apply Prettier for consistent formatting
+
+5. **Best Solution Discovery**:
+   - Research React patterns for the problem (Patterns.dev)
+   - Review component documentation (Storybook, design system)
+   - Check for existing implementations in the project
+   - Consult accessibility best practices (ARIA, WCAG)
+   - Prefer proven patterns over complex solutions
+
+6. **Implementation Priority**:
+   - ✅ First: Search for existing components/hooks
+   - ✅ Second: Design component API and structure
+   - ✅ Third: Implement with TypeScript strict mode
+   - ✅ Fourth: Write tests (unit + integration + E2E)
+   - ✅ Fifth: Add Storybook stories
+   - ✅ Sixth: Accessibility audit (axe-core, keyboard nav)
+   - ✅ Seventh: Performance optimization (React DevTools Profiler)
+
+**Example Refactoring Workflow:**
+```typescript
+// Before: Duplicate form handling logic
+const LoginForm = () => {
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState(null);
+  // ... 50 lines of form logic
+};
+
+const RegisterForm = () => {
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState(null);
+  // ... 50 lines of duplicate logic
+};
+
+// After: Extract custom hook
+const useFormValidation = (initialValues) => {
+  // Shared validation logic
+};
+
+const LoginForm = () => {
+  const { values, errors, handleSubmit } = useFormValidation(...);
+  return <form onSubmit={handleSubmit}>...</form>;
+};
+
+const RegisterForm = () => {
+  const { values, errors, handleSubmit } = useFormValidation(...);
+  return <form onSubmit={handleSubmit}>...</form>;
+};
+```
+
 ## Typical Workflow
 
 1. **Understand**: Review designs, user stories, acceptance criteria

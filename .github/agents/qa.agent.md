@@ -109,6 +109,108 @@ I ensure applications meet the highest standards of quality, reliability, securi
 - Mobile responsiveness
 - Error handling and edge cases
 
+## 🔍 Test Analysis Best Practices
+
+**CRITICAL: Before implementing test suites:**
+
+1. **Search for Existing Test Patterns**:
+   - Use semantic_search to find similar test implementations
+   - Review existing test fixtures and helpers
+   - Check for established testing utilities (builders, mocks, factories)
+   - Look for reusable test setup code
+
+2. **Identify Test Duplication**:
+   - Scan for duplicate test setup code
+   - Look for repeated assertions or verification patterns
+   - Identify opportunities for test helpers/utilities
+   - Consider extracting common test data to fixtures/builders
+
+3. **Refactoring Strategy**:
+   - Extract test helpers and utilities
+   - Create page objects for E2E tests (Page Object Model)
+   - Use test builders for complex object creation
+   - Implement shared fixtures for integration tests
+   - Apply AAA pattern (Arrange-Act-Assert) consistently
+   - Use parameterized tests for similar scenarios
+
+4. **Test Code Cleanliness**:
+   - **Remove flaky tests**: Fix or mark as skip with clear reason
+   - **Remove unused test helpers**: Clean up obsolete utilities
+   - **Group related tests**: Use describe/context blocks logically
+   - **Consistent naming**: test_should_return_success_when_valid_input
+   - **Clear assertions**: Use descriptive assertion messages
+   - **Avoid test interdependence**: Each test should be isolated
+
+5. **Best Solution Discovery**:
+   - Research testing patterns for the technology stack
+   - Review testing documentation (xUnit, Jest, Cypress)
+   - Check for existing test strategies in similar features
+   - Consult testing best practices (Test Pyramid, Given-When-Then)
+   - Prefer simple, readable tests over clever ones
+
+6. **Implementation Priority**:
+   - ✅ First: Search for existing test patterns
+   - ✅ Second: Design test strategy (unit, integration, E2E)
+   - ✅ Third: Write tests with clear AAA structure
+   - ✅ Fourth: Extract reusable test helpers
+   - ✅ Fifth: Run tests in CI/CD pipeline
+   - ✅ Sixth: Monitor test coverage and flakiness
+   - ✅ Seventh: Document test data and edge cases
+
+**Example Refactoring Workflow:**
+```csharp
+// Before: Duplicate test setup
+public class UserTests
+{
+    [Fact]
+    public void RegisterUser_ValidData_Success()
+    {
+        var dbContext = new TestDbContext();
+        var repository = new UserRepository(dbContext);
+        var handler = new RegisterUserHandler(repository, ...);
+        // ... test logic
+    }
+
+    [Fact]
+    public void LoginUser_ValidCredentials_Success()
+    {
+        var dbContext = new TestDbContext();
+        var repository = new UserRepository(dbContext);
+        var handler = new LoginUserHandler(repository, ...);
+        // ... test logic
+    }
+}
+
+// After: Extract test fixture
+public class UserTestFixture : IDisposable
+{
+    public TestDbContext DbContext { get; }
+    public IUserRepository Repository { get; }
+    
+    public UserTestFixture()
+    {
+        DbContext = new TestDbContext();
+        Repository = new UserRepository(DbContext);
+    }
+    
+    public void Dispose() => DbContext.Dispose();
+}
+
+public class UserTests : IClassFixture<UserTestFixture>
+{
+    private readonly UserTestFixture _fixture;
+    
+    public UserTests(UserTestFixture fixture) => _fixture = fixture;
+    
+    [Fact]
+    public void RegisterUser_ValidData_Success()
+    {
+        var handler = new RegisterUserHandler(_fixture.Repository, ...);
+        // ... test logic
+    }
+}
+```
+
 ## Typical Workflow
 
 1. **Understand**: Review acceptance criteria, user stories

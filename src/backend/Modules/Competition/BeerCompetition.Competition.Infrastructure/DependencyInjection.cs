@@ -1,4 +1,5 @@
 using BeerCompetition.Competition.Application.Features.CreateCompetition;
+using BeerCompetition.Competition.Application.Features.UserRegistration.Strategies;
 using BeerCompetition.Competition.Domain.Repositories;
 using BeerCompetition.Competition.Infrastructure.Persistence;
 using BeerCompetition.Competition.Infrastructure.Repositories;
@@ -29,6 +30,9 @@ public static class DependencyInjection
         services.AddMediatRConfiguration();
 
         services.AddFluentValidationConfiguration();
+        
+        // Add Registration Strategies (Strategy Pattern)
+        services.AddRegistrationStrategies();
 
         // MediatR pipeline behaviors could be added here (e.g., validation, logging, transactions)
 
@@ -78,6 +82,7 @@ public static class DependencyInjection
         services.AddScoped<ICompetitionRepository, CompetitionRepository>();
         services.AddScoped<ITenantRepository, TenantRepository>();
         services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
+        services.AddScoped<ICompetitionUserRepository, CompetitionUserRepository>();
         return services;
     }
 
@@ -101,5 +106,23 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(typeof(CreateCompetitionValidator).Assembly);
 
         return services;
-    } 
+    }
+    
+    /// <summary>
+    /// Registers user registration strategies for the Strategy Pattern.
+    /// Each role (Entrant, Judge, Steward, Organizer) has its own strategy.
+    /// </summary>
+    public static IServiceCollection AddRegistrationStrategies(this IServiceCollection services)
+    {
+        // Register all registration strategies
+        services.AddScoped<IRegistrationStrategy, EntrantRegistrationStrategy>();
+        services.AddScoped<IRegistrationStrategy, JudgeRegistrationStrategy>();
+        services.AddScoped<IRegistrationStrategy, StewardRegistrationStrategy>();
+        services.AddScoped<IRegistrationStrategy, OrganizerRegistrationStrategy>();
+        
+        // Register the factory that resolves strategies
+        services.AddScoped<RegistrationStrategyFactory>();
+        
+        return services;
+    }
 }

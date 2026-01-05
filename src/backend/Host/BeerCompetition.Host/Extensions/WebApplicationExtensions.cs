@@ -24,7 +24,7 @@ public static class WebApplicationExtensions
                 options.RoutePrefix = string.Empty;  // Serve Swagger at root
                 options.DocumentTitle = "Beer Competition API";
                 options.DisplayRequestDuration();
-                
+
                 // OAuth2 Configuration for Swagger UI with PKCE S256
                 options.OAuthUsePkce();  // Enable PKCE with S256 challenge method
                 options.OAuthClientId("swagger-ui");  // Dedicated Keycloak client for Swagger OAuth2
@@ -51,22 +51,19 @@ public static class WebApplicationExtensions
     /// </summary>
     public static WebApplication ApplyDatabaseMigrations(this WebApplication app)
     {
-        if (app.Environment.IsDevelopment())
+        using var scope = app.Services.CreateScope();
+        var competitionDb = scope.ServiceProvider.GetRequiredService<CompetitionDbContext>();
+
+        try
         {
-            using var scope = app.Services.CreateScope();
-            var competitionDb = scope.ServiceProvider.GetRequiredService<CompetitionDbContext>();
-            
-            try
-            {
-                Log.Information("Applying pending database migrations...");
-                competitionDb.Database.Migrate();
-                Log.Information("Database migrations applied successfully");
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Error applying database migrations");
-                throw;
-            }
+            Log.Information("Applying pending database migrations...");
+            competitionDb.Database.Migrate();
+            Log.Information("Database migrations applied successfully");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Error applying database migrations");
+            throw;
         }
 
         return app;
