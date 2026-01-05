@@ -61,6 +61,34 @@ public class Tenant : Entity, IAggregateRoot
     }
 
     /// <summary>
+    /// Validates tenant input parameters.
+    /// </summary>
+    /// <param name="organizationName">Name of the organization.</param>
+    /// <param name="email">Contact email.</param>
+    /// <returns>Result indicating success or validation error.</returns>
+    private static Result ValidateInput(string organizationName, string email)
+    {
+        // Validate organization name
+        if (string.IsNullOrWhiteSpace(organizationName))
+            return Result.Failure("Organization name is required");
+
+        if (organizationName.Length > 255)
+            return Result.Failure("Organization name must not exceed 255 characters");
+
+        // Validate email
+        if (string.IsNullOrWhiteSpace(email))
+            return Result.Failure("Email is required");
+
+        if (email.Length > 255)
+            return Result.Failure("Email must not exceed 255 characters");
+
+        if (!IsValidEmail(email))
+            return Result.Failure("Invalid email format");
+
+        return Result.Success();
+    }
+
+    /// <summary>
     /// Factory method to create a new tenant account.
     /// </summary>
     /// <param name="organizationName">Name of the organization.</param>
@@ -68,22 +96,9 @@ public class Tenant : Entity, IAggregateRoot
     /// <returns>Result with Tenant instance or error message.</returns>
     public static Result<Tenant> Create(string organizationName, string email)
     {
-        // Validate organization name
-        if (string.IsNullOrWhiteSpace(organizationName))
-            return Result<Tenant>.Failure("Organization name is required");
-
-        if (organizationName.Length > 255)
-            return Result<Tenant>.Failure("Organization name must not exceed 255 characters");
-
-        // Validate email
-        if (string.IsNullOrWhiteSpace(email))
-            return Result<Tenant>.Failure("Email is required");
-
-        if (email.Length > 255)
-            return Result<Tenant>.Failure("Email must not exceed 255 characters");
-
-        if (!IsValidEmail(email))
-            return Result<Tenant>.Failure("Invalid email format");
+        var validationResult = ValidateInput(organizationName, email);
+        if (validationResult.IsFailure)
+            return Result<Tenant>.Failure(validationResult.Error);
 
         var tenant = new Tenant
         {
@@ -111,22 +126,9 @@ public class Tenant : Entity, IAggregateRoot
     /// <returns>Result with Tenant instance or error message.</returns>
     internal static Result<Tenant> CreateForTesting(Guid id, string organizationName, string email)
     {
-        // Validate organization name
-        if (string.IsNullOrWhiteSpace(organizationName))
-            return Result<Tenant>.Failure("Organization name is required");
-
-        if (organizationName.Length > 255)
-            return Result<Tenant>.Failure("Organization name must not exceed 255 characters");
-
-        // Validate email
-        if (string.IsNullOrWhiteSpace(email))
-            return Result<Tenant>.Failure("Email is required");
-
-        if (email.Length > 255)
-            return Result<Tenant>.Failure("Email must not exceed 255 characters");
-
-        if (!IsValidEmail(email))
-            return Result<Tenant>.Failure("Invalid email format");
+        var validationResult = ValidateInput(organizationName, email);
+        if (validationResult.IsFailure)
+            return Result<Tenant>.Failure(validationResult.Error);
 
         var tenant = new Tenant
         {
