@@ -23,9 +23,13 @@ public class SelectPlanCommandValidator : AbstractValidator<SelectPlanCommand>
             .WithMessage($"Invalid plan name. Valid options: {string.Join(", ", ValidPlanNames)}");
     }
 
-    private bool BeValidPlanName(string planName)
+    private bool BeValidPlanName(string? planName)
     {
-        return !string.IsNullOrWhiteSpace(planName) && 
-               ValidPlanNames.Contains(planName.ToUpperInvariant());
+        if (string.IsNullOrWhiteSpace(planName))
+        {
+            return false;
+        }
+        
+        return ValidPlanNames.Contains(planName.ToUpperInvariant());
     }
 }

@@ -36,7 +36,7 @@ apiClient.interceptors.request.use((config) => {
   
   // Add tenant ID header
   // Priority: 1) localStorage (after registration), 2) environment variable (dev)
-  const storedTenantId = localStorage.getItem('tenantId');
+  const storedTenantId = localStorage.getItem('tenant_id');
   const tenantId = storedTenantId || TENANT_ID;
   
   if (tenantId) {

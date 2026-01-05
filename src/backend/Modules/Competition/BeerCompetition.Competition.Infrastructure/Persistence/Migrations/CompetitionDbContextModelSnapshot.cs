@@ -100,7 +100,7 @@ namespace BeerCompetition.Competition.Infrastructure.Persistence.Migrations
                     b.HasIndex("SubscriptionPlanId")
                         .IsUnique()
                         .HasDatabaseName("ix_competitions_subscription_plan_id_unique")
-                        .HasFilter("[subscription_plan_id] IS NOT NULL");
+                        .HasFilter("subscription_plan_id IS NOT NULL");
 
                     b.HasIndex("TenantId")
                         .HasDatabaseName("ix_competitions_tenant_id");
