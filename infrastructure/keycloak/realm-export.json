@@ -1085,7 +1085,10 @@
             "access.token.claim": "true",
             "userinfo.token.claim": "false"
           }
-        }
+        },
+        {
+          "id": "judging-roles-mapper",
+          "name": "roles",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-usermodel-realm-role-mapper",
           "consentRequired": false,
