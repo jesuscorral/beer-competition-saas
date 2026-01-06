@@ -1,4 +1,3 @@
-using BeerCompetition.Competition.Application.Features.RegisterOrganizer;
 using BeerCompetition.Competition.Application.Features.UserRegistration;
 using BeerCompetition.Competition.Domain.Entities;
 using MediatR;
@@ -21,15 +20,31 @@ public static class AuthenticationEndpoints
 
         // POST /api/auth/register-organizer - Register new organizer with tenant
         group.MapPost("/register-organizer", async (
-            RegisterOrganizerCommand command,
+            RegisterOrganizerRequest request,
             IMediator mediator,
             CancellationToken ct) =>
         {
+            var command = new RegisterUserCommand(
+                request.Email,
+                request.Password,
+                request.OrganizationName,  // FullName = OrganizationName for organizers
+                CompetitionUserRole.ORGANIZER,
+                null,  // No competitionId for organizers
+                null,  // No bjcpRank
+                request.OrganizationName  // Pass organization name to strategy
+            );
+            
             var result = await mediator.Send(command, ct);
 
-            return result.IsSuccess
-                ? Results.Ok(result.Value)
-                : Results.BadRequest(new { error = result.Error });
+            if (result.IsFailure)
+                return Results.BadRequest(new { error = result.Error });
+
+            // Map response to match frontend OrganizerRegistrationResponse interface
+            return Results.Ok(new 
+            { 
+                tenantId = result.Value.TenantId?.ToString() ?? string.Empty,
+                userId = result.Value.UserId
+            });
         })
         .WithName("RegisterOrganizer")
         .WithSummary("Register a new organizer")
@@ -38,12 +53,15 @@ Creates a new organizer account with:
 - Keycloak user with 'organizer' role
 - New tenant (organization) 
 - User attributes: tenant_id
+- ACTIVE status (auto-approved)
 
 This is the entry point for competition organizers to onboard onto the platform.
 Competition creation happens in a separate workflow after registration.
 
+Now uses unified RegisterUserCommand with Strategy Pattern for consistency.
+
 **No authentication required** - this is a public registration endpoint.")
-        .Produces<OrganizerRegistrationResponse>(StatusCodes.Status200OK)
+        .Produces<object>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .AllowAnonymous(); // Public endpoint - no auth required
 
@@ -175,3 +193,12 @@ public record RegisterJudgeRequest(
     string FullName,
     Guid CompetitionId,
     string? BjcpRank = null);
+
+/// <summary>
+/// Request DTO for organizer registration.
+/// </summary>
+public record RegisterOrganizerRequest(
+    string Email,
+    string Password,
+    string OrganizationName,
+    string PlanName);
