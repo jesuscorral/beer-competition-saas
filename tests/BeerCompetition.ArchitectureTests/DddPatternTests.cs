@@ -104,20 +104,21 @@ public class DddPatternTests
             .ToList();
 
         // Act & Assert: Entities should typically be sealed unless designed for inheritance
-        foreach (var entityType in entityTypes)
+        var nonSealedEntityTypes = entityTypes
+            .Where(t => !t.IsSealed)
+            .ToList();
+
+        foreach (var entityType in nonSealedEntityTypes)
         {
             // If not sealed, should be abstract or have protected constructors
-            if (!entityType.IsSealed)
+            var hasPublicConstructor = entityType.GetConstructors(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance).Any();
+
+            // If has public constructor and not sealed, this might be intentional for inheritance
+            // We'll log a warning but not fail (this is a soft rule)
+            if (hasPublicConstructor && !entityType.IsAbstract)
             {
-                var hasPublicConstructor = entityType.GetConstructors(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance).Any();
-                
-                // If has public constructor and not sealed, this might be intentional for inheritance
-                // We'll log a warning but not fail (this is a soft rule)
-                if (hasPublicConstructor && !entityType.IsAbstract)
-                {
-                    // This is acceptable - entities can be designed for inheritance
-                    // Example: Competition could be base for different competition types
-                }
+                // This is acceptable - entities can be designed for inheritance
+                // Example: Competition could be base for different competition types
             }
         }
 
