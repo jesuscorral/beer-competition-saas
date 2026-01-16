@@ -144,60 +144,29 @@ export function OrganizerRegistrationForm() {
           {t('auth.register.subscriptionPlan')}
         </h2>
 
-        <div className="space-y-3">
-          <label className="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-amber-500 transition-colors">
-            <input
-              type="radio"
-              {...register('planName')}
-              value="TRIAL"
-              defaultChecked
-              className="h-4 w-4 text-amber-600"
-            />
-            <div className="ml-3">
-              <div className="font-medium text-gray-900">{t('auth.plans.TRIAL.name')}</div>
-              <div className="text-sm text-gray-500">{t('auth.plans.TRIAL.description')}</div>
-            </div>
+        <div>
+          <label htmlFor="planName" className="block text-sm font-medium text-gray-700 mb-1">
+            {t('auth.register.selectPlan')}
           </label>
-
-          <label className="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-amber-500 transition-colors">
-            <input
-              type="radio"
-              {...register('planName')}
-              value="BASIC"
-              className="h-4 w-4 text-amber-600"
-            />
-            <div className="ml-3">
-              <div className="font-medium text-gray-900">{t('auth.plans.BASIC.name')}</div>
-              <div className="text-sm text-gray-500">{t('auth.plans.BASIC.description')}</div>
-            </div>
-          </label>
-
-          <label className="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-amber-500 transition-colors">
-            <input
-              type="radio"
-              {...register('planName')}
-              value="STANDARD"
-              className="h-4 w-4 text-amber-600"
-            />
-            <div className="ml-3">
-              <div className="font-medium text-gray-900">{t('auth.plans.STANDARD.name')}</div>
-              <div className="text-sm text-gray-500">{t('auth.plans.STANDARD.description')}</div>
-            </div>
-          </label>
-
-          <label className="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-amber-500 transition-colors">
-            <input
-              type="radio"
-              {...register('planName')}
-              value="PRO"
-              className="h-4 w-4 text-amber-600"
-            />
-            <div className="ml-3">
-              <div className="font-medium text-gray-900">{t('auth.plans.PRO.name')}</div>
-              <div className="text-sm text-gray-500">{t('auth.plans.PRO.description')}</div>
-            </div>
-          </label>
-
+          <select
+            id="planName"
+            {...register('planName')}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+            defaultValue="TRIAL"
+          >
+            <option value="TRIAL">
+              {t('auth.plans.TRIAL.name')} - {t('auth.plans.TRIAL.description')}
+            </option>
+            <option value="BASIC">
+              {t('auth.plans.BASIC.name')} - {t('auth.plans.BASIC.description')}
+            </option>
+            <option value="STANDARD">
+              {t('auth.plans.STANDARD.name')} - {t('auth.plans.STANDARD.description')}
+            </option>
+            <option value="PRO">
+              {t('auth.plans.PRO.name')} - {t('auth.plans.PRO.description')}
+            </option>
+          </select>
           {errors.planName && (
             <p className="text-red-600 text-sm mt-1">{errors.planName.message}</p>
           )}

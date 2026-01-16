@@ -9,7 +9,7 @@ export const registerOrganizer = async (
   data: RegisterOrganizerRequest
 ): Promise<OrganizerRegistrationResponse> => {
   const response = await apiClient.post<OrganizerRegistrationResponse>(
-    '/api/auth/register-organizer',
+    '/api/user-registration/register-organizer',
     data
   );
   return response.data;

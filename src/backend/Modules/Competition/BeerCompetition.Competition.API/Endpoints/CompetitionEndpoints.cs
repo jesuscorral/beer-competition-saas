@@ -33,11 +33,10 @@ public static class CompetitionEndpoints
         })
         .WithName("GetCompetitions")
         .WithSummary("Get all competitions")
-        .WithDescription("Retrieves all competitions for the current tenant. Automatically filtered by tenant_id. Requires authentication.")
+        .WithDescription("Retrieves all competitions. Public endpoint - no authentication required.")
         .Produces<List<CompetitionDto>>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
-        .ProducesProblem(StatusCodes.Status401Unauthorized)
-        .RequireAuthorization("AuthenticatedUser"); // Policy: Authenticated user with tenant_id claim
+        .AllowAnonymous(); // Public endpoint - anyone can view competitions
 
         // POST /api/competitions - Create new competition
         group.MapPost("/", async (

@@ -33,6 +33,15 @@ public class CompetitionRepository : ICompetitionRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<List<Domain.Entities.Competition>> GetAllPublicAsync(CancellationToken cancellationToken = default)
+    {
+        // Ignore query filters to get all competitions across all tenants (public access)
+        return await _context.Competitions
+            .IgnoreQueryFilters()
+            .OrderByDescending(c => c.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<List<Domain.Entities.Competition>> GetByStatusAsync(
         CompetitionStatus status,
         CancellationToken cancellationToken = default)

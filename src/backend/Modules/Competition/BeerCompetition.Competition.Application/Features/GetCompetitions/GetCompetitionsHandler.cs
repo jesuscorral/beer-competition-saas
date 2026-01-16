@@ -27,12 +27,12 @@ public class GetCompetitionsHandler : IRequestHandler<GetCompetitionsQuery, Resu
         GetCompetitionsQuery request, 
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Fetching all competitions for current tenant");
+        _logger.LogInformation("Fetching all competitions (public access)");
 
         try
         {
-            // Repository automatically filters by tenant_id via EF Core global filter
-            var competitions = await _repository.GetAllAsync(cancellationToken);
+            // Get all competitions across all tenants (public endpoint)
+            var competitions = await _repository.GetAllPublicAsync(cancellationToken);
 
             // Map domain entities to DTOs
             var competitionDtos = competitions.Select(c => new CompetitionDto(

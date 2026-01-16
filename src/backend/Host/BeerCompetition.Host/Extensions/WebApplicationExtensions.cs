@@ -77,7 +77,7 @@ public static class WebApplicationExtensions
         // Map module endpoints
         app.MapCompetitionEndpoints();
         app.MapSubscriptionPlanEndpoints();
-        app.MapAuthenticationEndpoints();
+        app.MapUserRegistrationEndpoints();
         // Future: app.MapJudgingEndpoints();
 
         // Health check endpoint (anonymous access)

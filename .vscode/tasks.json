@@ -4,7 +4,7 @@
     {
       "type": "npm",
       "script": "dev",
-      "path": "frontend/",
+      "path": "src/frontend/",
       "label": "npm: dev",
       "detail": "Start Vite development server",
       "isBackground": true,
@@ -31,7 +31,7 @@
     {
       "type": "npm",
       "script": "build",
-      "path": "frontend/",
+      "path": "src/frontend/",
       "label": "npm: build",
       "detail": "Build frontend for production",
       "problemMatcher": [
@@ -50,7 +50,7 @@
         "install"
       ],
       "options": {
-        "cwd": "${workspaceFolder}/frontend"
+        "cwd": "${workspaceFolder}/src/frontend"
       },
       "problemMatcher": []
     },
@@ -73,7 +73,7 @@
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/backend/BFF.ApiGateway/BeerCompetition.BFF.ApiGateway.csproj",
+        "${workspaceFolder}/src/BFF/BFF.ApiGateway/BeerCompetition.BFF.ApiGateway.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary;ForceNoAlign"
       ],
@@ -86,7 +86,7 @@
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/backend/Host/BeerCompetition.Host/BeerCompetition.Host.csproj",
+        "${workspaceFolder}/src/backend/Host/BeerCompetition.Host/BeerCompetition.Host.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary;ForceNoAlign"
       ],

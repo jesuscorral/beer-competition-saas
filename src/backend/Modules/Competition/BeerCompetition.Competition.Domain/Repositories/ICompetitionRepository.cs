@@ -22,6 +22,12 @@ public interface ICompetitionRepository
     Task<List<Entities.Competition>> GetAllAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets all competitions across all tenants (public access).
+    /// Ignores tenant_id filter for public listing.
+    /// </summary>
+    Task<List<Entities.Competition>> GetAllPublicAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Gets competitions by status for the current tenant.
     /// </summary>
     Task<List<Entities.Competition>> GetByStatusAsync(CompetitionStatus status, CancellationToken cancellationToken = default);

@@ -8,17 +8,17 @@ using Microsoft.AspNetCore.Routing;
 namespace BeerCompetition.Competition.API.Endpoints;
 
 /// <summary>
-/// Minimal API endpoints for authentication and user onboarding.
+/// Minimal API endpoints for user onboarding.
 /// Uses unified RegisterUserCommand with Strategy Pattern for role-specific logic.
 /// </summary>
-public static class AuthenticationEndpoints
+public static class UserRegistrationEndpoints
 {
-    public static void MapAuthenticationEndpoints(this IEndpointRouteBuilder app)
+    public static void MapUserRegistrationEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/auth")
-            .WithTags("Authentication");
+        var group = app.MapGroup("/api/user-registration")
+            .WithTags("UserRegistration");
 
-        // POST /api/auth/register-organizer - Register new organizer with tenant
+        // POST /api/user-registration/register-organizer - Register new organizer with tenant
         group.MapPost("/register-organizer", async (
             RegisterOrganizerRequest request,
             IMediator mediator,
@@ -37,13 +37,15 @@ public static class AuthenticationEndpoints
             var result = await mediator.Send(command, ct);
 
             if (result.IsFailure)
+            { 
                 return Results.BadRequest(new { error = result.Error });
+            }
 
             // Map response to match frontend OrganizerRegistrationResponse interface
             return Results.Ok(new 
             { 
-                tenantId = result.Value.TenantId?.ToString() ?? string.Empty,
-                userId = result.Value.UserId
+                tenantId = result.Value?.TenantId?.ToString() ?? string.Empty,
+                userId = result.Value?.UserId
             });
         })
         .WithName("RegisterOrganizer")

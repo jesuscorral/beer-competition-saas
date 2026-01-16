@@ -6,7 +6,7 @@
       "type": "chrome",
       "request": "launch",
       "url": "http://localhost:5173",
-      "webRoot": "${workspaceFolder}/frontend/src",
+      "webRoot": "${workspaceFolder}/src/frontend/src",
       "sourceMaps": true,
       "preLaunchTask": "npm: dev",
       "skipFiles": [
@@ -26,7 +26,7 @@
       "request": "attach",
       "port": 9222,
       "url": "http://localhost:5173",
-      "webRoot": "${workspaceFolder}/frontend/src",
+      "webRoot": "${workspaceFolder}/src/frontend/src",
       "sourceMaps": true,
       "skipFiles": [
         "<node_internals>/**",
@@ -38,7 +38,7 @@
       "type": "msedge",
       "request": "launch",
       "url": "http://localhost:5173",
-      "webRoot": "${workspaceFolder}/frontend/src",
+      "webRoot": "${workspaceFolder}/src/frontend/src",
       "sourceMaps": true,
       "preLaunchTask": "npm: dev",
       "skipFiles": [
@@ -50,7 +50,7 @@
       "name": "Debug Vite Server",
       "type": "node",
       "request": "launch",
-      "cwd": "${workspaceFolder}/frontend",
+      "cwd": "${workspaceFolder}/src/frontend",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run",
@@ -67,9 +67,9 @@
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build-bff",
-      "program": "${workspaceFolder}/backend/BFF.ApiGateway/bin/Debug/net10.0/BeerCompetition.BFF.ApiGateway.dll",
+      "program": "${workspaceFolder}/src/backend/BFF.ApiGateway/bin/Debug/net10.0/BeerCompetition.BFF.ApiGateway.dll",
       "args": [],
-      "cwd": "${workspaceFolder}/backend/BFF.ApiGateway",
+      "cwd": "${workspaceFolder}/src/backend/BFF.ApiGateway",
       "stopAtEntry": false,
       "env": {
         "ASPNETCORE_ENVIRONMENT": "Development",
@@ -83,9 +83,9 @@
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build-host",
-      "program": "${workspaceFolder}/backend/Host/BeerCompetition.Host/bin/Debug/net10.0/BeerCompetition.Host.dll",
+      "program": "${workspaceFolder}/src/backend/Host/BeerCompetition.Host/bin/Debug/net10.0/BeerCompetition.Host.dll",
       "args": [],
-      "cwd": "${workspaceFolder}/backend/Host/BeerCompetition.Host",
+      "cwd": "${workspaceFolder}/src/backend/Host/BeerCompetition.Host",
       "stopAtEntry": false,
       "env": {
         "ASPNETCORE_ENVIRONMENT": "Development",
@@ -99,9 +99,9 @@
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build-all-backend",
-      "program": "${workspaceFolder}/backend/BFF.ApiGateway/bin/Debug/net10.0/BeerCompetition.BFF.ApiGateway.dll",
+      "program": "${workspaceFolder}/src/backend/BFF.ApiGateway/bin/Debug/net10.0/BeerCompetition.BFF.ApiGateway.dll",
       "args": [],
-      "cwd": "${workspaceFolder}/backend/BFF.ApiGateway",
+      "cwd": "${workspaceFolder}/src/backend/BFF.ApiGateway",
       "stopAtEntry": false,
       "env": {
         "ASPNETCORE_ENVIRONMENT": "Development",

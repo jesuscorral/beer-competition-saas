@@ -1,8 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 export function Home() {
   const { t } = useTranslation();
+  const { isAuthenticated, isOrganizer } = useAuth();
   
   return (
     <div className="max-w-4xl mx-auto">
@@ -27,12 +29,14 @@ export function Home() {
               >
                 {t('home.organizeCompetitions.viewAction')}
               </Link>
-              <Link
-                to="/competitions/create"
-                className="inline-block px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
-              >
-                {t('home.organizeCompetitions.action')}
-              </Link>
+              {isAuthenticated && isOrganizer && (
+                <Link
+                  to="/competitions/create"
+                  className="inline-block px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
+                >
+                  {t('home.organizeCompetitions.action')}
+                </Link>
+              )}
             </div>
           </div>
           

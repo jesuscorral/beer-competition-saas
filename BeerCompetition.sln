@@ -43,7 +43,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{8DEECEC3-66A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BFF", "BFF", "{59517116-0FEB-462D-A240-C008B6B182AC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeerCompetition.BFF.ApiGateway", "src\backend\BFF\BFF.ApiGateway\BeerCompetition.BFF.ApiGateway.csproj", "{FD7B143B-76B7-935E-4D4B-5D2FD65F3EE1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeerCompetition.BFF.ApiGateway", "src\BFF\BFF.ApiGateway\BeerCompetition.BFF.ApiGateway.csproj", "{FD7B143B-76B7-935E-4D4B-5D2FD65F3EE1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeerCompetition.Host", "src\backend\Host\BeerCompetition.Host\BeerCompetition.Host.csproj", "{477CAF7F-2472-70DF-ACB2-4705481C8955}"
 EndProject
