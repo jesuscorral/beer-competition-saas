@@ -67,9 +67,9 @@
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build-bff",
-      "program": "${workspaceFolder}/src/backend/BFF.ApiGateway/bin/Debug/net10.0/BeerCompetition.BFF.ApiGateway.dll",
+      "program": "${workspaceFolder}/src/BFF/BFF.ApiGateway/bin/Debug/net10.0/BeerCompetition.BFF.ApiGateway.dll",
       "args": [],
-      "cwd": "${workspaceFolder}/src/backend/BFF.ApiGateway",
+      "cwd": "${workspaceFolder}/src/BFF/BFF.ApiGateway",
       "stopAtEntry": false,
       "env": {
         "ASPNETCORE_ENVIRONMENT": "Development",
@@ -99,9 +99,9 @@
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build-all-backend",
-      "program": "${workspaceFolder}/src/backend/BFF.ApiGateway/bin/Debug/net10.0/BeerCompetition.BFF.ApiGateway.dll",
+      "program": "${workspaceFolder}/src/BFF/BFF.ApiGateway/bin/Debug/net10.0/BeerCompetition.BFF.ApiGateway.dll",
       "args": [],
-      "cwd": "${workspaceFolder}/src/backend/BFF.ApiGateway",
+      "cwd": "${workspaceFolder}/src/BFF/BFF.ApiGateway",
       "stopAtEntry": false,
       "env": {
         "ASPNETCORE_ENVIRONMENT": "Development",
